@@ -432,7 +432,14 @@ Parameters
                 res[i_new]=Truncated(Normal(part.width,part.width_sigma),0,Inf)
                 bias[i_new] =Truncated(Normal(part.bias,part.bias_sigma),-Inf,Inf)
                 long_name = string(part.experiment)*" "*string(part.part_name)*" "*part.detector
-                append!(pretty_names[:ω],["Energy Width "*L"(\omega)"*" "*long_name*" [keV]"])
+                if part.signal_name == :gaussian
+                    append!(pretty_names[:ω],["Energy Resolution "*L"(\omega)"*" "*long_name*" [keV]"])
+                elseif part.signal_name == :gaussian_plus_lowEtail
+                    append!(pretty_names[:ω],["Resolution fractional uncertainty "*L"(\omega)"*" "*long_name*" [keV]"])
+                else
+                    @info "There is no specific name for the $(part.signal_name) peak shape, exit here"
+                    exit()
+                end
                 append!(pretty_names[:𝛥],["Energy Scale Bias "*L"(\Delta)"*" - "*long_name*" [keV]"])
             end
         end
