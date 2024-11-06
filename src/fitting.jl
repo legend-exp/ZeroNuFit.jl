@@ -106,10 +106,10 @@ Signal model based on the peak shape used for the MJD analysis. The peak shape d
     σ = part_k.sigma
     γ = part_k.width
     
-    term1 = (1-f) * pdf(Normal(Qbb - bias, γ*σ), evt_energy)
+    term1 = (1-f) * pdf(Normal(Qbb-bias, γ*σ), evt_energy)
 
     term2 = f / (2*γ*τ) * exp( ((γ*σ)^2) / (2*(γ*τ)^2) + (evt_energy-(Qbb-bias)) / (γ*τ) )
-    term2 = term2 * erfc( (γ*σ) / (sqrt(2)*γ*τ) + (evt_energy-(Qbb-bias)) / (sqrt(2)*γ*σ) )
+    term2 = term2 * erfc( σ / (sqrt(2)*τ) + (evt_energy-(Qbb-bias)) / (sqrt(2)*γ*σ) )
     
     return term1 + term2
 end
