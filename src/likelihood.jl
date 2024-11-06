@@ -27,7 +27,7 @@ function get_signal_pdf(signal_shape,evt_energy::Float64,Qbb::Float64,bias::Floa
     if (signal_shape==:gaussian)
         return pdf(Normal(Qbb - bias, reso), evt_energy) 
     elseif (signal_shape==:gaussian_plus_lowEtail)
-        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,reso,part_k,fit_range)
+        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,part_k,fit_range)
     else
         @error "signal shape",signal_shape," is not yet implememnted"
         exit(-1)
@@ -40,17 +40,17 @@ function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,i
     Get the resolution and bias
     """
     if (settings[:energy_scale_fixed]==true || idx_part_with_events==0)
-        reso = part_k.fwhm/2.355
+        reso = part_k.width
         bias =part_k.bias
 
     elseif (settings[:energy_scale_correlated]==true)
         energy_reso_group = part_k.energy_reso_name
         energy_bias_group = part_k.energy_bias_name
-        reso = part_k.fwhm/2.355+p[energy_reso_group]*part_k.fwhm_sigma/2.355
+        reso = part_k.width+p[energy_reso_group]*part_k.width_sigma
         bias = part_k.bias+p[energy_bias_group]*part_k.bias_sigma
         
     else
-        reso = p.σ[idx_part_with_events]
+        reso = p.ω[idx_part_with_events]
         bias =p.𝛥[idx_part_with_events]
     end
 
@@ -344,7 +344,7 @@ Parameters
         :αb=>L"\alpha_{b}",
         :γ=>[],
         :ε=>[],
-        :σ=>[],
+        :ω=>[],
         :𝛥=>[])
 
     for key in keys(distrB_multi)
@@ -399,9 +399,9 @@ Parameters
     ### ENERGY scale prior
 
     if (settings[:energy_scale_fixed]==false && settings[:energy_scale_correlated]==true)
-        all_fwhm = partitions.fwhm
-        all_fwhm_sigma = partitions.fwhm_sigma
-        ratio = - all_fwhm ./ all_fwhm_sigma 
+        all_width = partitions.width
+        all_width_sigma = partitions.width_sigma
+        ratio = - all_width ./ all_width_sigma 
         αr_min = maximum(ratio)
 
         list_names = partitions.energy_reso_name
@@ -429,58 +429,18 @@ Parameters
 
             if (part_event_index[idx]!=0)
                 i_new = part_event_index[idx]
-                res[i_new]=Truncated(Normal(part.fwhm/2.355,part.fwhm_sigma/2.355),0,Inf)
+                res[i_new]=Truncated(Normal(part.width,part.width_sigma),0,Inf)
                 bias[i_new] =Truncated(Normal(part.bias,part.bias_sigma),-Inf,Inf)
                 long_name = string(part.experiment)*" "*string(part.part_name)*" "*part.detector
-                append!(pretty_names[:σ],["Energy Resolution "*L"(\sigma)"*" "*long_name*" [keV]"])
+                append!(pretty_names[:ω],["Energy Width "*L"(\omega)"*" "*long_name*" [keV]"])
                 append!(pretty_names[:𝛥],["Energy Scale Bias "*L"(\Delta)"*" - "*long_name*" [keV]"])
             end
         end
-        priors[:σ]=res
+        priors[:ω]=res
         priors[:𝛥]=bias
 
     end
     
-    ## additional signal priors 
-    # ...first, we look if there is any partition that requires the gamma parameter
-    part_event_index_gamma = []
-    ct = 1
-    for (idx,el) in enumerate(part_event_index)
-        if (partitions[idx].gamma != nothing && partitions[idx].signal_name == :gaussian_plus_lowEtail)
-            append!(part_event_index_gamma, ct)
-            ct += 1
-        else
-            append!(part_event_index_gamma, 0)
-        end
-    end
-    
-    @info "prima", part_event_index
-    @info "dopo", part_event_index_gamma
-    @info "max(prima)", maximum(part_event_index)
-    @info "max(dopo)", maximum(part_event_index_gamma)
-    @info "partitions[1]", partitions[1]
-    @info "partitions[8]", partitions[8]
-    #@info "partitions_gamma[1]", partitions_gamma[1]
-    #@info "partitions_gamma[8]", partitions_gamma[8]
-    #@info partitions_gamma
-    
-    # if there are >0 partitions that requires the gamma parameter, let's add it!
-    if maximum(part_event_index_gamma) != 0
-        gamma=Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(undef,maximum(part_event_index_gamma))
-        for (idx,part) in enumerate(partitions)
-            # be careful to include a prior just for those experiments that need the parameter in the fit!
-            if (part_event_index[idx]!=0 && part.gamma != nothing && part.signal_name == :gaussian_plus_lowEtail)
-                i_new = part_event_index_gamma[idx]
-
-                gamma[i_new] =Truncated(Normal(part.gamma-1, part.gamma_sigma),-Inf,Inf)
-                long_name = string(part.experiment)*" "*string(part.part_name)*" "*part.detector
-                append!(pretty_names[:γ],["Peak-shape scale parameter "*L"(\gamma)"*" - "*long_name*""])
-            end
-        end
-        # add a prior only if there were partitions that included this parameter
-        @info "we are going to include a prior for gamma"
-        priors[:γ]=gamma
-    end
     
     ## bkg shape priors
     if shape_pars!=nothing

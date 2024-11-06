@@ -49,8 +49,7 @@ function get_partitions_new(part_path::String)
         arrays["energy_bias_name"]=[]
         arrays["frac"]=[]
         arrays["tau"]=[]
-        arrays["gamma"]=[]
-        arrays["gamma_sigma"]=[]
+        arrays["sigma"]=[]
 
         fit_ranges=OrderedDict()
         for fit_group in keys(part_data_json["partitions"])
@@ -58,12 +57,12 @@ function get_partitions_new(part_path::String)
             fit_ranges[fit_group]=part_data_json["fit_groups"][fit_group]["range"]
             for part in part_data_json["partitions"][fit_group]
                 for key in k
-                    if key in ["frac", "tau", "gamma", "gamma_sigma"]
+                    if key in ["frac", "tau", "sigma"]
                         continue # separate treatment
                     end
                     append!(arrays[key],[part[key]])
                 end
-                for key in ["frac", "tau", "gamma", "gamma_sigma"]
+                for key in ["frac", "tau", "sigma"]
                     if key in k
                         append!(arrays[key],[part[key]])
                     else
@@ -116,15 +115,14 @@ function get_partitions_new(part_path::String)
                     end_ts=Array(arrays["end_ts"]),
                     eff_tot=Array(arrays["eff_tot"]),
                     eff_tot_sigma=Array(arrays["eff_tot_sigma"]),
-                    fwhm=Array(arrays["fwhm"]),
-                    fwhm_sigma=Array(arrays["fwhm_sigma"]),
+                    width=Array(arrays["width"]),
+                    width_sigma=Array(arrays["width_sigma"]),
                     exposure=Array(arrays["exposure"]),
                     bias =Array(arrays["bias"]),
                     bias_sigma =Array(arrays["bias_sigma"]),
                     frac =Array(arrays["frac"]),
                     tau =Array(arrays["tau"]),
-                    gamma =Array(arrays["gamma"]),
-                    gamma_sigma =Array(arrays["gamma_sigma"]))
+                    sigma =Array(arrays["sigma"]))
         return tab,fit_groups,fit_ranges
 end
 
