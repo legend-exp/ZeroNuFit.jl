@@ -21,22 +21,36 @@ function get_bkg_pdf(bkg_shape::Symbol,evt_energy::Float64,p::NamedTuple,b_name:
     end
 
 end
+
+function get_signal_pdf(signal_shape,evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple,fit_range)
+    #@info part_k.experiment, signal_shape
+    if (signal_shape==:gaussian)
+        return pdf(Normal(Qbb - bias, reso), evt_energy) 
+    elseif (signal_shape==:gaussian_plus_lowEtail)
+        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,part_k,fit_range)
+    else
+        @error "signal shape",signal_shape," is not yet implememnted"
+        exit(-1)
+    end
+
+end
+
 function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
     """ 
     Get the resolution and bias
     """
     if (settings[:energy_scale_fixed]==true || idx_part_with_events==0)
-        reso = part_k.fwhm/2.355
+        reso = part_k.width
         bias =part_k.bias
 
     elseif (settings[:energy_scale_correlated]==true)
         energy_reso_group = part_k.energy_reso_name
         energy_bias_group = part_k.energy_bias_name
-        reso = part_k.fwhm/2.355+p[energy_reso_group]*part_k.fwhm_sigma/2.355
+        reso = part_k.width+p[energy_reso_group]*part_k.width_sigma
         bias = part_k.bias+p[energy_bias_group]*part_k.bias_sigma
         
     else
-        reso = p.σ[idx_part_with_events]
+        reso = p.ω[idx_part_with_events]
         bias =p.𝛥[idx_part_with_events]
     end
 
@@ -48,9 +62,9 @@ function get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,s
     """
     Get the expected number of signal and background counts in a partition
     """
-    N_A = 6.022E23
-    m_76 = 75.92E-3 # kg/mol
-    sig_units =1e-27 # signal is in units of this
+    N_A = constants.N_A
+    m_76 = constants.m_76
+    sig_units = constants.sig_units
     
     deltaE = sum([arr[2]-arr[1] for arr in fit_range])
     eff= nothing
@@ -106,7 +120,7 @@ function build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,pa
 Function which computes the partial likelihood for a single data partiton
 free parameters: signal (S), background (B), energy bias (biask) and resolution per partition (resk)
 """
-    Qbb = 2039.06 # keV
+    Qbb = constants.Qbb
 
     ll_value = 0
 
@@ -129,9 +143,9 @@ free parameters: signal (S), background (B), energy bias (biask) and resolution 
 
         if (settings[:bkg_only]==false)
 
-            # get the correct reso and bias (
+            # get the correct reso and bias 
             reso,bias = get_energy_scale_pars(part_k,p,settings,idx_part_with_events)
-            term2 = model_s_k * pdf(Normal(Qbb - bias, reso), evt_energy) 
+            term2 = model_s_k * get_signal_pdf(part_k.signal_name,evt_energy,Qbb,bias,reso,part_k,fit_range) 
         else
             term2 =0
         end
@@ -217,7 +231,7 @@ Keyword arguments
 Returns
     OrderedDict of the data
 """
-    Qbb = 2039.06 # keV
+    Qbb = constants.Qbb
 
     # seed the seed
     output=OrderedDict("events"=>[])
@@ -247,7 +261,7 @@ Returns
 
         n_s = rand(Poisson(model_s_k))
         n_b = rand(Poisson(model_b_k))
-        events =generate_disjoint_uniform_samples(n_b)
+        events = generate_disjoint_uniform_samples(n_b, fit_ranges[part_k.fit_group])
         if (bkg_only == false)
             for i in 1:n_s
 
@@ -321,8 +335,6 @@ Parameters
     unique_list=unique(list_names)
     bkg_names=[Symbol(name) for name in unique_list]
     
-   
-
     distrS, distrB = get_signal_bkg_priors(config)
     distrB_multi=OrderedDict(Symbol(bkg_name)=>distrB for bkg_name in bkg_names)
 
@@ -330,8 +342,9 @@ Parameters
         :α=>L"\alpha_{\varepsilon}",
         :αr=>L"\alpha_{r}",
         :αb=>L"\alpha_{b}",
+        :γ=>[],
         :ε=>[],
-        :σ=>[],
+        :ω=>[],
         :𝛥=>[])
 
     for key in keys(distrB_multi)
@@ -386,9 +399,9 @@ Parameters
     ### ENERGY scale prior
 
     if (settings[:energy_scale_fixed]==false && settings[:energy_scale_correlated]==true)
-        all_fwhm = partitions.fwhm
-        all_fwhm_sigma = partitions.fwhm_sigma
-        ratio = - all_fwhm ./ all_fwhm_sigma 
+        all_width = partitions.width
+        all_width_sigma = partitions.width_sigma
+        ratio = - all_width ./ all_width_sigma 
         αr_min = maximum(ratio)
 
         list_names = partitions.energy_reso_name
@@ -416,18 +429,26 @@ Parameters
 
             if (part_event_index[idx]!=0)
                 i_new = part_event_index[idx]
-                res[i_new]=Truncated(Normal(part.fwhm/2.355,part.fwhm_sigma/2.355),0,Inf)
+                res[i_new]=Truncated(Normal(part.width,part.width_sigma),0,Inf)
                 bias[i_new] =Truncated(Normal(part.bias,part.bias_sigma),-Inf,Inf)
                 long_name = string(part.experiment)*" "*string(part.part_name)*" "*part.detector
-                append!(pretty_names[:σ],["Energy Resolution "*L"(\sigma)"*" "*long_name*" [keV]"])
+                if part.signal_name == :gaussian
+                    append!(pretty_names[:ω],["Energy Resolution "*L"(\omega)"*" "*long_name*" [keV]"])
+                elseif part.signal_name == :gaussian_plus_lowEtail
+                    append!(pretty_names[:ω],["Resolution fractional uncertainty "*L"(\omega)"*" "*long_name*" [keV]"])
+                else
+                    @info "There is no specific name for the $(part.signal_name) peak shape, exit here"
+                    exit()
+                end
                 append!(pretty_names[:𝛥],["Energy Scale Bias "*L"(\Delta)"*" - "*long_name*" [keV]"])
             end
         end
-        priors[:σ]=res
+        priors[:ω]=res
         priors[:𝛥]=bias
 
     end
-
+    
+    
     ## bkg shape priors
     if shape_pars!=nothing
         
@@ -444,6 +465,7 @@ Parameters
     
     end
     
+
     ## BKG prior
     if (hierachical==false)
         for (key,item) in distrB_multi

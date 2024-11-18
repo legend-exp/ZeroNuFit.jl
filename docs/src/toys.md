@@ -12,7 +12,7 @@ The input config file (`config_fake_data.json`) has the following entries:
 
 ```
 {
-    "path_to_fit": "output/fit_alpha_high_stat_true_TOBY4_v4/",
+    "path_to_fit": "output/fit_gerda_phIandphII_NoSignal/",
     "best_fit": false,
     "seed": null
 }

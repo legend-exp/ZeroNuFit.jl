@@ -18,5 +18,6 @@ makedocs(
         "Configuration file" => "config.md",
         "Partitions and events" => "inputs.md",
         "Generating toys" => "toys.md",
+        "Tutorial" => "tutorial.md",
     ]
 )

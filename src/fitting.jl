@@ -3,6 +3,7 @@ using BAT, DensityInterface, IntervalSets
 using TypedTables
 using Plots
 using Cuba
+using SpecialFunctions
 
 include("likelihood.jl")
 
@@ -22,39 +23,39 @@ end
 
 
 function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
-    """
-    Normalised linear function defined by (1+slope*(x-center)/260)/norm.
-    Parameters
-    ----------
-        - slope::Real, the slope of the background
-        - x::Real,     the x value to evaluate at
-    """
-        center = 1930
-        range_l = [arr[1] for arr in fit_range]
-        range_h = [arr[2] for arr in fit_range]
-       
-        sum_range = sum(range_h .- range_l)
-        sum_range_sq =sum(range_h .^ 2 .- range_l .^ 2)
-        slope = p[Symbol(string(b_name)*"_slope")]
-    
-        delta = range_h[end] - range_l[1]
-        norm = sum_range * (1 - slope * center / delta) + slope * sum_range_sq / (2 * delta)
-     
-        return (1+slope*(x-center)/delta)/norm
-    end
+"""
+Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+Parameters
+----------
+    - slope::Real, the slope of the background
+    - x::Real,     the x value to evaluate at
+"""
+    range_l = [arr[1] for arr in fit_range]
+    range_h = [arr[2] for arr in fit_range]
+    center = range_l[1]
+
+    sum_range = sum(range_h .- range_l)
+    sum_range_sq =sum(range_h .^ 2 .- range_l .^ 2)
+    slope = p[Symbol(string(b_name)*"_slope")]
+
+    delta = range_h[end] - range_l[1]
+    norm = sum_range * (1 - slope * center / delta) + slope * sum_range_sq / (2 * delta)
+
+    return (1+slope*(x-center)/delta)/norm
+end
 
 
 
 function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
-    """
-    Normalised linear function defined by (1+slope*(x-center)/260)/norm.
-    Parameters
-    ----------
-        - x::Real,     the x value to evaluate at
-    """    
-    center = 1930
+"""
+Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+Parameters
+----------
+    - x::Real,     the x value to evaluate at
+"""    
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
+    center = range_l[1]
 
     norm =sum(range_h .- range_l)
     return 1/norm
@@ -63,8 +64,6 @@ function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
 end
  
 function exp_stable(x::Float64)
-
-    
     if (abs(x)<1E-6)
         return 1 + x + x^2/2+x^3/6
     else
@@ -72,46 +71,48 @@ function exp_stable(x::Float64)
     end
 end
 function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
-        """
-        Normalised linear function defined by (1+slope*(x-center)/fit_range)/norm.
-        Parameters
-        ----------
-            - slope::Real, the slope of the background
-            - x::Real,     the x value to evaluate at
-        """
-        center = 1930
-        range_l = [arr[1] for arr in fit_range]
-        range_h = [arr[2] for arr in fit_range]
+"""
+Normalised linear function defined by (1+slope*(x-center)/fit_range)/norm.
+Parameters
+----------
+    - slope::Real, the slope of the background
+    - x::Real,     the x value to evaluate at
+"""
+    range_l = [arr[1] for arr in fit_range]
+    range_h = [arr[2] for arr in fit_range]
+    center = range_l[1]
 
-        centers=[center,center,center]
-        # could be made faster?
-        R = p[Symbol(string(b_name)*"_slope")]
-        delta = range_h[end] - range_l[1]
-        Rt=R/delta
-        if (abs(Rt)>1E-6)
-            norm = (-sum(exp_stable.(-Rt*(centers-range_l)))+sum(exp_stable.(-Rt*(centers-range_h))))/Rt
-        else
-            norm =sum(range_h .- range_l)
-        end
-       
-        return exp_stable((x-center)*Rt)/norm
+    centers=[center,center,center]
+    # could be made faster?
+    R = p[Symbol(string(b_name)*"_slope")]
+    delta = range_h[end] - range_l[1]
+    Rt=R/delta
+    if (abs(Rt)>1E-6)
+        norm = (-sum(exp_stable.(-Rt*(centers-range_l)))+sum(exp_stable.(-Rt*(centers-range_h))))/Rt
+    else
+        norm =sum(range_h .- range_l)
+    end
+
+    return exp_stable((x-center)*Rt)/norm
     
 end
 
+function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,part_k::NamedTuple,fit_range)
+"""
+Signal model based on the peak shape used for the MJD analysis. The peak shape derives from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
+"""
+    f = part_k.frac
+    τ = part_k.tau
+    σ = part_k.sigma
+    γ = part_k.width
+    
+    term1 = (1-f) * pdf(Normal(Qbb-bias, γ*σ), evt_energy)
 
-function norm_gauss(sigma::Real,mu::Real,x::Real)
-"""
-Normalised gaussian function
-Parameters
-----------
-    - sigma::Real (the std of the Gaussian)
-    - mu::Real    (the mean)
-    - x::Real     (the x value to evaluate at)
-"""
-    pdf(Normal(mu,sigma), x)
+    term2 = f / (2*γ*τ) * exp( ((γ*σ)^2) / (2*(γ*τ)^2) + (evt_energy-(Qbb-bias)) / (γ*τ) )
+    term2 = term2 * erfc( σ / (sqrt(2)*τ) + (evt_energy-(Qbb-bias)) / (sqrt(2)*γ*σ) )
+    
+    return term1 + term2
 end
-
-
 
 
 
@@ -156,6 +157,7 @@ Function to retrieve useful pieces (prior, likelihood, posterior), also in savin
     
     posterior = PosteriorMeasure(likelihood, prior) 
     @info "got posterior"
+    
     return prior,likelihood,posterior,par_names
 end
 
@@ -198,7 +200,7 @@ function get_qbb_posterior(fit_function,samples)
         v=samp.v
         weight=samp.weight
         for w in 1:1:weight
-            append!(qbb,fit_function(NamedTuple(v),2039.0))
+            append!(qbb,fit_function(NamedTuple(v), constants.Qbb))
         end
     end
     return qbb

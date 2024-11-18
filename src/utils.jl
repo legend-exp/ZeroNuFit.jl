@@ -42,10 +42,14 @@ function get_partitions_new(part_path::String)
 
         end
         arrays["fit_group"]=[]
+        arrays["signal_par_name"]=[]
         arrays["bkg_par_name"]=[]
         arrays["eff_par_name"]=[]
         arrays["energy_reso_name"]=[]
         arrays["energy_bias_name"]=[]
+        arrays["frac"]=[]
+        arrays["tau"]=[]
+        arrays["sigma"]=[]
 
         fit_ranges=OrderedDict()
         for fit_group in keys(part_data_json["partitions"])
@@ -53,11 +57,28 @@ function get_partitions_new(part_path::String)
             fit_ranges[fit_group]=part_data_json["fit_groups"][fit_group]["range"]
             for part in part_data_json["partitions"][fit_group]
                 for key in k
-                    append!(arrays[key],[part[key]])
+                    if key in ["frac", "tau", "sigma"]
+                        continue # separate treatment
                     end
+                    append!(arrays[key],[part[key]])
+                end
+                for key in ["frac", "tau", "sigma"]
+                    if key in k
+                        append!(arrays[key],[part[key]])
+                    else
+                        append!(arrays[key],[nothing])
+                    end
+                end
                 append!(arrays["fit_group"],[fit_group])
                 append!(arrays["bkg_par_name"],[Symbol(part_data_json["fit_groups"][fit_group]["bkg_name"])])
-                
+            
+                ## defaults to 'gaussian'
+                if haskey(part_data_json["fit_groups"][fit_group], "signal_name")
+                    append!(arrays["signal_par_name"], [Symbol(part_data_json["fit_groups"][fit_group]["signal_name"])])
+                else
+                    append!(arrays["signal_par_name"], [Symbol("gaussian")])
+                end
+            
                 ## defaults to 'all'
                 if (haskey("efficiency_group_name",part_data_json["fit_groups"][fit_group]))
                     append!(arrays["eff_par_name"],["αe_"*Symbol(part_data_json["fit_groups"][fit_group]["efficiency_group_name"])])
@@ -65,6 +86,7 @@ function get_partitions_new(part_path::String)
                     append!(arrays["eff_par_name"],[:αe_all])
                 end
 
+                ## defaults to 'all'
                 if (haskey("energy_scale_group_name",part_data_json["fit_groups"][fit_group]))
                     append!(arrays["energy_reso_name"],[Symbol("αr_"*part_data_json["fit_groups"][fit_group]["energy_scale_group_name"])])
                     append!(arrays["energy_bias_name"],[Symbol("αb_"*part_data_json["fit_groups"][fit_group]["energy_scale_group_name"])])
@@ -78,10 +100,12 @@ function get_partitions_new(part_path::String)
             end
 
         end
+    
         #TODO: find a way to make this not hardcoded
         tab = Table(experiment=Array(arrays["experiment"]),
                     fit_group=Array(arrays["fit_group"]),
                     bkg_name = Array(arrays["bkg_par_name"]),
+                    signal_name = Array(arrays["signal_par_name"]),
                     energy_reso_name = Array(arrays["energy_reso_name"]),
                     energy_bias_name = Array(arrays["energy_bias_name"]),
                     eff_name = Array(arrays["eff_par_name"]),
@@ -91,11 +115,14 @@ function get_partitions_new(part_path::String)
                     end_ts=Array(arrays["end_ts"]),
                     eff_tot=Array(arrays["eff_tot"]),
                     eff_tot_sigma=Array(arrays["eff_tot_sigma"]),
-                    fwhm=Array(arrays["fwhm"]),
-                    fwhm_sigma=Array(arrays["fwhm_sigma"]),
+                    width=Array(arrays["width"]),
+                    width_sigma=Array(arrays["width_sigma"]),
                     exposure=Array(arrays["exposure"]),
                     bias =Array(arrays["bias"]),
-                    bias_sigma =Array(arrays["bias_sigma"]))
+                    bias_sigma =Array(arrays["bias_sigma"]),
+                    frac =Array(arrays["frac"]),
+                    tau =Array(arrays["tau"]),
+                    sigma =Array(arrays["sigma"]))
         return tab,fit_groups,fit_ranges
 end
 
@@ -126,7 +153,7 @@ end
 
 function get_events(event_path,partitions)::Array{Vector{Float64}}
     """
-        Get the event info from a jason file and save  to a Table
+        Get the event info from a JSON file and save to a Table
     """
         @info event_path
         event_json = JSON.parsefile(event_path,dicttype=DataStructures.OrderedDict)
@@ -157,23 +184,50 @@ function get_events(event_path,partitions)::Array{Vector{Float64}}
         
 end
 
-## sampling - this has to be generalized to whatever fit range!
-function inverse_uniform_cdf(p)
-    res = ifelse.(p .== 0, 1930,
-          ifelse.(p .< (169/240), p .* 240 .+ 1930,
-          ifelse.(p .< (169/240), 2099,
-          ifelse.(p .< (169 + 1/240), p .* 240 .+ 1940,
-          ifelse.(p .< (175/240), 2114,
-          ifelse.(p .< 1, p .* 240 .+ 1950, 2190))))))
+## sampling 
+function inverse_uniform_cdf(p, fit_range)
+    range_l = [arr[1] for arr in fit_range] 
+    range_h = [arr[2] for arr in fit_range] 
+    delta = sum(range_h .- range_l)
+    a = range_l[1]
+    b = range_h[end]
+    
+    cumulative_prob = 0.0
+    cumulative_range = 0.0
+
+    for j in 1:length(fit_range)
+        interval_width = range_h[j] - range_l[j]
+        interval_prob = interval_width / delta
+
+        # if p is within the current interval range
+        if cumulative_prob + interval_prob >= p
+            # scale the probability to the current interval
+            interval_p = (p - cumulative_prob) / interval_prob
+            res = range_l[j] + interval_p * interval_width
+            break
+        end
+
+        # accumulate the probability and range covered so far
+        cumulative_prob += interval_prob
+        cumulative_range += interval_width
+    end
+
+    # handle the p=1 case
+    if p == 1
+        res = range_h[end]
+    end
     
     return res
 end
-function generate_disjoint_uniform_samples(n)
+
+
+function generate_disjoint_uniform_samples(n, fit_range)
     rands=[]
     for i in 1:n
         append!(rands,rand())
     end
-    return inverse_uniform_cdf(rands)
+    res = [inverse_uniform_cdf(rand,fit_range) for rand in rands]
+    return res
 end
 
 
@@ -203,15 +257,19 @@ Function which saves results from the fit and copies the input config (for any f
     first_sample = samples.v[1]
     pars = keys(first_sample)
     nuisance_dict = Dict{String, Vector{Dict{String, String}}}()
+    @info "pars", pars
     for par in pars
         par_entry = first_sample[par]
+        @info "par_entry", par_entry
         
         # we do not save entries for global parameters with length==1
-        if length(par_entry) != 1
+        if (length(par_entry) != 1 || !(par_entry isa AbstractFloat))
+            @info "par_names[par]", par_names[par]
+            
             # initialize an empty array for each main key (eff, bias, res)
             nuisance_dict[string("$(par)")] = []  
             
-            for idx in 1:length(par_entry) 
+            for idx in 1:length(par_names[par]) 
                 xname = string("$(par)")
                 if (par_names !=nothing)
                     xname = par_names[par][idx]

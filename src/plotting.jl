@@ -6,6 +6,7 @@ using Cuba
 using Base.Filesystem
 using PDFmerger: append_pdf!
 using ColorSchemes
+using OrderedCollections
 
 default(
     framestyle=:box,               # Grid line transparency
@@ -29,10 +30,10 @@ color_schemes=Dict(:blue =>[tol_colors[1],tol_colors[3],tol_colors[2]],
 ##############################################
 ##############################################
 function fit_model(idx_part_with_events::Int,part_k::NamedTuple, p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,x)
-    Qbb = 2039.06 # keV
-    N_A = 6.022E23
-    m_76 = 75.92E-3 # kg/mol
-    sig_units =1e-27 # signal is in units of this
+    Qbb = constants.Qbb
+    N_A = constants.N_A
+    m_76 = constants.m_76
+    sig_units = constants.sig_units
     
     deltaE = sum([arr[2]-arr[1] for arr in fit_range])
     eff= nothing
@@ -61,7 +62,7 @@ function fit_model(idx_part_with_events::Int,part_k::NamedTuple, p::NamedTuple,s
     if (settings[:bkg_only]==false)
         reso,bias = get_energy_scale_pars(part_k,p,settings,idx_part_with_events)
         model_s_k = log(2) * N_A * part_k.exposure * (eff) * (p.S*sig_units) / m_76
-        term2 = model_s_k * pdf(Normal(Qbb - bias, reso), x) 
+        term2 = model_s_k * get_signal_pdf(part_k.signal_name,x,Qbb,bias,reso,part_k,fit_range) 
     else
         term2 = 0
     end
@@ -85,6 +86,12 @@ Function to plot events in the Qbb analysis window and BAT fit results
     ymax = 1.5*maximum(hist.weights)
     bin_edges = hist.edges[1]
     
+    # flatten all nested arrays into a single array of numbers
+    all_values = reduce(vcat, reduce(vcat, values(fit_ranges)))
+    # find the minimum and maximum values
+    min_x = minimum(all_values)
+    max_x = maximum(all_values)
+    
     plot!(
        p, hist,
         st = :steps, label = "Data",
@@ -92,7 +99,7 @@ Function to plot events in the Qbb analysis window and BAT fit results
         xlabel="Energy (keV)",
         ylabel="Counts/ (1 keV)",
         ylim=(0,ymax),
-        xlim=(1930,2190),
+        xlim=(min_x,max_x),
         color="dark blue",
         fill=true,
         framestyle = :box
@@ -115,21 +122,23 @@ Function to plot events in the Qbb analysis window and BAT fit results
     end
     
     if plotflag["bandfit_and_data"]
-        plot!(p,1930:0.1:2190, build_model_for_plotting, samples, alpha=0.4,median=false,globalmode=false,fillalpha=0.3) #TO DO: take only some samples
+        plot!(p,min_x:0.1:max_x, build_model_for_plotting, samples, alpha=0.4,median=false,globalmode=false,fillalpha=0.3) #TO DO: take only some samples
         best_fit_pars = BAT.mode(samples)
-        plot!(p,1930:0.1:2190,x -> build_model_for_plotting(best_fit_pars,x),label="Fit",lw=2,color="red")
+        plot!(p,min_x:0.1:max_x,x -> build_model_for_plotting(best_fit_pars,x),label="Fit",lw=2,color="red")
     else
         best_fit_pars = BAT.mode(samples)
-        plot!(p,1930:0.1:2190,x -> build_model_for_plotting(best_fit_pars,x),label="Fit",lw=2,color="red")
+        plot!(p,min_x:0.1:max_x,x -> build_model_for_plotting(best_fit_pars,x),label="Fit",lw=2,color="red")
     end
     
     # exclude the gamma lines
-    shape_x = [2114,2114,2124,2124]
-    shape_x2 = [2099,2099,2109,2109]
+    shape_x = [constants.gamma_2113_keV,constants.gamma_2113_keV,constants.gamma_2123_keV,constants.gamma_2123_keV]
+    shape_x2 = [constants.gamma_2098_keV,constants.gamma_2098_keV,constants.gamma_2108_keV,constants.gamma_2108_keV]
+    shape_x3 = [constants.gamma_2199_keV,constants.gamma_2199_keV,constants.gamma_2209_keV,constants.gamma_2209_keV]
     shape_y=[0,ymax,ymax,0]
     
-    plot!(p, shape_x, shape_y, fillalpha=0.3,fill=true, line=false,fillcolor=:blue, label=false)
-    plot!(p, shape_x2, shape_y, fillalpha=0.3,fill=true, line=false,fillcolor=:blue, label=false)
+    plot!(p, shape_x, shape_y,  fillalpha=0.4, fill=true, line=false, linecolor=:transparent, fillcolor=:gray, label="Excluded band")
+    plot!(p, shape_x2, shape_y, fillalpha=0.4, fill=true, line=false, linecolor=:transparent, fillcolor=:gray, label=false)
+    plot!(p, shape_x3, shape_y, fillalpha=0.4, fill=true, line=false, linecolor=:transparent, fillcolor=:gray, label=false)
     
     return p
 end
@@ -154,7 +163,13 @@ function plot_fit_and_data(partitions, events, part_event_index, samples, pars, 
             end
         end
     end
-    hist_data = append!(Histogram(1930:1:2190), energies)
+
+    # find the minimum and maximum x values
+    all_values = reduce(vcat, reduce(vcat, values(fit_ranges)))
+    min_x = minimum(all_values)
+    max_x = maximum(all_values)
+    
+    hist_data = append!(Histogram(min_x:1:max_x), energies)
     p_fit = plot_data(hist_data,"",partitions,part_event_index,pars,samples,plotflag,settings,bkg_shape,fit_ranges)
     
     log_suffix = toy_idx == nothing ? "" : "_$(toy_idx)"
@@ -187,7 +202,7 @@ function plot_two_dim_posteriors(samples,pars,output;par_names=nothing,toy_idx=n
     for par_x in pars
         par_entry = first_sample[par_x]
         
-        if length(par_entry) != 1
+        if (length(par_entry) != 1 || !(par_entry isa AbstractFloat))
             continue
         end
         for par_y in pars
@@ -195,13 +210,13 @@ function plot_two_dim_posteriors(samples,pars,output;par_names=nothing,toy_idx=n
                 continue
             end
             par_entry = first_sample[par_y]
-            if length(par_entry) != 1
+            if (length(par_entry) != 1 || !(par_entry isa AbstractFloat))
                 continue
             end
             
             x = get_par_posterior(samples,par_x,idx=nothing)
             y = get_par_posterior(samples,par_y,idx=nothing)
-
+            
             p=histogram2d(x, y, bins=200, cmap=:batlow, xlabel=par_names[par_x], ylabel=par_names[par_y],
             right_margin = 10Plots.mm)
             log_suffix = toy_idx == nothing ? "" : "_$(toy_idx)"
@@ -253,7 +268,8 @@ Function to plot 1D and 2D marginalized distributions (and priors)
     for par in pars
         par_entry = first_sample[par]
         
-        if length(par_entry) == 1
+        # checking if it is a 'AbstractFloat' helps avoiding cases were multivariate parameters have 1 entry only
+        if (length(par_entry) == 1 && par_entry isa AbstractFloat)
 
             post = get_par_posterior(samples,par,idx=nothing)
             if (par==:S || par==:B)
@@ -265,8 +281,6 @@ Function to plot 1D and 2D marginalized distributions (and priors)
             if (par_names !=nothing)
                 xname = par_names[par]
             end
-
-            
 
             p=plot(
             samples, par,
