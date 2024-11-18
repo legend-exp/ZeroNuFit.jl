@@ -1,7 +1,7 @@
 # Building the configuration file
 Before running the code, set the input config.json file with following entries:
 
-```
+```json
 {
     "debug":false,
     "partitions":["config/partitions_gerda_new.json","config/partitions_l200.json","config/partitions_mjd_new.json"],
@@ -39,7 +39,7 @@ where
 
 
 Moreover, the config requires the following block for nuisance parameters, ie energy scale (=energy bias and resolution) and efficiency:
-```
+```json
     {
     ...
     "nuisance": { 
@@ -76,15 +76,15 @@ There are several options to control the background in more detail. These can be
 In particular:
  - "correlated" adds a hierachical (correlated) background to the model, this key should have a dictonary giving details on the prior shape and ranges for example:
 
-```
+```json
 "correlated":{"mode":"lognormal","range":[0,0.1]}
 ```
 
-The three options for the mode are 'lognormal', 'normal' or 'none'.While the range gives the range of the uniform prior on the `\sigma_B` parameter.
+The three options for the mode are 'lognormal', 'normal' or 'none'. While the range gives the range of the uniform prior on the `\sigma_B` parameter.
 - "shape" changes the shape of the background from uniform. The user should provide a dictonary giving details on the shape:
 for example:
 
-```
+```json
 "shape":{
             "name":"exponential",
             "pars":{"slope":[-10,10]}
@@ -98,3 +98,8 @@ This will add parameters `${bkg_name}_slope` or similar to the model (and then c
 !!! note
 
     If these keys are not provided the model defaults to a uniform uncorrelated background.
+
+## Signal shape
+The signal shape can be specified in the partition JSON file in order to have a different signal shape for different partitions.
+An example is given by the combined fit of GERDA/LEGEND and MAJORANA DEMONSTRATOR (MJD) partitions where for the first one we want to model the signal with a simple gaussian function while we want to model data from MJD accountinf for an additional tail at the low-energy side of the gaussian.
+See the ["Partitions and events" documentation](inputs.html).
