@@ -61,7 +61,7 @@ function fit_model(idx_part_with_events::Int,part_k::NamedTuple, p::NamedTuple,s
     if (settings[:bkg_only]==false)
         reso,bias = get_energy_scale_pars(part_k,p,settings,idx_part_with_events)
         model_s_k = log(2) * N_A * part_k.exposure * (eff) * (p.S*sig_units) / m_76
-        term2 = model_s_k * pdf(Normal(Qbb - bias, reso), x) 
+        term2 = model_s_k * get_signal_pdf(part_k.signal_name,x,Qbb,bias,reso,part_k,fit_range) 
     else
         term2 = 0
     end
