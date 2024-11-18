@@ -23,39 +23,39 @@ end
 
 
 function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
-    """
-    Normalised linear function defined by (1+slope*(x-center)/260)/norm.
-    Parameters
-    ----------
-        - slope::Real, the slope of the background
-        - x::Real,     the x value to evaluate at
-    """
-        center = 1930
-        range_l = [arr[1] for arr in fit_range]
-        range_h = [arr[2] for arr in fit_range]
-       
-        sum_range = sum(range_h .- range_l)
-        sum_range_sq =sum(range_h .^ 2 .- range_l .^ 2)
-        slope = p[Symbol(string(b_name)*"_slope")]
-    
-        delta = range_h[end] - range_l[1]
-        norm = sum_range * (1 - slope * center / delta) + slope * sum_range_sq / (2 * delta)
-     
-        return (1+slope*(x-center)/delta)/norm
-    end
+"""
+Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+Parameters
+----------
+    - slope::Real, the slope of the background
+    - x::Real,     the x value to evaluate at
+"""
+    range_l = [arr[1] for arr in fit_range]
+    range_h = [arr[2] for arr in fit_range]
+    center = range_l[1]
+
+    sum_range = sum(range_h .- range_l)
+    sum_range_sq =sum(range_h .^ 2 .- range_l .^ 2)
+    slope = p[Symbol(string(b_name)*"_slope")]
+
+    delta = range_h[end] - range_l[1]
+    norm = sum_range * (1 - slope * center / delta) + slope * sum_range_sq / (2 * delta)
+
+    return (1+slope*(x-center)/delta)/norm
+end
 
 
 
 function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
-    """
-    Normalised linear function defined by (1+slope*(x-center)/260)/norm.
-    Parameters
-    ----------
-        - x::Real,     the x value to evaluate at
-    """    
-    center = 1930
+"""
+Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+Parameters
+----------
+    - x::Real,     the x value to evaluate at
+"""    
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
+    center = range_l[1]
 
     norm =sum(range_h .- range_l)
     return 1/norm
@@ -71,29 +71,29 @@ function exp_stable(x::Float64)
     end
 end
 function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
-        """
-        Normalised linear function defined by (1+slope*(x-center)/fit_range)/norm.
-        Parameters
-        ----------
-            - slope::Real, the slope of the background
-            - x::Real,     the x value to evaluate at
-        """
-        center = 1930
-        range_l = [arr[1] for arr in fit_range]
-        range_h = [arr[2] for arr in fit_range]
+"""
+Normalised linear function defined by (1+slope*(x-center)/fit_range)/norm.
+Parameters
+----------
+    - slope::Real, the slope of the background
+    - x::Real,     the x value to evaluate at
+"""
+    range_l = [arr[1] for arr in fit_range]
+    range_h = [arr[2] for arr in fit_range]
+    center = range_l[1]
 
-        centers=[center,center,center]
-        # could be made faster?
-        R = p[Symbol(string(b_name)*"_slope")]
-        delta = range_h[end] - range_l[1]
-        Rt=R/delta
-        if (abs(Rt)>1E-6)
-            norm = (-sum(exp_stable.(-Rt*(centers-range_l)))+sum(exp_stable.(-Rt*(centers-range_h))))/Rt
-        else
-            norm =sum(range_h .- range_l)
-        end
-       
-        return exp_stable((x-center)*Rt)/norm
+    centers=[center,center,center]
+    # could be made faster?
+    R = p[Symbol(string(b_name)*"_slope")]
+    delta = range_h[end] - range_l[1]
+    Rt=R/delta
+    if (abs(Rt)>1E-6)
+        norm = (-sum(exp_stable.(-Rt*(centers-range_l)))+sum(exp_stable.(-Rt*(centers-range_h))))/Rt
+    else
+        norm =sum(range_h .- range_l)
+    end
+
+    return exp_stable((x-center)*Rt)/norm
     
 end
 
