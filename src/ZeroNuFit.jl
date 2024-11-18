@@ -4,6 +4,7 @@ module ZeroNuFit
 include("fitting.jl")
 include("plotting.jl")
 include("utils.jl")
+include("constants.jl")
 using JSON
 
 export run_analysis

@@ -62,9 +62,9 @@ function get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,s
     """
     Get the expected number of signal and background counts in a partition
     """
-    N_A = 6.022E23
-    m_76 = 75.92E-3 # kg/mol
-    sig_units =1e-27 # signal is in units of this
+    N_A = constants.N_A
+    m_76 = constants.m_76
+    sig_units = constants.sig_units
     
     deltaE = sum([arr[2]-arr[1] for arr in fit_range])
     eff= nothing
@@ -120,7 +120,7 @@ function build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,pa
 Function which computes the partial likelihood for a single data partiton
 free parameters: signal (S), background (B), energy bias (biask) and resolution per partition (resk)
 """
-    Qbb = 2039.06 # keV
+    Qbb = constants.Qbb
 
     ll_value = 0
 
@@ -231,7 +231,7 @@ Keyword arguments
 Returns
     OrderedDict of the data
 """
-    Qbb = 2039.06 # keV
+    Qbb = constants.Qbb
 
     # seed the seed
     output=OrderedDict("events"=>[])

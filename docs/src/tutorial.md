@@ -541,6 +541,7 @@ In case you want one BI only for all phase I events, then you have to define a n
 Let's fit above events with a simple signal+background model (`"bkg_only": false`) where the signal is modelled with a Gaussian function (default option, nothing to add/change in input).
 
 The signal prior is taken as uniform in $[0;10^{-24}]$ yr$^{-1}$ and the BI prior is taken as uniform in $[0;0.1]$ counts/keV/kg/yr. 
+Notice that for the signal the values are expressed in terms of $10^{-27}$yr$^{-1}$ (that is why `"signal": {"upper_bound":1000, ...}`).
 
 We assume the 4 BIs are not correlated (if not, change into `"bkg": {"correlated": true, ...}`).
 

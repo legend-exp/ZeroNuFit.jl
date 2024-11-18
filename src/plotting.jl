@@ -29,10 +29,10 @@ color_schemes=Dict(:blue =>[tol_colors[1],tol_colors[3],tol_colors[2]],
 ##############################################
 ##############################################
 function fit_model(idx_part_with_events::Int,part_k::NamedTuple, p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,x)
-    Qbb = 2039.06 # keV
-    N_A = 6.022E23
-    m_76 = 75.92E-3 # kg/mol
-    sig_units =1e-27 # signal is in units of this
+    Qbb = constants.Qbb
+    N_A = constants.N_A
+    m_76 = constants.m_76
+    sig_units = constants.sig_units
     
     deltaE = sum([arr[2]-arr[1] for arr in fit_range])
     eff= nothing

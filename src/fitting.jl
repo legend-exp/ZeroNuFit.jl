@@ -200,7 +200,7 @@ function get_qbb_posterior(fit_function,samples)
         v=samp.v
         weight=samp.weight
         for w in 1:1:weight
-            append!(qbb,fit_function(NamedTuple(v),2039.0))
+            append!(qbb,fit_function(NamedTuple(v), constants.Qbb))
         end
     end
     return qbb
