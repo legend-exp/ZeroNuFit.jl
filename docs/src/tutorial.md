@@ -42,7 +42,7 @@ More documentation on this topic can be found in "A. Gelman, J.B. Carlin, H.S. S
 As regards the nuisance parameters, we can leave free the energy biases and energy widths by not fixing them to their best value (`"nuisance": {"energy_scale": {"fixed": false, ...}, ...}`), but constraining them via a Gaussian prior.
 An additional option for treating all energy biases or widths together via one common parameter, i.e. $\alpha_{\Delta}$ or $\alpha_{\omega}$, can be enabled/disabled. For the moment, we leave this out and we treat nuisance parameters individually (`"nuisance": {"energy_scale": {"correlated": false, ...}, ...}`).
 
-As regards the efficiencies, we don't fix the values to their best value (`"nuisance": {"efficiency": {"fixed": false, ...}, ...}`), but we correlated them via a global parameter $\alpha_{\varepsilon}$e (`"nuisance": {"efficiency": {"correlated": true, ...}, ...}`).
+As regards the efficiencies, we don't fix the values to their best value (`"nuisance": {"efficiency": {"fixed": false, ...}, ...}`), but we correlated them via a global parameter $\alpha_{\varepsilon}$ (`"nuisance": {"efficiency": {"correlated": true, ...}, ...}`).
 
 All these fit settings can therefore be grouped in the following config JSON file with name `config_gerda_phI.json`: 
 
