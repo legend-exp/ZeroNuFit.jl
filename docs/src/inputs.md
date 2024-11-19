@@ -58,7 +58,7 @@ They key `bkg_name` is used to set the name of the background parameter for this
 Note that several groups can be fitted with the same background parameter, this enables quick modifcation of the fit.
 
 The key `"model":"uniform"` is used to set the background model to uniform as default.
-For different background model shapes, additional information are necessary and these can be specified in the `config.json` (see the ["Configuration file" documentation](config.html)).
+For different background model shapes, additional information are necessary and these can be specified in the `config.json` (see the "Configuration file" documentation).
 
 !!! warning
 

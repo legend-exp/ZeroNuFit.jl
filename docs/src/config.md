@@ -65,7 +65,7 @@ In particular, the field has to be specified as:
 
     If the key doesn't exist, this defaults to "all"
  
-Parameters are then added to the model called `αr_$name` (for resolution), `αe_$name` for efficiency and `αb_$name` for bias.
+Parameters are then added to the model called `αr_\$name` (for resolution), `αe_\$name` for efficiency and `αb_\$name` for bias.
  
 !!! warning
 
@@ -102,4 +102,4 @@ This will add parameters `${bkg_name}_slope` or similar to the model (and then c
 ## Signal shape
 The signal shape can be specified in the partition JSON file in order to have a different signal shape for different partitions.
 An example is given by the combined fit of GERDA/LEGEND and MAJORANA DEMONSTRATOR (MJD) partitions where for the first one we want to model the signal with a simple gaussian function while we want to model data from MJD accountinf for an additional tail at the low-energy side of the gaussian.
-See the ["Partitions and events" documentation](inputs.html).
+See the "Partitions and events" documentation.

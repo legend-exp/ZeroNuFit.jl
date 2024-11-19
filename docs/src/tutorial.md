@@ -1,7 +1,7 @@
 # TUTORIALS
 
 ## GERDA Phase I: S+B fit
-Let's take start by fitting data acquired by the GERDA experiment during its Phase I and let's fit them with a signal+background model.
+Let's start by fitting data acquired by the GERDA experiment during its Phase I and let's fit them with a signal+background model.
 
 ### Input files
 First of all, we have to populate partitions and events JSON input files.
@@ -6512,7 +6512,7 @@ You can now run this fit by running
 julia main.jl -c config_gerda_phIandphII_NoSignal.json
 ```
 
-Additional details on how to generate fake spectra (and fit them) can be found in the [toys section](toys.html).
+Additional details on how to generate fake spectra (and fit them) can be found in the "Generating toys" section.
 
 ## GERDA + MJD: different S shapes
 As exaplained in ["I. J. Arnquist et al., Final Result of the Majorana Demonstrator’s Search for Neutrinoless Double- β Decay in Ge 76, PRL 130, 062501 (2023)"](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.130.062501), MAJORANA DEMONSTRATOR (MJD) used a modified Gaussian signal peak shape.
