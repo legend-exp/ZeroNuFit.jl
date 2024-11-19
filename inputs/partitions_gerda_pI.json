@@ -1,0 +1,142 @@
+{
+    "fit_groups": {
+        "ph1_silver": {
+            "range": [
+                [
+                    1930.0,
+                    2098.511
+                ],
+                [
+                    2108.511,
+                    2113.513
+                ],
+                [
+                    2123.513,
+                    2190.0
+                ]
+            ],
+            "model": "uniform",
+            "bkg_name": "ph1_silver"
+        },
+        "ph1_golden": {
+            "range": [
+                [
+                    1930.0,
+                    2098.511
+                ],
+                [
+                    2108.511,
+                    2113.513
+                ],
+                [
+                    2123.513,
+                    2190.0
+                ]
+            ],
+            "model": "uniform",
+            "bkg_name": "ph1_golden"
+        },
+        "ph1_extra": {
+            "range": [
+                [
+                    1930.0,
+                    2098.511
+                ],
+                [
+                    2108.511,
+                    2113.513
+                ],
+                [
+                    2123.513,
+                    2190.0
+                ]
+            ],
+            "model": "uniform",
+            "bkg_name": "ph1_extra"
+        },
+        "ph1_bege": {
+            "range": [
+                [
+                    1930.0,
+                    2098.511
+                ],
+                [
+                    2108.511,
+                    2113.513
+                ],
+                [
+                    2123.513,
+                    2190.0
+                ]
+            ],
+            "model": "uniform",
+            "bkg_name": "ph1_bege"
+        }
+    },
+    "partitions": {
+        "ph1_golden": [
+            {
+                "experiment": "GERDA_pI",
+                "detector": "coax",
+                "part_name": "part00",
+                "start_ts": 1320849782,
+                "end_ts": 1369143782,
+                "eff_tot": 0.571,
+                "eff_tot_sigma": 0.033,
+                "exposure": 17.9,
+                "bias": 0.0,
+                "bias_sigma": 0.2,
+                "width": 1.8089171974522291,
+                "width_sigma": 0.059447983014862
+            }
+        ],
+        "ph1_bege": [
+            {
+                "experiment": "GERDA_pI",
+                "detector": "bege",
+                "part_name": "part00",
+                "start_ts": 1320849782,
+                "end_ts": 1369143782,
+                "eff_tot": 0.663,
+                "eff_tot_sigma": 0.022,
+                "exposure": 2.404,
+                "bias": 0.0,
+                "bias_sigma": 0.2,
+                "width": 1.1592356687898089,
+                "width_sigma": 0.08067940552016985
+            }
+        ],
+        "ph1_silver": [
+            {
+                "experiment": "GERDA_pI",
+                "detector": "coax",
+                "part_name": "part01",
+                "start_ts": 339945251,
+                "end_ts": 342589688,
+                "eff_tot": 0.571,
+                "eff_tot_sigma": 0.033,
+                "exposure": 1.304,
+                "bias": 0.0,
+                "bias_sigma": 0.2,
+                "width": 1.8089171974522291,
+                "width_sigma": 0.059447983014862
+            }
+        ],
+        "ph1_extra": [
+            {
+                "experiment": "GERDA_pI",
+                "detector": "coax",
+                "part_name": "part02",
+                "start_ts": 1370007782,
+                "end_ts": 1380548582,
+                "eff_tot": 0.576,
+                "eff_tot_sigma": 0.04,
+                "exposure": 1.904,
+                "bias": 0.0,
+                "bias_sigma": 0.2,
+                "width": 1.7664543524416136,
+                "width_sigma": 0.08067940552016985
+            }
+        ]
+    }
+}

@@ -1,0 +1,370 @@
+{
+    "events": [
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2013.97,
+            "timestamp": 1323496141,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2057.71,
+            "timestamp": 1323888346,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2134.01,
+            "timestamp": 1324785969,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1974.56,
+            "timestamp": 1325657286,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2031.54,
+            "timestamp": 1325802976,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2050.95,
+            "timestamp": 1327553206,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1966.41,
+            "timestamp": 1328475760,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1940.5,
+            "timestamp": 1330823469,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1999.37,
+            "timestamp": 1331492642,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2170.92,
+            "timestamp": 1332143846,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2043.92,
+            "timestamp": 1332260397,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1984.44,
+            "timestamp": 1333873146,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2085.78,
+            "timestamp": 1334394013,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2177.16,
+            "timestamp": 1335826821,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2059.66,
+            "timestamp": 1336108794,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1967.36,
+            "timestamp": 1336119864,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2173.66,
+            "timestamp": 1337478672,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2069.03,
+            "timestamp": 1337642247,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1966.33,
+            "timestamp": 339945251,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1955.0,
+            "timestamp": 340002777,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2157.55,
+            "timestamp": 340199538,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1977.13,
+            "timestamp": 340376921,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2036.78,
+            "timestamp": 340485378,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2028.72,
+            "timestamp": 340955171,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2127.36,
+            "timestamp": 341212671,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2006.46,
+            "timestamp": 342107560,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1945.03,
+            "timestamp": 342472727,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1974.98,
+            "timestamp": 342589688,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2088.79,
+            "timestamp": 1343633802,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2053.04,
+            "timestamp": 1344192386,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2066.65,
+            "timestamp": 1344767941,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1946.55,
+            "timestamp": 1345248279,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1946.25,
+            "timestamp": 1345332095,
+            "detector": "bege"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1995.03,
+            "timestamp": 1346120026,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1998.02,
+            "timestamp": 1346436915,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2135.73,
+            "timestamp": 1347514795,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2086.79,
+            "timestamp": 1348335681,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2147.56,
+            "timestamp": 1348345003,
+            "detector": "bege"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2148.16,
+            "timestamp": 1349837342,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2025.96,
+            "timestamp": 1350335115,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2160.54,
+            "timestamp": 1350609949,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2026.52,
+            "timestamp": 1353008558,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2041.49,
+            "timestamp": 1355612985,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2181.65,
+            "timestamp": 1356002344,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2027.75,
+            "timestamp": 1357932335,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1931.92,
+            "timestamp": 1359321345,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2034.28,
+            "timestamp": 1359426932,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2063.52,
+            "timestamp": 1359538842,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2089.16,
+            "timestamp": 1359654046,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2052.77,
+            "timestamp": 1360030642,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2175.34,
+            "timestamp": 1360267268,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1936.12,
+            "timestamp": 1360533783,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1963.57,
+            "timestamp": 1362160300,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2014.3,
+            "timestamp": 1362197280,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2063.83,
+            "timestamp": 1363191032,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2187.51,
+            "timestamp": 1363418889,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2156.23,
+            "timestamp": 1365849097,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 2033.38,
+            "timestamp": 1367969415,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1938.57,
+            "timestamp": 1368792117,
+            "detector": "bege"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1983.04707,
+            "timestamp": 1371664046,
+            "detector": "coax"
+        },
+        {
+            "experiment": "GERDA_pI",
+            "energy": 1980.40983,
+            "timestamp": 1371668878,
+            "detector": "coax"
+        }
+    ]
+}
