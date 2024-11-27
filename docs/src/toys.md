@@ -1,8 +1,14 @@
-# Generating toys
+Table of contents:
+
+```@contents
+Pages = ["toys.md"]
+Depth = 3
+```
+
 Another module is present for generating toys and running sensitivity studies. This can be run as
 
 ```
-julia sensitivity.jl -c config_fake_data.json -i N
+$ julia sensitivity.jl -c config_fake_data.json -i N
 ```
 
 where `N` is an integer number corresponding to the toy index.

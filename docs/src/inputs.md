@@ -1,10 +1,16 @@
-# JSON inputs
-The fit takes in inputs two files in JSON format (for a full customisation of the fit), which paths have to be specified in the `config.json` file.
+The fit takes in inputs two files in JSON format (for a full customization of the fit), which paths have to be specified in the `config.json` file.
+
+Table of contents:
+
+```@contents
+Pages = ["inputs.md"]
+Depth = 3
+```
 
 
 ## Partitions file
 The partitions file gives information on the independent spectra to be used in the fit/likelihood, this is set by the "partitions" key in the config file. 
-This provides all the information neccesary to define the fit model.
+This provides all the information neccessary to define the fit model.
 
 The file consists of a file of independent spectra to include in the fit (for example channels or partitions). 
 A partition is defined uniquely by a range of time-stamps, a detector name and an experiment name. 
@@ -15,9 +21,9 @@ A partition is defined uniquely by a range of time-stamps, a detector name and a
     This allows to make fits where all detectors are fit together.
 
 The partitions are grouped into `fit_groups`: these are sets of partitions which are treated with the same background/signal fit model and range.
-In the partitions file, the user must provide the information on the fit groups and partitions (organised by fit group). 
+In the partitions file, the user must provide the information on the fit groups and partitions (organized by fit group). 
 
-This JSON file has a nested structure with two subdictonaries, the first with key `"fit_groups"`, describing the groupings in the fit, and the second `"partitions"` giving a list of partitions for each fit group.
+This JSON file has a nested structure with two subdictionaries, the first with key `"fit_groups"`, describing the groupings in the fit, and the second `"partitions"` giving a list of partitions for each fit group.
 An example is shown below.
 ```
 {
@@ -55,7 +61,7 @@ An example is shown below.
             
 ```
 They key `bkg_name` is used to set the name of the background parameter for this group.
-Note that several groups can be fitted with the same background parameter, this enables quick modifcation of the fit.
+Note that several groups can be fitted with the same background parameter, this enables quick modification of the fit.
 
 The key `"model":"uniform"` is used to set the background model to uniform as default.
 For different background model shapes, additional information are necessary and these can be specified in the `config.json` (see the "Configuration file" documentation).
@@ -84,7 +90,7 @@ Notice that if you want to use the `"signal_name":"gaussian_plus_lowEtail"` opti
 
 
 ## Events file
-In addition, it is neccesary to provide an 'event' file describing the events observed in the data, the path to this file is specified by the 'events' key in the config. Again this is a JSON file consisting of a list of observed events of the form.
+In addition, it is neccessary to provide an 'event' file describing the events observed in the data, the path to this file is specified by the 'events' key in the config. Again this is a JSON file consisting of a list of observed events of the form.
  
 ```
     {       "experiment":"LEGEND",

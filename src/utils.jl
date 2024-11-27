@@ -102,6 +102,7 @@ function get_partitions_new(part_path::String)
         end
     
         #TODO: find a way to make this not hardcoded
+        #NOTE: "*1.0" helps converting into floats
         tab = Table(experiment=Array(arrays["experiment"]),
                     fit_group=Array(arrays["fit_group"]),
                     bkg_name = Array(arrays["bkg_par_name"]),
@@ -113,16 +114,16 @@ function get_partitions_new(part_path::String)
                     part_name=Array(arrays["part_name"]),
                     start_ts=Array(arrays["start_ts"]),
                     end_ts=Array(arrays["end_ts"]),
-                    eff_tot=Array(arrays["eff_tot"]),
-                    eff_tot_sigma=Array(arrays["eff_tot_sigma"]),
-                    width=Array(arrays["width"]),
-                    width_sigma=Array(arrays["width_sigma"]),
-                    exposure=Array(arrays["exposure"]),
-                    bias =Array(arrays["bias"]),
-                    bias_sigma =Array(arrays["bias_sigma"]),
-                    frac =Array(arrays["frac"]),
-                    tau =Array(arrays["tau"]),
-                    sigma =Array(arrays["sigma"]))
+                    eff_tot=Array(arrays["eff_tot"]*1.0),
+                    eff_tot_sigma=Array(arrays["eff_tot_sigma"]*1.0),
+                    width=Array(arrays["width"]*1.0),
+                    width_sigma=Array(arrays["width_sigma"]*1.0),
+                    exposure=Array(arrays["exposure"]*1.0),
+                    bias =Array(arrays["bias"]*1.0),
+                    bias_sigma =Array(arrays["bias_sigma"]*1.0),
+                    frac =Array(arrays["frac"]*1.0),
+                    tau =Array(arrays["tau"]*1.0),
+                    sigma =Array(arrays["sigma"]*1.0))
         return tab,fit_groups,fit_ranges
 end
 
@@ -171,7 +172,6 @@ function get_events(event_path,partitions)::Array{Vector{Float64}}
                     append!(events[idx],Vector{Float64}([Float64(event["energy"])]))
                     found=true
                 end
-                    
             end
             
             if (found==false)
@@ -257,14 +257,11 @@ Function which saves results from the fit and copies the input config (for any f
     first_sample = samples.v[1]
     pars = keys(first_sample)
     nuisance_dict = Dict{String, Vector{Dict{String, String}}}()
-    @info "pars", pars
     for par in pars
         par_entry = first_sample[par]
-        @info "par_entry", par_entry
         
         # we do not save entries for global parameters with length==1
         if (length(par_entry) != 1 || !(par_entry isa AbstractFloat))
-            @info "par_names[par]", par_names[par]
             
             # initialize an empty array for each main key (eff, bias, res)
             nuisance_dict[string("$(par)")] = []  

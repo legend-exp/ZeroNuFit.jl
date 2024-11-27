@@ -1,5 +1,4 @@
-# TUTORIALS
-This aim of this tutorial consists in building proper config JSON files in order to run a neutrinoless double-beta decay analysis over GERDA and MAJORANA DEMONSTRATO (MJD) published data.
+The aim of this tutorial consists in building proper config JSON files in order to run a neutrinoless double-beta decay analysis over GERDA and MAJORANA DEMONSTRATO (MJD) published data.
 Additional info on the meaning of input parameters can be found under the "Configuration file" section, and for input files under the "Partitions and events" section.
 
 Table of contents:
@@ -73,8 +72,8 @@ All these fit settings can therefore be grouped in the following config JSON fil
 ```
 
 You can now run this fit by running
-```bash
-julia main.jl -c config_gerda_phI.json
+```
+$ julia main.jl -c config_gerda_phI.json
 ```
 
 
@@ -101,8 +100,8 @@ Let's create the following config JSON file with name `config_gerda_phIandphII.j
 }
 ```
 All the rest can be left unchanged and you can now run the GERDA Phase I+II combined fit by running
-```bash
-julia main.jl -c config_gerda_phIandphII.json
+```
+$ julia main.jl -c config_gerda_phIandphII.json
 ```
 
 
@@ -153,12 +152,12 @@ or `config_gerda_phIandphII_expoB.json`:
 
 
 You can now run this fit by running
-```bash
-julia main.jl -c config_gerda_phIandphII_linearB.json
+```
+$ julia main.jl -c config_gerda_phIandphII_linearB.json
 ```
 if you want to shape the background with a linear function, or 
-```bash
-julia main.jl -c config_gerda_phIandphII_expoB.json
+```
+$ julia main.jl -c config_gerda_phIandphII_expoB.json
 ```
 if you want to shape the background with an exponential function.
 
@@ -180,8 +179,8 @@ This can be achieved by setting `"bkg_only": true` in our config JSON file that 
 }
 ```
 You can now run this fit by running
-```bash
-julia main.jl -c config_gerda_phIandphII_NoSignal.json
+```
+$ julia main.jl -c config_gerda_phIandphII_NoSignal.json
 ```
 
 Additional details on the type of available sensitivity studies (e.g. how to generate fake spectra and fit them) can be found in the "Generating toys" section.
