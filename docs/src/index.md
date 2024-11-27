@@ -9,11 +9,11 @@ The tool was developed for the LEGEND experiment but it can be easily extended t
 
 The package uses the [BAT.jl](https://bat.github.io/BAT.jl/dev/) tool box  for Bayesian inference (see _O. Schulz, F. Beaujean, A. Caldwell, C. Grunwald, V. Hafych, K. Kröninger et al., “Bat.jl: A julia-based tool for bayesian inference”, SN Computer Science 2 (2021) 210_).
 
+### Likelihood Function
 The implemented unbinned Likelihood function reads as: $\mathcal{L} = \prod_{\rm k=1}^{N_{\rm p}} \left[\frac{\mu_{\rm k}^{N_{\rm k}} e^{-\mu_{\rm k}}}{N_{\rm k}!} \times \prod_{\rm i=1}^{N_{\rm k}} \frac{1}{\mu_{\rm k}}\left(\frac{\mu_{\rm b,\,k}}{\Delta E} + \mu_{\rm s,\,k} \times \frac{dP(E_{\rm i} | Q_{\beta\beta} +\Delta_{\rm k}, \omega_{\rm k})}{dE}\right) \right]$.
 
 Here, the first product runs over the number of partitions _k_ ($N_{\rm p}$ partitions in total) and the second over the events _i_ in a given partition ($N_{\rm k}$ events in total).
 In particular, $E_{\rm i}$ are the energies of the events falling in the analysis window for a partition _k_ with energy bias $\Delta_{\rm k}$ and energy width $\omega_{\rm k}$.
-
 
 The background and signal contributions are defined as $\mu_{\rm b,\,k} = \mathcal{B}_{\rm k} \cdot \Delta E \cdot \mathcal{E}_{\rm k}$ and $\mu_{\rm s,\,k} = \frac{\text{ln}\,2\mathcal{N}_{\rm A}}{m_{\rm 76}} \cdot (\varepsilon_{\rm k} + \alpha \cdot \sigma_{\varepsilon_{\rm k}}) \cdot \mathcal{E}_{\rm k} \cdot \mathcal{S}$.
 The total contribution can thus be defined as $\mu_{\rm b,\,k} = \mu_{\rm b,\,k} + \mu_{\rm s,\,k}$.

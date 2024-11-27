@@ -1,4 +1,11 @@
-# Building the configuration file
+Table of contents:
+
+```@contents
+Pages = ["config.md"]
+Depth = 3
+```
+
+## Building the configuration file
 Before running the code, set the input config.json file with following entries:
 
 ```json
@@ -56,7 +63,7 @@ Moreover, the config requires the following block for nuisance parameters, ie en
 
 In particular, you can set `"correlated": true` if you want to use one variable to correlate the nuisance parameters (eg to speed up the computation times), and `"fixed": false` if you want to include a prior for nuisance parameters (otherwise these parameters they will be fixed to their partition value and not constrained).
  
-If a variable is correlated (either `energy_scale` or `efficency`), the code will search for a field in the `fit_groups` block of the partitions JSON file to use a correlated variable per each fit group. 
+If a variable is correlated (either `energy_scale` or `efficiency`), the code will search for a field in the `fit_groups` block of the partitions JSON file to use a correlated variable per each fit group. 
 In particular, the field has to be specified as:
 - `"efficiency_group_name": "..."`
 - `"energy_scale_group_name": "..."`
@@ -74,14 +81,14 @@ Parameters are then added to the model called `αr_\$name` (for resolution), `α
 ## Background shape and correlation
 There are several options to control the background in more detail. These can be added to the "bkg" section of the config:
 In particular:
- - "correlated" adds a hierachical (correlated) background to the model, this key should have a dictonary giving details on the prior shape and ranges for example:
+ - "correlated" adds a hierarchical (correlated) background to the model, this key should have a dictionary giving details on the prior shape and ranges for example:
 
 ```json
 "correlated":{"mode":"lognormal","range":[0,0.1]}
 ```
 
 The three options for the mode are 'lognormal', 'normal' or 'none'. While the range gives the range of the uniform prior on the `\sigma_B` parameter.
-- "shape" changes the shape of the background from uniform. The user should provide a dictonary giving details on the shape:
+- "shape" changes the shape of the background from uniform. The user should provide a dictionary giving details on the shape:
 for example:
 
 ```json
@@ -91,7 +98,7 @@ for example:
         },
 ```
 
-The "pars" subdictonary describes the range of the priors on the parameters of the model, currently implemented shapes are "uniform", "linear" and "exponential". These names correspond to functions in `fitting.jl` and logical conditions in `get_bkg_pdf` in `likelihood.jl`.
+The "pars" subdictionary describes the range of the priors on the parameters of the model, currently implemented shapes are "uniform", "linear" and "exponential". These names correspond to functions in `fitting.jl` and logical conditions in `get_bkg_pdf` in `likelihood.jl`.
 
 This will add parameters `${bkg_name}_slope` or similar to the model (and then call them). This names therefore must correspond to the names in the functions in `fitting.jl`. To add a new shape simply define a new method in `fitting.jl` and a new logical condition in `get_bkg_pdf` in `likelihood.jl`.
 
@@ -101,5 +108,5 @@ This will add parameters `${bkg_name}_slope` or similar to the model (and then c
 
 ## Signal shape
 The signal shape can be specified in the partition JSON file in order to have a different signal shape for different partitions.
-An example is given by the combined fit of GERDA/LEGEND and MAJORANA DEMONSTRATOR (MJD) partitions where for the first one we want to model the signal with a simple gaussian function while we want to model data from MJD accountinf for an additional tail at the low-energy side of the gaussian.
+An example is given by the combined fit of GERDA/LEGEND and MAJORANA DEMONSTRATOR (MJD) partitions where for the first one we want to model the signal with a simple gaussian function while we want to model data from MJD accounting for an additional tail at the low-energy side of the gaussian.
 See the "Partitions and events" documentation.
