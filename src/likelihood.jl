@@ -21,13 +21,13 @@ function get_bkg_pdf(bkg_shape::Symbol,evt_energy::Float64,p::NamedTuple,b_name:
     end
 
 end
-
+ 
 function get_signal_pdf(signal_shape,evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple,fit_range)
     #@info part_k.experiment, signal_shape
     if (signal_shape==:gaussian)
         return pdf(Normal(Qbb - bias, reso), evt_energy) 
     elseif (signal_shape==:gaussian_plus_lowEtail)
-        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,part_k,fit_range)
+        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,reso,part_k,fit_range)
     else
         @error "signal shape",signal_shape," is not yet implememnted"
         exit(-1)
@@ -41,7 +41,7 @@ function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,i
     """
     if (settings[:energy_scale_fixed]==true || idx_part_with_events==0)
         reso = part_k.width
-        bias =part_k.bias
+        bias = part_k.bias
 
     elseif (settings[:energy_scale_correlated]==true)
         energy_reso_group = part_k.energy_reso_name
@@ -51,10 +51,11 @@ function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,i
         
     else
         reso = p.ω[idx_part_with_events]
-        bias =p.𝛥[idx_part_with_events]
+        bias = p.𝛥[idx_part_with_events]
     end
 
-return reso,bias
+# convert into Float
+return reso*1.0,bias*1.0
 
 end
 
@@ -429,13 +430,24 @@ Parameters
 
             if (part_event_index[idx]!=0)
                 i_new = part_event_index[idx]
-                res[i_new]=Truncated(Normal(part.width,part.width_sigma),0,Inf)
-                bias[i_new] =Truncated(Normal(part.bias,part.bias_sigma),-Inf,Inf)
+                
                 long_name = string(part.experiment)*" "*string(part.part_name)*" "*part.detector
                 if part.signal_name == :gaussian
+                    res[i_new]=Truncated(Normal(part.width,part.width_sigma),0,Inf)
+                    bias[i_new] =Truncated(Normal(part.bias,part.bias_sigma),-Inf,Inf)
                     append!(pretty_names[:ω],["Energy Resolution "*L"(\omega)"*" "*long_name*" [keV]"])
+                    
                 elseif part.signal_name == :gaussian_plus_lowEtail
+                    # let's define some intervals in +-5σ (always with res>0)
+                    res_min = part.width - 5*part.width_sigma
+                    res_min = res_min<0 ? 0 : res_min
+                    res_max = part.width + 5*part.width_sigma
+                    bias_min = part.bias - 5*part.bias_sigma
+                    bias_max = part.bias + 5*part.bias_sigma
+                    res[i_new]=Truncated(Normal(part.width, part.width_sigma),res_min, res_max)
+                    bias[i_new] =Truncated(Normal(part.bias, part.bias_sigma),bias_min, bias_max)
                     append!(pretty_names[:ω],["Resolution fractional uncertainty "*L"(\omega)"*" "*long_name*" [keV]"])
+                    
                 else
                     @info "There is no specific name for the $(part.signal_name) peak shape, exit here"
                     exit()
