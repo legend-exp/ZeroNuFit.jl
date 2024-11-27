@@ -102,7 +102,6 @@ function get_partitions_new(part_path::String)
         end
     
         #TODO: find a way to make this not hardcoded
-        #NOTE: "*1.0" helps converting into floats
         tab = Table(experiment=Array(arrays["experiment"]),
                     fit_group=Array(arrays["fit_group"]),
                     bkg_name = Array(arrays["bkg_par_name"]),
@@ -114,16 +113,16 @@ function get_partitions_new(part_path::String)
                     part_name=Array(arrays["part_name"]),
                     start_ts=Array(arrays["start_ts"]),
                     end_ts=Array(arrays["end_ts"]),
-                    eff_tot=Array(arrays["eff_tot"]*1.0),
-                    eff_tot_sigma=Array(arrays["eff_tot_sigma"]*1.0),
-                    width=Array(arrays["width"]*1.0),
-                    width_sigma=Array(arrays["width_sigma"]*1.0),
-                    exposure=Array(arrays["exposure"]*1.0),
-                    bias =Array(arrays["bias"]*1.0),
-                    bias_sigma =Array(arrays["bias_sigma"]*1.0),
-                    frac =Array(arrays["frac"]*1.0),
-                    tau =Array(arrays["tau"]*1.0),
-                    sigma =Array(arrays["sigma"]*1.0))
+                    eff_tot=Array(arrays["eff_tot"]),
+                    eff_tot_sigma=Array(arrays["eff_tot_sigma"]),
+                    width=Array(arrays["width"]),
+                    width_sigma=Array(arrays["width_sigma"]),
+                    exposure=Array(arrays["exposure"]),
+                    bias =Array(arrays["bias"]),
+                    bias_sigma =Array(arrays["bias_sigma"]),
+                    frac =Array(arrays["frac"]),
+                    tau =Array(arrays["tau"]),
+                    sigma =Array(arrays["sigma"]))
         return tab,fit_groups,fit_ranges
 end
 

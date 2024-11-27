@@ -97,14 +97,15 @@ Parameters
     
 end
 
-function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,part_k::NamedTuple,fit_range)
+function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple,fit_range)
 """
 Signal model based on the peak shape used for the MJD analysis. The peak shape derives from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
 """
+    γ = reso
+    # following params are ALWAYS fixed
     f = part_k.frac
     τ = part_k.tau
     σ = part_k.sigma
-    γ = part_k.width
     
     term1 = (1-f) * pdf(Normal(Qbb-bias, γ*σ), evt_energy)
 
