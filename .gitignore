@@ -1,5 +1,6 @@
 .ipynb_checkpoints/
 src/.ipynb_checkpoints/
+docs/build/
 .DS_Store
 *.jl.cov
 *.jl.*.cov
