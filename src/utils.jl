@@ -270,8 +270,8 @@ Function which saves results from the fit and copies the input config (for any f
                 "detector" => values[idx][3],
                 "prior_mu" => values[idx][4],
                 "prior_sigma" => values[idx][5],
-                "prior_low_bound" => values[idx][6],
-                "prior_upp_bound" => values[idx][7]
+                "prior_low_bound" => values[idx][6] == -Inf ? "-Inf" : values[idx][6],
+                "prior_upp_bound" => values[idx][7] == Inf ? "Inf" : values[idx][7]
             )
             push!(nuisance_dict[key], inner_dict)
         end
