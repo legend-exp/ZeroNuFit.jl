@@ -238,19 +238,26 @@ Function which saves sampling results
     bat_write(joinpath(output,"mcmc_files/samples.h5"), samples)
 end
 
+function get_global_mode(samples, posterior)
+"""
+Function which retrieves global mode and a refined estimate of it
+"""
+    global_modes = BAT.mode(samples) 
+    # more refined estimate 
+    findmode_result = bat_findmode(
+        posterior,
+        OptimAlg(optalg = Optim.NelderMead(), init = ExplicitInit([global_modes]))
+    )
+    return global_modes, findmode_result.result
+end
+
 
 function save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
 """
 Function which saves results from the fit and copies the input config (for any future need)
 """
     
-    global_modes = BAT.mode(samples) 
-    # a more refined estimate would be the following 
-    findmode_result = bat_findmode(
-        posterior,
-        OptimAlg(optalg = Optim.NelderMead(), init = ExplicitInit([global_modes]))
-    )
-    refined_global_modes = findmode_result.result
+    global_modes, refined_global_modes = get_global_mode(samples, posterior)
     
     # save partitions info for nuisance parameters
     nuisance_dict = Dict{String, Vector{Dict{String, Any}}}()
@@ -283,21 +290,6 @@ Function which saves results from the fit and copies the input config (for any f
     with_logger(ltmp) do
         marginalized_modes = BAT.bat_marginalmode(samples).result
        end
-    
-    """
-    unshaped_samples, f_flatten = bat_transform(Vector, samples)
-    @info "Unshaped samples:", bat_report(unshaped_samples)
-    
-    marginalized_modes = Dict()
-    parameter_samples = [s["v_1"] for s in unshaped_samples]  # Adjust for vectors if needed
-
-    hist = fit(Histogram, parameter_samples, nbins=50)
-    max_bin_idx = argmax(hist.weights)
-    mode_value = hist.edges[1][max_bin_idx]
-
-    marginalized_modes[string("v_1")] = mode_value
-    println("Marginalized modes: $marginalized_modes")
-    """
 
     mean = BAT.mean(samples)
     stddev = BAT.std(samples)
@@ -384,7 +376,7 @@ Function to plot and save results, as well as inputs
     
     if config["plot"]["bandfit_and_data"] || config["plot"]["fit_and_data"]
         @info "... now we plot fit & data"
-        plot_fit_and_data(partitions, events, part_event_index, samples, free_pars, output_path, config, fit_ranges, toy_idx=toy_idx)
+        plot_fit_and_data(partitions, events, part_event_index, samples, posterior, free_pars, output_path, config, fit_ranges, toy_idx=toy_idx)
         @info "...done!"
     end
     

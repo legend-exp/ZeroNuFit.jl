@@ -75,7 +75,7 @@ end
 ##############################################
 ##############################################
 ##############################################
-function plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
+function plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
 """
 Function to plot events in the Qbb analysis window and BAT fit results
 """
@@ -123,10 +123,10 @@ Function to plot events in the Qbb analysis window and BAT fit results
     
     if plotflag["bandfit_and_data"]
         plot!(p,min_x:0.1:max_x, build_model_for_plotting, samples, alpha=0.4,median=false,globalmode=false,fillalpha=0.3) #TO DO: take only some samples
-        best_fit_pars = BAT.mode(samples)
+        _, best_fit_pars = get_global_mode(samples, posterior)
         plot!(p,min_x:0.1:max_x,x -> build_model_for_plotting(best_fit_pars,x),label="Fit",lw=2,color="red")
     else
-        best_fit_pars = BAT.mode(samples)
+        _, best_fit_pars = get_global_mode(samples, posterior)
         plot!(p,min_x:0.1:max_x,x -> build_model_for_plotting(best_fit_pars,x),label="Fit",lw=2,color="red")
     end
     
@@ -148,7 +148,7 @@ end
 ##############################################
 ##############################################
 ##############################################
-function plot_fit_and_data(partitions, events, part_event_index, samples, pars, output, config, fit_ranges; toy_idx=nothing)
+function plot_fit_and_data(partitions, events, part_event_index, samples, posterior, pars, output, config, fit_ranges; toy_idx=nothing)
     
     plotflag=config["plot"]
     settings=get_settings(config)
@@ -170,7 +170,7 @@ function plot_fit_and_data(partitions, events, part_event_index, samples, pars, 
     max_x = maximum(all_values)
     
     hist_data = append!(Histogram(min_x:1:max_x), energies)
-    p_fit = plot_data(hist_data,"",partitions,part_event_index,pars,samples,plotflag,settings,bkg_shape,fit_ranges)
+    p_fit = plot_data(hist_data,"",partitions,part_event_index,pars,samples,posterior,plotflag,settings,bkg_shape,fit_ranges)
     
     log_suffix = toy_idx == nothing ? "" : "_$(toy_idx)"
     savefig(joinpath(output, "plots/fit_over_data$log_suffix.pdf"))
