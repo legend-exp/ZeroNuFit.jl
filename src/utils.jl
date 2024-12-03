@@ -239,7 +239,7 @@ Function which saves sampling results
 end
 
 
-function save_results_into_json(samples,posterior,config,output;par_names=nothing,toy_idx=nothing)
+function save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
 """
 Function which saves results from the fit and copies the input config (for any future need)
 """
@@ -253,38 +253,30 @@ Function which saves results from the fit and copies the input config (for any f
     refined_global_modes = findmode_result.result
     
     # save partitions info for nuisance parameters
-    first_sample = samples.v[1]
-    pars = keys(first_sample)
-    nuisance_dict = Dict{String, Vector{Dict{String, String}}}()
-    for par in pars
-        par_entry = first_sample[par]
+    nuisance_dict = Dict{String, Vector{Dict{String, Any}}}()
+    for (key, values) in pairs(nuisance_info)
+        # skip parameters that were not used in the fit
+        if values == []
+            continue
+        end
+        # initialize an empty array for each main key (eff, bias, res)
+        nuisance_dict[key] = []  
         
-        # we do not save entries for global parameters with length==1
-        if (length(par_entry) != 1 || !(par_entry isa AbstractFloat))
-            
-            # initialize an empty array for each main key (eff, bias, res)
-            nuisance_dict[string("$(par)")] = []  
-            
-            for idx in 1:length(par_names[par]) 
-                xname = string("$(par)")
-                if (par_names !=nothing)
-                    xname = par_names[par][idx]
-                end
-                pattern = r"\w+\s+part\d{4}\s\w+"
-                result = match(pattern, xname)
-                if result !== nothing
-                    tot_str = result.match
-                    parts = split(tot_str)
-                    inner_dict = Dict(
-                        "experiment" => parts[1], 
-                        "partition" => parts[2],
-                        "detector" => parts[3] 
-                    )
-                    push!(nuisance_dict[string("$(par)")], inner_dict)
-                end
-            end
+        for idx in 1:length(values)
+
+            inner_dict = Dict(
+                "experiment" => values[idx][1], 
+                "partition" => values[idx][2],
+                "detector" => values[idx][3],
+                "prior_mu" => values[idx][4],
+                "prior_sigma" => values[idx][5],
+                "prior_low_bound" => values[idx][6],
+                "prior_upp_bound" => values[idx][7]
+            )
+            push!(nuisance_dict[key], inner_dict)
         end
     end
+    
     
     ltmp = NullLogger()
     marginalized_modes=0
@@ -329,7 +321,7 @@ Function which saves results from the fit and copies the input config (for any f
         "ci_99" => ci_99,
         "quantile90" => quantile90,
         "config" => config, 
-        "nuisance_partitions" => nuisance_dict
+        "nuisance_info" => nuisance_dict
     )
 
     json_string = JSON.json(data,4)
@@ -345,7 +337,7 @@ Function which saves results from the fit and copies the input config (for any f
     end
 end
 
-function save_outputs(partitions, events, part_event_index, samples, posterior, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
+function save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
 """
 Function to plot and save results, as well as inputs
 """
@@ -374,7 +366,7 @@ Function to plot and save results, as well as inputs
     end
     
     @info "... now we save other useful results + config entries"
-    save_results_into_json(samples, posterior, config, output_path,par_names=par_names,toy_idx=toy_idx)
+    save_results_into_json(samples, posterior, nuisance_info, config, output_path,par_names=par_names,toy_idx=toy_idx)
     @info "...done!"
 
     if config["light_output"]==false

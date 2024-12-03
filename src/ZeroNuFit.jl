@@ -84,14 +84,14 @@ Parameters:
     else
         @info "... we load already existing fit results"
         samples = bat_read(joinpath(config["output_path"],"mcmc_files/samples.h5")).result
-        prior,_,_,par_names = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=config["bkg_only"]) 
+        prior,_,_,par_names,nuisance_info = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=config["bkg_only"]) 
     end
 
     # let's save
     @info samples
     @info bat_report(samples)
-    _,_,posterior,_ = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=config["bkg_only"]) 
-    save_outputs(partitions, events, part_event_index, samples, posterior, config, output_path, fit_ranges, priors=prior,par_names=par_names, toy_idx=toy_idx)
+    _,_,posterior,_,nuisance_info = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=config["bkg_only"]) 
+    save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges, priors=prior,par_names=par_names, toy_idx=toy_idx)
     
     return 
     
