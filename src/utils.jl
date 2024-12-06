@@ -251,6 +251,21 @@ Function which retrieves global mode and a refined estimate of it
     return global_modes, findmode_result.result
 end
 
+function get_marginalized_mode(samples, par)
+"""
+Function which retrieves marginalized mode as the highest bin of the posterior, rebinned with 250 bins
+"""
+    post = get_par_posterior(samples,par,idx=nothing)
+    post_numeric = Float64.(post)
+    xmin = minimum(post)
+    xmax = maximum(post)
+    nbin = 250
+    delta = (xmax-xmin) / nbin
+    hist = fit(Histogram, post_numeric, xmin:delta:xmax)
+    max_bin_idx = argmax(hist.weights)
+    mode_value = hist.edges[1][max_bin_idx]
+    return mode_value
+end
 
 function save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
 """
@@ -284,12 +299,34 @@ Function which saves results from the fit and copies the input config (for any f
         end
     end
     
-    
+    # default marginalized modes
     ltmp = NullLogger()
     marginalized_modes=0
     with_logger(ltmp) do
         marginalized_modes = BAT.bat_marginalmode(samples).result
        end
+    
+    # marginalized mode from binned histogram (250 bins)
+    unshaped_samples, f_flatten = bat_transform(Vector, samples)
+    first_sample = unshaped_samples.v[1]
+    free_pars = keys(first_sample)
+    marginalized_modes_highest_bin = Dict()
+    ct = 1
+    for (idx,par) in enumerate(keys(marginalized_modes))
+        # parameters with 1 entry only
+        if length(marginalized_modes[par]) == 1
+            marginalized_modes_highest_bin[string(par)] = get_marginalized_mode(samples, par)
+            ct += 1
+        # parameters with more than 1 entry
+        else
+            marginalized_modes_highest_bin[string(par)] = []
+            for entry in marginalized_modes[par]
+                mode_value = get_marginalized_mode(unshaped_samples, free_pars[ct])
+                ct += 1
+                append!(marginalized_modes_highest_bin[string(par)],mode_value)
+            end
+        end
+    end
 
     mean = BAT.mean(samples)
     stddev = BAT.std(samples)
@@ -307,6 +344,7 @@ Function which saves results from the fit and copies the input config (for any f
         "global_modes" => global_modes,
         "refined_global_modes" => refined_global_modes,
         "marginalized_modes" => marginalized_modes,
+        "marginalized_modes_highest_bin" => marginalized_modes_highest_bin,
         "ci_68" => ci_68,
         "ci_90" => ci_90,
         "ci_95" => ci_95,
