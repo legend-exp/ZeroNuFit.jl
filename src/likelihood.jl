@@ -341,7 +341,7 @@ Parameters
 
     pretty_names =OrderedDict(:S=>string("S [")*L"10^{-27}"*string("yr")*L"^{-1}"*string("]"),
         :α=>L"\alpha_{\varepsilon}",
-        :αr=>L"\alpha_{r}",
+        :αr=>L"\alpha_{r}", 
         :αb=>L"\alpha_{b}",
         :γ=>[],
         :ε=>[],
@@ -361,10 +361,20 @@ Parameters
         priors[:S] =distrS
         @info "entered to add S prior"
     end
+    
+    # dictionary with info on the prior parameters
+    nuisance_info =OrderedDict(
+        "α"=>[],
+        "αr"=>[],
+        "αb"=>[],
+        "γ"=>[],
+        "ε"=>[],
+        "ω"=>[],
+        "𝛥"=>[])
 
-    ### EFF prior
+    ### EFFICIENCY prior
 
-    if (settings[:eff_fixed]==false  && settings[:eff_correlated]==true)
+    if (settings[:eff_fixed]==false && settings[:eff_correlated]==true)
 
         all_eff_tot = partitions.eff_tot
         all_eff_tot_sigma = partitions.eff_tot_sigma
@@ -376,12 +386,11 @@ Parameters
         for name in unique_list
             priors[Symbol(name)]=Truncated(Normal(0,1),α_min,Inf)
             pretty_names[Symbol(name)]=L"\alpha_{\varepsilon} ("*split(String(name),"_")[2]*")"
+            nuisance_info[string(name)]=[["combined", "", "", 0,1,α_min,Inf]]
         end
-
       
     else
         eff=Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(undef,maximum(part_event_index))
-    
 
         for (idx,part) in enumerate(partitions)
 
@@ -391,10 +400,10 @@ Parameters
                 eff[i_new] =Truncated(Normal(part.eff_tot,part.eff_tot_sigma),0,1)
                 long_name = string(part.experiment)*" "*string(part.part_name)*" "*part.detector
                 append!(pretty_names[:ε],["Efficiency "*L"(\varepsilon)"*" - "*long_name*""])
+                append!(nuisance_info["ε"],[[string(part.experiment), string(part.part_name), part.detector, part.eff_tot, part.eff_tot_sigma, 0, 1]])
             end
         end
         priors[:ε]=eff
-
     end
 
     ### ENERGY scale prior
@@ -410,15 +419,16 @@ Parameters
         for name in unique_list
             priors[Symbol(name)]=Truncated(Normal(0,1),αr_min,Inf)
             pretty_names[Symbol(name)]=L"\alpha_{r} ("*split(String(name),"_")[2]*")"
+            nuisance_info[string(name)]=[["combined", "", "", 0,1,αr_min,Inf]]
 
         end
-
 
         list_names = partitions.energy_bias_name
         unique_list=unique(list_names)
         for name in unique_list
             priors[Symbol(name)]=Truncated(Normal(0,1),-Inf,Inf)
             pretty_names[Symbol(name)]=L"\alpha_{b} ("*split(String(name),"_")[2]*")"
+            nuisance_info[string(name)]=[["combined", "", "", part.detector, 0,1,-Inf,Inf]]
 
         end
 
@@ -436,6 +446,8 @@ Parameters
                     res[i_new]=Truncated(Normal(part.width,part.width_sigma),0,Inf)
                     bias[i_new] =Truncated(Normal(part.bias,part.bias_sigma),-Inf,Inf)
                     append!(pretty_names[:ω],["Energy Resolution "*L"(\omega)"*" "*long_name*" [keV]"])
+                    append!(nuisance_info["ω"],[[string(part.experiment), string(part.part_name), part.detector, part.width, part.width_sigma, 0,Inf]])
+                    append!(nuisance_info["𝛥"],[[string(part.experiment), string(part.part_name), part.detector, part.bias, part.bias_sigma, -Inf,Inf]])
                     
                 elseif part.signal_name == :gaussian_plus_lowEtail
                     # let's define some intervals in +-5σ (always with res>0)
@@ -447,6 +459,8 @@ Parameters
                     res[i_new]=Truncated(Normal(part.width, part.width_sigma),res_min, res_max)
                     bias[i_new] =Truncated(Normal(part.bias, part.bias_sigma),bias_min, bias_max)
                     append!(pretty_names[:ω],["Resolution fractional uncertainty "*L"(\omega)"*" "*long_name*" [keV]"])
+                    append!(nuisance_info["ω"],[[string(part.experiment), string(part.part_name), part.detector, part.width, part.width_sigma, res_min, res_max]])
+                    append!(nuisance_info["𝛥"],[[string(part.experiment), string(part.part_name), part.detector, part.bias, part.bias_sigma, bias_min, bias_max]])
                     
                 else
                     @info "There is no specific name for the $(part.signal_name) peak shape, exit here"
@@ -484,7 +498,7 @@ Parameters
             priors[key]=item
         end
 
-        return distprod(;priors...),pretty_names
+        return distprod(;priors...),pretty_names,nuisance_info
     else
 
         if (hierachical_mode=="lognormal")
@@ -513,7 +527,7 @@ Parameters
         pretty_names[:B]="B [cts/keV/kg/yr]"
         pretty_names[:σB]=L"\sigma_B"*string("[cts/keV/kg/yr]")
 
-        return hd,pretty_names
+        return hd,pretty_names,nuisance_info
     end
 end
 

@@ -238,74 +238,95 @@ Function which saves sampling results
     bat_write(joinpath(output,"mcmc_files/samples.h5"), samples)
 end
 
-
-function save_results_into_json(samples,posterior,config,output;par_names=nothing,toy_idx=nothing)
+function get_global_mode(samples, posterior)
 """
-Function which saves results from the fit and copies the input config (for any future need)
+Function which retrieves global mode and a refined estimate of it
 """
-    
     global_modes = BAT.mode(samples) 
-    # a more refined estimate would be the following 
+    # more refined estimate 
     findmode_result = bat_findmode(
         posterior,
         OptimAlg(optalg = Optim.NelderMead(), init = ExplicitInit([global_modes]))
     )
-    refined_global_modes = findmode_result.result
+    return global_modes, findmode_result.result
+end
+
+function get_marginalized_mode(samples, par)
+"""
+Function which retrieves marginalized mode as the highest bin of the posterior, rebinned with 250 bins
+"""
+    post = get_par_posterior(samples,par,idx=nothing)
+    post_numeric = Float64.(post)
+    xmin = minimum(post)
+    xmax = maximum(post)
+    nbin = 250
+    delta = (xmax-xmin) / nbin
+    hist = fit(Histogram, post_numeric, xmin:delta:xmax)
+    max_bin_idx = argmax(hist.weights)
+    mode_value = hist.edges[1][max_bin_idx]
+    return mode_value
+end
+
+function save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
+"""
+Function which saves results from the fit and copies the input config (for any future need)
+"""
+    
+    global_modes, refined_global_modes = get_global_mode(samples, posterior)
     
     # save partitions info for nuisance parameters
-    first_sample = samples.v[1]
-    pars = keys(first_sample)
-    nuisance_dict = Dict{String, Vector{Dict{String, String}}}()
-    for par in pars
-        par_entry = first_sample[par]
+    nuisance_dict = Dict{String, Vector{Dict{String, Any}}}()
+    for (key, values) in pairs(nuisance_info)
+        # skip parameters that were not used in the fit
+        if values == []
+            continue
+        end
+        # initialize an empty array for each main key (eff, bias, res)
+        nuisance_dict[key] = []  
         
-        # we do not save entries for global parameters with length==1
-        if (length(par_entry) != 1 || !(par_entry isa AbstractFloat))
-            
-            # initialize an empty array for each main key (eff, bias, res)
-            nuisance_dict[string("$(par)")] = []  
-            
-            for idx in 1:length(par_names[par]) 
-                xname = string("$(par)")
-                if (par_names !=nothing)
-                    xname = par_names[par][idx]
-                end
-                pattern = r"\w+\s+part\d{4}\s\w+"
-                result = match(pattern, xname)
-                if result !== nothing
-                    tot_str = result.match
-                    parts = split(tot_str)
-                    inner_dict = Dict(
-                        "experiment" => parts[1], 
-                        "partition" => parts[2],
-                        "detector" => parts[3] 
-                    )
-                    push!(nuisance_dict[string("$(par)")], inner_dict)
-                end
-            end
+        for idx in 1:length(values)
+
+            inner_dict = Dict(
+                "experiment" => values[idx][1], 
+                "partition" => values[idx][2],
+                "detector" => values[idx][3],
+                "prior_mu" => values[idx][4],
+                "prior_sigma" => values[idx][5],
+                "prior_low_bound" => values[idx][6] == -Inf ? "-Inf" : values[idx][6],
+                "prior_upp_bound" => values[idx][7] == Inf ? "Inf" : values[idx][7]
+            )
+            push!(nuisance_dict[key], inner_dict)
         end
     end
     
+    # default marginalized modes
     ltmp = NullLogger()
     marginalized_modes=0
     with_logger(ltmp) do
         marginalized_modes = BAT.bat_marginalmode(samples).result
        end
     
-    """
+    # marginalized mode from binned histogram (250 bins)
     unshaped_samples, f_flatten = bat_transform(Vector, samples)
-    @info "Unshaped samples:", bat_report(unshaped_samples)
-    
-    marginalized_modes = Dict()
-    parameter_samples = [s["v_1"] for s in unshaped_samples]  # Adjust for vectors if needed
-
-    hist = fit(Histogram, parameter_samples, nbins=50)
-    max_bin_idx = argmax(hist.weights)
-    mode_value = hist.edges[1][max_bin_idx]
-
-    marginalized_modes[string("v_1")] = mode_value
-    println("Marginalized modes: $marginalized_modes")
-    """
+    first_sample = unshaped_samples.v[1]
+    free_pars = keys(first_sample)
+    marginalized_modes_highest_bin = Dict()
+    ct = 1
+    for (idx,par) in enumerate(keys(marginalized_modes))
+        # parameters with 1 entry only
+        if length(marginalized_modes[par]) == 1
+            marginalized_modes_highest_bin[string(par)] = get_marginalized_mode(samples, par)
+            ct += 1
+        # parameters with more than 1 entry
+        else
+            marginalized_modes_highest_bin[string(par)] = []
+            for entry in marginalized_modes[par]
+                mode_value = get_marginalized_mode(unshaped_samples, free_pars[ct])
+                ct += 1
+                append!(marginalized_modes_highest_bin[string(par)],mode_value)
+            end
+        end
+    end
 
     mean = BAT.mean(samples)
     stddev = BAT.std(samples)
@@ -323,13 +344,14 @@ Function which saves results from the fit and copies the input config (for any f
         "global_modes" => global_modes,
         "refined_global_modes" => refined_global_modes,
         "marginalized_modes" => marginalized_modes,
+        "marginalized_modes_highest_bin" => marginalized_modes_highest_bin,
         "ci_68" => ci_68,
         "ci_90" => ci_90,
         "ci_95" => ci_95,
         "ci_99" => ci_99,
         "quantile90" => quantile90,
         "config" => config, 
-        "nuisance_partitions" => nuisance_dict
+        "nuisance_info" => nuisance_dict
     )
 
     json_string = JSON.json(data,4)
@@ -345,7 +367,7 @@ Function which saves results from the fit and copies the input config (for any f
     end
 end
 
-function save_outputs(partitions, events, part_event_index, samples, posterior, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
+function save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
 """
 Function to plot and save results, as well as inputs
 """
@@ -374,7 +396,7 @@ Function to plot and save results, as well as inputs
     end
     
     @info "... now we save other useful results + config entries"
-    save_results_into_json(samples, posterior, config, output_path,par_names=par_names,toy_idx=toy_idx)
+    save_results_into_json(samples, posterior, nuisance_info, config, output_path,par_names=par_names,toy_idx=toy_idx)
     @info "...done!"
 
     if config["light_output"]==false
@@ -392,7 +414,7 @@ Function to plot and save results, as well as inputs
     
     if config["plot"]["bandfit_and_data"] || config["plot"]["fit_and_data"]
         @info "... now we plot fit & data"
-        plot_fit_and_data(partitions, events, part_event_index, samples, free_pars, output_path, config, fit_ranges, toy_idx=toy_idx)
+        plot_fit_and_data(partitions, events, part_event_index, samples, posterior, free_pars, output_path, config, fit_ranges, toy_idx=toy_idx)
         @info "...done!"
     end
     

@@ -139,7 +139,7 @@ Function to retrieve useful pieces (prior, likelihood, posterior), also in savin
 
     bkg_shape,bkg_shape_pars = get_bkg_info(config)       
     
-    prior,par_names=build_prior(partitions,part_event_index,config,settings,hierachical=corr,hierachical_mode=hier_mode,hierachical_range=hier_range,
+    prior,par_names,nuisance_info=build_prior(partitions,part_event_index,config,settings,hierachical=corr,hierachical_mode=hier_mode,hierachical_range=hier_range,
                             bkg_shape=bkg_shape,shape_pars=bkg_shape_pars)
     @info "using a ",bkg_shape," bkg with ",bkg_shape_pars," parameters"
     @info "built prior"
@@ -159,7 +159,7 @@ Function to retrieve useful pieces (prior, likelihood, posterior), also in savin
     posterior = PosteriorMeasure(likelihood, prior) 
     @info "got posterior"
     
-    return prior,likelihood,posterior,par_names
+    return prior,likelihood,posterior,par_names,nuisance_info
 end
 
 
@@ -168,7 +168,7 @@ function run_fit_over_partitions(partitions,events::Array{Vector{Float64}},part_
 Function to run the fit looping over partitions
 """
     bkg_only = config["bkg_only"]
-    prior,likelihood,posterior,par_names = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=bkg_only)
+    prior,likelihood,posterior,par_names,nuisance_info = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=bkg_only)
 
     Ns = Int(config["bat_fit"]["nsteps"])
     Nc = Int(config["bat_fit"]["nchains"])
