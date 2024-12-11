@@ -13,7 +13,18 @@ using FileIO
 import JLD2
 import HDF5
 
+function check_key(config, k)
+    if !(k in keys(config))
+        @info "'$k' not in config, exit here"
+        exit()
+    end
+end
+
 function get_settings(config)
+    
+    check_key(config,"nuisance")
+    check_key(config["nuisance"],"energy_scale")
+    check_key(config["nuisance"]["energy_scale"],"fixed")
 
     settings=Dict()
     settings[:energy_scale_fixed]=config["nuisance"]["energy_scale"]["fixed"]

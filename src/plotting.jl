@@ -232,7 +232,7 @@ end
 ##############################################
 ##############################################
 ##############################################
-
+    
 function plot_marginal_distr(partitions,samples,pars,output;sqrt_prior=false,
     priors=nothing,par_names=nothing,plot_config=nothing,s_max=nothing,hier=false,toy_idx=nothing)    
 """

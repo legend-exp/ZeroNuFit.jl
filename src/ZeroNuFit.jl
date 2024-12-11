@@ -1,15 +1,15 @@
-# src/ZeroNuFit.jl
 module ZeroNuFit
 
-include("fitting.jl")
 include("plotting.jl")
 include("utils.jl")
 include("constants.jl")
+include("likelihood.jl")
+include("fitting.jl")
 using JSON
 
 export run_analysis
 export retrieve_real_fit_results
-
+export get_partitions_events
 
 
 function get_partitions_events(config::Dict{String, Any})
@@ -19,7 +19,11 @@ function get_partitions_events(config::Dict{String, Any})
     partitions = nothing
     first=true
     fit_ranges=nothing
-    for part_path  in config["partitions"]
+    
+    check_key(config, "partitions")
+    check_key(config, "events")
+    
+    for part_path in config["partitions"]
 
         part_tmp,fit_groups,fit_range =get_partitions_new(part_path) 
         if (first)

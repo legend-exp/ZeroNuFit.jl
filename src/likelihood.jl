@@ -6,8 +6,6 @@ using Plots,LaTeXStrings
 using Cuba
 using OrderedCollections
 
-
-
 function get_bkg_pdf(bkg_shape::Symbol,evt_energy::Float64,p::NamedTuple,b_name::Symbol,fit_range)
     if (bkg_shape==:uniform)
         return norm_uniform(evt_energy,p,b_name,fit_range)
@@ -22,12 +20,15 @@ function get_bkg_pdf(bkg_shape::Symbol,evt_energy::Float64,p::NamedTuple,b_name:
 
 end
  
-function get_signal_pdf(signal_shape,evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple,fit_range)
+function get_signal_pdf(evt_energy::Float64,Qbb::Float64,part_k::NamedTuple)
+    signal_shape = part_k.signal_name
+    bias = part_k.bias
+    reso = part_k.width
     #@info part_k.experiment, signal_shape
     if (signal_shape==:gaussian)
         return pdf(Normal(Qbb - bias, reso), evt_energy) 
     elseif (signal_shape==:gaussian_plus_lowEtail)
-        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,reso,part_k,fit_range)
+        return gaussian_plus_lowEtail(evt_energy,Qbb,bias,reso,part_k)
     else
         @error "signal shape",signal_shape," is not yet implememnted"
         exit(-1)
@@ -115,7 +116,7 @@ function build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settin
 end
 
 
-function build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Float64}, 
+function build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}}, 
     p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
 """
 Function which computes the partial likelihood for a single data partiton
@@ -146,7 +147,7 @@ free parameters: signal (S), background (B), energy bias (biask) and resolution 
 
             # get the correct reso and bias 
             reso,bias = get_energy_scale_pars(part_k,p,settings,idx_part_with_events)
-            term2 = model_s_k * get_signal_pdf(part_k.signal_name,evt_energy,Qbb,bias,reso,part_k,fit_range) 
+            term2 = model_s_k * get_signal_pdf(evt_energy,Qbb,part_k) 
         else
             term2 =0
         end
@@ -177,7 +178,7 @@ Returns:
     return DensityInterface.logfuncdensity( function(p::NamedTuple)
             total_ll = 0.0
             
-             for (idx_k, part_k) in enumerate(partitions)
+            for (idx_k, part_k) in enumerate(partitions)
                 
                 if part_event_index[idx_k]!=0
                     idx_k_with_events=part_event_index[idx_k]
@@ -192,7 +193,6 @@ Returns:
             if (sqrt_prior)
                 total_ll+=-log(2)-0.5*log(s_max)-0.5*log(p.S+eps(p.S))
             end
-
 
             return total_ll
         end

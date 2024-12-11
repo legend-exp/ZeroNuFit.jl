@@ -6,7 +6,7 @@ using Cuba
 using SpecialFunctions
 
 include("likelihood.jl")
-
+include("utils.jl")
 
 function get_bkg_info(config)
     bkg_shape=:uniform
@@ -97,7 +97,7 @@ Parameters
     
 end
 
-function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple,fit_range)
+function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple)
 """
 Signal model based on the peak shape used for the MJD analysis. The peak shape derives from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
 """
@@ -260,5 +260,3 @@ Distributions.rand(d::LogFlat) = exp(rand()*(log(d.b)-log(d.a))+log(d.a))
 Distributions.logpdf(d::LogFlat, x::Float64) = x > d.a && x<d.b ? -log(x)-log(log(d.b)-log(d.a)) : -Inf
 Distributions.cdf(d::LogFlat, x::Float64) =  x < d.a ? 0 : x<d.b ? (log(x)-log(d.a))/(log(d.b)-log(d.a)) : 1
 Distributions.params(d::LogFlat) = (d.a,d.b)
-
-    
