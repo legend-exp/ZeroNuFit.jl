@@ -1,3 +1,5 @@
+using Pkg
+Pkg.activate(".")
 using Test
 
 @info "Running tests with $(Base.Threads.nthreads()) Julia threads active."
