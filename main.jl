@@ -66,7 +66,7 @@ Parse the script arguments
     settings = ArgParseSettings(prog="LEGEND ovbb Bayesian unbinned fit",
                             description="",
                             commands_are_required = true)
-    @add_arg_table settings begin
+    @add_arg_table! settings begin
         "--config", "-c"
             help = "path to config file"
             arg_type = String

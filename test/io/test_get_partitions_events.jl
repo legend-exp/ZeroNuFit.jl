@@ -1,12 +1,6 @@
 using Pkg
 Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
-using ArgParse
-using Logging, LoggingExtras
-using JSON
-using FilePathsBase
-using DensityInterface
-
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
 include("../../main.jl")
@@ -15,13 +9,14 @@ include("../../src/utils.jl")
 @testset "test_get_partitions_events" begin
     
     @info "Testing function to retrieve input parameters (function 'get_partitions_events' in src/utils.jl)"
+    present_dir = @__DIR__
     
     config = Dict(
         "bkg_only" => false,
         "bkg" => Dict("correlated" => Dict("range" => "none", "mode" => "none"), "prior" => "uniform", "upper_bound" => 0.1), 
         "signal" => Dict("prior" => "uniform", "upper_bound" => 1000), 
-        "events" => ["test/inputs/events_test.json"], 
-        "partitions" => ["test/inputs/partitions_test.json"], 
+        "events" => [joinpath(present_dir, "../inputs/events_test.json")], 
+        "partitions" => [joinpath(present_dir, "../inputs/partitions_test.json")], 
         "output_path" => "tests", 
         "bat_fit" => Dict("nsteps" => 10000.0, "nchains" => 4), 
         "nuisance" => Dict("efficiency" => Dict("fixed" => true, "correlated" => true), "energy_scale" => Dict("fixed" => true, "correlated" => false)), 
