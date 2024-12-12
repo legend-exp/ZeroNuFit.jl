@@ -5,9 +5,6 @@ using Plots
 using Cuba
 using SpecialFunctions
 
-include("likelihood.jl")
-include("utils.jl")
-
 function get_bkg_info(config)
     bkg_shape=:uniform
     bkg_shape_pars=nothing
