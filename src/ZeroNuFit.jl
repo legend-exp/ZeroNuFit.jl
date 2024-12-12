@@ -9,60 +9,9 @@ using JSON
 
 export run_analysis
 export retrieve_real_fit_results
-export get_partitions_events
 
 
-function get_partitions_events(config::Dict{String, Any})
-    @info "You entered into src/ZeroNuFit.jl"
-    
-    @info"Let's retrieve some partitions ..."
-    partitions = nothing
-    first=true
-    fit_ranges=nothing
-    
-    check_key(config, "partitions")
-    check_key(config, "events")
-    
-    for part_path in config["partitions"]
 
-        part_tmp,fit_groups,fit_range =get_partitions_new(part_path) 
-        if (first)
-            partitions=part_tmp
-            first=false
-            fit_ranges=fit_range
-        else
-            partitions=vcat(partitions,part_tmp)
-            merge!(fit_ranges,fit_range)
-        end
-    end
-    display(partitions)
-    @info "... load events"
-    events_multi = []
-    for event_path in config["events"]
-        append!(events_multi,[get_events(event_path,partitions)])
-    end
-
-    events=Array{Vector{Float64}}(undef,length(partitions))
-    for i in 1:length(partitions)
-        
-        arr_tmp =Vector{Float64}()
-        for sub in events_multi
-            if (sub[i]!=Float64[])
-                
-                append!(arr_tmp,sub[i])
-                end
-        end
-         
-        events[i]=arr_tmp
-    end
-    @debug events
-
-    @info "get which partitions have events"
-    part_event_index = get_partition_event_index(events,partitions)
-
-    return part_event_index,events,partitions,fit_ranges
-
-end
 # function to run the unbinned fit
 function run_analysis(config::Dict{String, Any};output_path::String, toy_idx=nothing)
 """
@@ -72,7 +21,7 @@ Parameters:
     config::Dict{String,Any} the fit configuration
     output_path::String (keyword) the path to the output files folder
 """
-
+    @info "You entered into src/ZeroNuFit.jl"
    
     part_event_index,events,partitions,fit_ranges= get_partitions_events(config)
     # check if you want to overwrite the fit; if no results are present, then fit data

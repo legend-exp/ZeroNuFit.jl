@@ -15,8 +15,8 @@ import HDF5
 
 function check_key(config, k)
     if !(k in keys(config))
-        @info "'$k' not in config, exit here"
-        exit()
+        @error "'$k' not in config, exit here"
+        exit(-1)
     end
 end
 
@@ -41,6 +41,10 @@ function get_partitions_new(part_path::String)
     Get the partition info from a JSON file and save to a Table
 
     """
+        if !isfile(part_path)
+            @error "Error: file $part_path does not exist!"
+            exit(-1) 
+        end
         part_data_json = JSON.parsefile(part_path,dicttype=DataStructures.OrderedDict)
 
         fit_groups = part_data_json["fit_groups"]
@@ -137,9 +141,45 @@ function get_partitions_new(part_path::String)
         return tab,fit_groups,fit_ranges
 end
 
+function get_partitions_events(config::Dict{String, Any})
+    """
+        Get partition, event, and fit range info from input JSON files
+    """
+    
+    @info"... retrieve some partitions"
+    partitions,fit_ranges = get_partitions(config)
+    display(partitions)
+    @info "... load events"
+    events_multi = []
+    for event_path in config["events"]
+        append!(events_multi,[get_events(event_path,partitions)])
+    end
+
+    events=Array{Vector{Float64}}(undef,length(partitions))
+    for i in 1:length(partitions)
+        
+        arr_tmp =Vector{Float64}()
+        for sub in events_multi
+            if (sub[i]!=Float64[])
+                
+                append!(arr_tmp,sub[i])
+                end
+        end
+         
+        events[i]=arr_tmp
+    end
+    @debug events
+
+    @info "... get which partitions have events"
+    part_event_index = get_partition_event_index(events,partitions)
+
+    return part_event_index,events,partitions,fit_ranges
+
+end
+
 function get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
 """
-gets an object descirbing if a partiton has an event and giving them indexs
+Gets an object descirbing if a partition has an event and giving them indexes
 This creates a vector where
 V[i]=0 if partition i has no events
 V[i]=idx if partition i has events
@@ -162,11 +202,41 @@ events and corresponds to the index of the parameters.
     return output
 end
 
-function get_events(event_path,partitions)::Array{Vector{Float64}}
+function get_partitions(config::Dict{String, Any})
+    """
+        Get the partition info from a JSON file 
+    """
+    
+    partitions=nothing
+    first=true
+    fit_ranges=nothing
+    
+    check_key(config, "partitions")
+    check_key(config, "events")
+    
+    for part_path in config["partitions"]
+
+        part_tmp,fit_groups,fit_range =get_partitions_new(part_path) 
+        if (first)
+            partitions=part_tmp
+            first=false
+            fit_ranges=fit_range
+        else
+            partitions=vcat(partitions,part_tmp)
+            merge!(fit_ranges,fit_range)
+        end
+    end
+    return partitions,fit_ranges
+end
+
+function get_events(event_path::String,partitions)::Array{Vector{Float64}}
     """
         Get the event info from a JSON file and save to a Table
     """
-        @info event_path
+        if !isfile(event_path)
+            @error "Error: file $event_path does not exist!"
+            exit(-1) 
+        end
         event_json = JSON.parsefile(event_path,dicttype=DataStructures.OrderedDict)
         events=Array{Vector{Float64}}(undef,length(partitions))
         for (idx,part) in enumerate(partitions)
