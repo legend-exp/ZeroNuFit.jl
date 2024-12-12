@@ -1,0 +1,53 @@
+using Pkg
+Pkg.activate(".") # activate the environment
+Pkg.instantiate() # instantiate the environment
+using ArgParse
+using Logging, LoggingExtras
+using JSON
+using FilePathsBase
+using DensityInterface
+
+include("../../src/ZeroNuFit.jl")
+using .ZeroNuFit
+include("../../main.jl")
+include("../../src/utils.jl")
+
+@testset "test_get_events" begin
+    
+    @info "Testing function to retrieve events given partitions (function 'get_events' in src/utils.jl)"
+    
+    config = Dict(
+        "bkg_only" => false,
+        "bkg" => Dict("correlated" => Dict("range" => "none", "mode" => "none"), "prior" => "uniform", "upper_bound" => 0.1), 
+        "signal" => Dict("prior" => "uniform", "upper_bound" => 1000), 
+        "events" => ["test/inputs/events_test.json"], 
+        "partitions" => ["test/inputs/partitions_test.json"], 
+        "output_path" => "tests", 
+        "bat_fit" => Dict("nsteps" => 10000.0, "nchains" => 4), 
+        "nuisance" => Dict("efficiency" => Dict("fixed" => true, "correlated" => true), "energy_scale" => Dict("fixed" => true, "correlated" => false)), 
+        "plot" => Dict("bandfit_and_data" => false, "alpha" => 0.3, "fit_and_data" => false, "scheme" => "blue")
+    )
+    
+    partitions = nothing
+    events = nothing
+    
+    partitions = nothing
+    fit_ranges = nothing
+    partitions,fit_ranges = ZeroNuFit.get_partitions(config)
+    try
+        events = ZeroNuFit.get_events(config["events"][1],partitions)
+    catch e
+        @error "Error in get_events: $e"
+        throw(e)
+    end
+    
+    @testset "Check events is valid" begin
+        @test !isnothing(events)
+    end
+    
+    expected_events=[[1995.2452]]
+    @testset "Check events accuracy" begin
+        @test events == expected_events
+    end
+end
+    
