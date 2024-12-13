@@ -26,9 +26,6 @@ color_schemes=Dict(:blue =>[tol_colors[1],tol_colors[3],tol_colors[2]],
                    :muted=>[:olivedrab,:goldenrod,:indianred1]
 )
 
-##############################################
-##############################################
-##############################################
 function fit_model(idx_part_with_events::Int,part_k::NamedTuple, p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,x)
     Qbb = constants.Qbb
     N_A = constants.N_A
@@ -72,13 +69,12 @@ function fit_model(idx_part_with_events::Int,part_k::NamedTuple, p::NamedTuple,s
 end
 
 
-##############################################
-##############################################
-##############################################
-function plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
 """
+    plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
+
 Function to plot events in the Qbb analysis window and BAT fit results
 """
+function plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
     
     counts=sum(hist.weights)
     p = plot() 
@@ -145,9 +141,6 @@ end
 
 
 
-##############################################
-##############################################
-##############################################
 function plot_fit_and_data(partitions, events, part_event_index, samples, posterior, pars, output, config, fit_ranges; toy_idx=nothing)
     
     plotflag=config["plot"]
@@ -177,14 +170,13 @@ function plot_fit_and_data(partitions, events, part_event_index, samples, poster
     
 end
 
-##############################################
-##############################################
-##############################################
 
-function plot_correlation_matrix(samples,output;par_names=nothing,toy_idx=nothing)
 """
+    plot_correlation_matrix(samples,output;par_names=nothing,toy_idx=nothing)
+
 Plots the correlation matrixs
 """
+function plot_correlation_matrix(samples,output;par_names=nothing,toy_idx=nothing)
     unshaped_samples, f_flatten = bat_transform(Vector, samples)
     covariance_matrix = cov(unshaped_samples)
     var = std(unshaped_samples)
@@ -233,11 +225,13 @@ end
 ##############################################
 ##############################################
     
-function plot_marginal_distr(partitions,samples,pars,output;sqrt_prior=false,
-    priors=nothing,par_names=nothing,plot_config=nothing,s_max=nothing,hier=false,toy_idx=nothing)    
 """
+    plot_marginal_distr(partitions,samples,pars,output;sqrt_prior=false,priors=nothing,par_names=nothing,plot_config=nothing,s_max=nothing,hier=false,toy_idx=nothing) 
+
 Function to plot 1D and 2D marginalized distributions (and priors)
 """
+function plot_marginal_distr(partitions,samples,pars,output;sqrt_prior=false,
+    priors=nothing,par_names=nothing,plot_config=nothing,s_max=nothing,hier=false,toy_idx=nothing)    
     
     name = split(output, "output/")[end]
     first_sample = samples.v[1]

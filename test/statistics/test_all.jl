@@ -5,4 +5,5 @@ Test.@testset "likelihood" begin
     include("test_get_mu_s_b.jl")
     include("test_build_likelihood_zero_obs_evts.jl")
     include("test_build_likelihood_per_partition.jl")
+    include("test_inverse_uniform_cdf.jl")
 end

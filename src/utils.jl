@@ -36,11 +36,13 @@ function get_settings(config)
     return settings
 end
 
-function get_partitions_new(part_path::String)
-    """
-    Get the partition info from a JSON file and save to a Table
 
-    """
+"""
+    get_partitions_new(part_path::String)
+
+Get the partition info from a JSON file and save to a Table
+"""
+function get_partitions_new(part_path::String)
         if !isfile(part_path)
             @error "Error: file $part_path does not exist!"
             exit(-1) 
@@ -141,10 +143,13 @@ function get_partitions_new(part_path::String)
         return tab,fit_groups,fit_ranges
 end
 
+
+"""
+    get_partitions_events(config::Dict{String, Any})
+    
+Get partition, event, and fit range info from input JSON files
+"""
 function get_partitions_events(config::Dict{String, Any})
-    """
-        Get partition, event, and fit range info from input JSON files
-    """
     
     @info"... retrieve some partitions"
     partitions,fit_ranges = get_partitions(config)
@@ -177,17 +182,21 @@ function get_partitions_events(config::Dict{String, Any})
 
 end
 
-function get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
+
 """
+    get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
+
 Gets an object descirbing if a partition has an event and giving them indexes
 This creates a vector where
-V[i]=0 if partition i has no events
-V[i]=idx if partition i has events
+
+- V[i]=0 if partition i has no events
+- V[i]=idx if partition i has events
 
 where the index counts the number of partitions with index<=i with, 
 events and corresponds to the index of the parameters.
 
 """
+function get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
     output = Vector{Int}(undef,length(partitions))
     counter=1
     for (idx,part) in enumerate(partitions)
@@ -202,10 +211,13 @@ events and corresponds to the index of the parameters.
     return output
 end
 
+
+"""
+    get_partitions(config::Dict{String, Any})
+
+Get the partition info from a JSON file 
+"""
 function get_partitions(config::Dict{String, Any})
-    """
-        Get the partition info from a JSON file 
-    """
     
     partitions=nothing
     first=true
@@ -229,10 +241,13 @@ function get_partitions(config::Dict{String, Any})
     return partitions,fit_ranges
 end
 
+
+"""
+    get_events(event_path::String,partitions)::Array{Vector{Float64}}
+
+Get the event info from a JSON file and save to a Table
+"""
 function get_events(event_path::String,partitions)::Array{Vector{Float64}}
-    """
-        Get the event info from a JSON file and save to a Table
-    """
         if !isfile(event_path)
             @error "Error: file $event_path does not exist!"
             exit(-1) 
@@ -269,33 +284,31 @@ function inverse_uniform_cdf(p, fit_range)
     range_l = [arr[1] for arr in fit_range] 
     range_h = [arr[2] for arr in fit_range] 
     delta = sum(range_h .- range_l)
-    a = range_l[1]
-    b = range_h[end]
     
     cumulative_prob = 0.0
     cumulative_range = 0.0
-
-    for j in 1:length(fit_range)
-        interval_width = range_h[j] - range_l[j]
-        interval_prob = interval_width / delta
-
-        # if p is within the current interval range
-        if cumulative_prob + interval_prob >= p
-            # scale the probability to the current interval
-            interval_p = (p - cumulative_prob) / interval_prob
-            res = range_l[j] + interval_p * interval_width
-            break
-        end
-
-        # accumulate the probability and range covered so far
-        cumulative_prob += interval_prob
-        cumulative_range += interval_width
-    end
-
+    
     # handle the p=1 case
     if p == 1
         res = range_h[end]
-    end
+    else
+        for j in 1:length(fit_range)
+            interval_width = range_h[j] - range_l[j]
+            interval_prob = interval_width / delta
+
+            # if p is within the current interval range
+            if cumulative_prob + interval_prob >= p
+                # scale the probability to the current interval
+                interval_p = (p - cumulative_prob) / interval_prob
+                res = range_l[j] + interval_p * interval_width
+                break
+            end
+
+            # accumulate the probability and range covered so far
+            cumulative_prob += interval_prob
+            cumulative_range += interval_width
+        end
+    end    
     
     return res
 end
@@ -311,18 +324,23 @@ function generate_disjoint_uniform_samples(n, fit_range)
 end
 
 
-function save_generated_samples(samples,output)
 """
+    save_generated_samples(samples,output)
+
 Function which saves sampling results
 """
+function save_generated_samples(samples,output)
     FileIO.save(joinpath(output,"mcmc_files/samples.jld2"), Dict("samples" => samples))
     bat_write(joinpath(output,"mcmc_files/samples.h5"), samples)
 end
 
-function get_global_mode(samples, posterior)
+
 """
+    get_global_mode(samples, posterior)
+
 Function which retrieves global mode and a refined estimate of it
 """
+function get_global_mode(samples, posterior)
     global_modes = BAT.mode(samples) 
     # more refined estimate 
     findmode_result = bat_findmode(
@@ -332,10 +350,12 @@ Function which retrieves global mode and a refined estimate of it
     return global_modes, findmode_result.result
 end
 
-function get_marginalized_mode(samples, par)
 """
+    get_marginalized_mode(samples, par)
+
 Function which retrieves marginalized mode as the highest bin of the posterior, rebinned with 250 bins
 """
+function get_marginalized_mode(samples, par)
     post = get_par_posterior(samples,par,idx=nothing)
     post_numeric = Float64.(post)
     xmin = minimum(post)
@@ -348,10 +368,13 @@ Function which retrieves marginalized mode as the highest bin of the posterior, 
     return mode_value
 end
 
-function save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
+
 """
+    save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
+
 Function which saves results from the fit and copies the input config (for any future need)
 """
+function save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
     
     global_modes, refined_global_modes = get_global_mode(samples, posterior)
     
@@ -448,10 +471,13 @@ Function which saves results from the fit and copies the input config (for any f
     end
 end
 
-function save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
+
 """
+    save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
+
 Function to plot and save results, as well as inputs
 """
+function save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
     if (haskey(config["bkg"],"correlated")) & (config["bkg"]["correlated"]["mode"]!="none")
         hier=true
     else

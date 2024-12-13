@@ -19,14 +19,17 @@ function get_bkg_info(config)
 end
 
 
-function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
 """
+    norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+
 Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+
 Parameters
 ----------
     - slope::Real, the slope of the background
     - x::Real,     the x value to evaluate at
 """
+function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     center = range_l[1]
@@ -43,13 +46,16 @@ end
 
 
 
-function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
 """
+    norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
+
 Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+
 Parameters
 ----------
     - x::Real,     the x value to evaluate at
 """    
+function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     center = range_l[1]
@@ -67,14 +73,19 @@ function exp_stable(x::Float64)
         return exp(x)
     end
 end
-function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+
+
 """
+    norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+
 Normalised linear function defined by (1+slope*(x-center)/fit_range)/norm.
+
 Parameters
 ----------
     - slope::Real, the slope of the background
     - x::Real,     the x value to evaluate at
 """
+function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     center = range_l[1]
@@ -94,10 +105,13 @@ Parameters
     
 end
 
-function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple)
+
 """
+    gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple)
+
 Signal model based on the peak shape used for the MJD analysis. The peak shape derives from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
 """
+function gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple)
     γ = reso
     # following params are ALWAYS fixed
     f = part_k.frac
@@ -117,10 +131,12 @@ end
 ##############################################
 ##############################################
 ##############################################
-function get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
 """
+    get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
+
 Function to retrieve useful pieces (prior, likelihood, posterior), also in saving values
 """
+function get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
     settings=get_settings(config)
 
     
@@ -160,10 +176,12 @@ Function to retrieve useful pieces (prior, likelihood, posterior), also in savin
 end
 
 
-function run_fit_over_partitions(partitions,events::Array{Vector{Float64}},part_event_index::Vector{Int}, config,fit_ranges)
 """
+    run_fit_over_partitions(partitions,events::Array{Vector{Float64}},part_event_index::Vector{Int}, config,fit_ranges)
+
 Function to run the fit looping over partitions
 """
+function run_fit_over_partitions(partitions,events::Array{Vector{Float64}},part_event_index::Vector{Int}, config,fit_ranges)
     bkg_only = config["bkg_only"]
     prior,likelihood,posterior,par_names,nuisance_info = get_stat_blocks(partitions,events,part_event_index,fit_ranges,config=config,bkg_only=bkg_only)
 
@@ -186,11 +204,6 @@ end
 
 
 
-
-
-##############################################
-##############################################
-##############################################
 function get_qbb_posterior(fit_function,samples)
     qbb=[]
     
@@ -204,9 +217,6 @@ function get_qbb_posterior(fit_function,samples)
     return qbb
 end
 
-##############################################
-##############################################
-##############################################
 function get_par_posterior(samples,par;idx)
     
     pars=[]
@@ -227,9 +237,6 @@ function get_par_posterior(samples,par;idx)
 end
 
 
-##############################################
-##############################################
-##############################################
 function get_n_posterior(samples)
     ns=[]
     
@@ -242,8 +249,6 @@ function get_n_posterior(samples)
     end
     return ns
 end
-
-
 
 
 struct LogFlat <: ContinuousUnivariateDistribution

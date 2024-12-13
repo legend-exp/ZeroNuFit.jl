@@ -36,10 +36,13 @@ function get_signal_pdf(evt_energy::Float64,Qbb::Float64,part_k::NamedTuple)
 
 end
 
+
+""" 
+    get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
+
+Get the resolution and bias
+"""
 function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
-    """ 
-    Get the resolution and bias
-    """
     if (settings[:energy_scale_fixed]==true || idx_part_with_events==0)
         reso = part_k.width
         bias = part_k.bias
@@ -60,10 +63,13 @@ return reso*1.0,bias*1.0
 
 end
 
+
+"""
+    get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict,fit_range)
+
+Get the expected number of signal and background counts in a partition
+"""
 function get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict,fit_range)
-    """
-    Get the expected number of signal and background counts in a partition
-    """
     N_A = constants.N_A
     m_76 = constants.m_76
     sig_units = constants.sig_units
@@ -101,10 +107,12 @@ function get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,s
 end
 
 
+"""
+    build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settings::Dict,fit_range)
+
+Function to calculate the partial likelihood for a partition with 0 events
+"""
 function build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settings::Dict,fit_range)
-    """
-    Function to calculate the partial likelihood for a partition with 0 events
-    """
 
     ll_value = 0
     model_s_k,model_b_k = get_mu_s_b(p,part_k,0,settings,fit_range)
@@ -116,12 +124,14 @@ function build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settin
 end
 
 
-function build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}}, 
-    p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
 """
+    build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}},p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
+
 Function which computes the partial likelihood for a single data partiton
 free parameters: signal (S), background (B), energy bias (biask) and resolution per partition (resk)
 """
+function build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}}, 
+    p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
     Qbb = constants.Qbb
 
     ll_value = 0
@@ -161,19 +171,23 @@ end
 
 
 
-function build_likelihood_looping_partitions(partitions::TypedTables.Table, events::Array{Vector{Float64}},
-    part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
 """
+    build_likelihood_looping_partitions(partitions::TypedTables.Table,events::Array{Vector{Float64}},part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
+
 Function which creates the likelihood function for the fit (looping over partitions)
+
 Parameters:
 -----------
     -partitions: Table - partitions input file
     -events: Array      - list of events in each partitions (with their energy)
     -nuis_prior:bool     - true if we want to include priors for nuisance parameters (bias, res, eff)
+
 Returns:
 --------
     DensityInterface.logfuncdensity - the likelihood function
 """
+function build_likelihood_looping_partitions(partitions::TypedTables.Table, events::Array{Vector{Float64}},
+    part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
     @debug part_event_index
     return DensityInterface.logfuncdensity( function(p::NamedTuple)
             total_ll = 0.0
@@ -202,17 +216,19 @@ end
 
 
 
-function generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges;
-    best_fit::Bool=false,seed=nothing,bkg_only=false)
 """
+    generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges;best_fit::Bool=false,seed=nothing,bkg_only=false)
+
 Generates data from a posterior distribution.
 This is based on the posterior predictive distributions. 
 Given a model with some parameters `theta_i`, the posterior predictive distribution,
 or the distribution of data generated according to the posterior distribution of theta
 and the likelihood is:
+
 ```math
 p(y|D) =int p(y|theta)p(theta|D)dtheta
 ```
+
 Or in terms of sampling we first draw samples of `theta` from the posterior and then generate,
 datasets based on the likelihood.
 We also give the options to fix the posterior distribution to the best fit,
@@ -223,15 +239,20 @@ Parameters
     - samples::DensitySamplesVector the samples of a past fit or a NamedTuple of best fit
     - partitions::Table of the partition info
     - part_event_index: index for the parameters for partitions with events
+
 Keyword arguments
 -----------------
     - best_fit::Bool where to fix the paramaters to the best fit
     - nuis_prior::Bool whether only statistical parameters were included in the posterior
     - bkg_only::Bool where the fit was without signal,
     - seed::Int random seed
+
 Returns
+-------
     OrderedDict of the data
 """
+function generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges;
+    best_fit::Bool=false,seed=nothing,bkg_only=false)
     Qbb = constants.Qbb
 
     # seed the seed
@@ -294,12 +315,16 @@ end
 
 
 
-function get_signal_bkg_priors(config)
 """
+    get_signal_bkg_priors(config)
+
 Defines specific priors for signal and background contributions
+
 Parameters
+----------
     - config: the Dict of the fit config
 """
+function get_signal_bkg_priors(config)
     
     uppS = config["signal"]["upper_bound"]
     uppB = config["bkg"]["upper_bound"]
@@ -321,15 +346,19 @@ Parameters
     return distrS, distrB
 end
 
-function build_prior(partitions,part_event_index,config,settings::Dict;hierachical=false,hierachical_mode=nothing,hierachical_range=nothing,bkg_shape=:uniform,shape_pars=nothing)
+
 """
+    build_prior(partitions,part_event_index,config,settings::Dict;hierachical=false,hierachical_mode=nothing,hierachical_range=nothing,bkg_shape=:uniform,shape_pars=nothing)
+
 Builds the priors for use in the fit
-----------
+
 Parameters
+----------
     - partitions:Table of the partition info
     - config: the Dict of the fit config
     - nuis_prior; true if we want to include priors for nuisance parameters (bias, res, eff)
 """
+function build_prior(partitions,part_event_index,config,settings::Dict;hierachical=false,hierachical_mode=nothing,hierachical_range=nothing,bkg_shape=:uniform,shape_pars=nothing)
 
     # bkg indexs
     list_names = partitions.bkg_name
@@ -530,6 +559,7 @@ Parameters
         return hd,pretty_names,nuisance_info
     end
 end
+
 
 function print_names(priors,pretty_names)
 
