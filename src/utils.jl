@@ -281,8 +281,7 @@ end
 
 ## sampling 
 function inverse_uniform_cdf(p, fit_range)
-    range_l = [arr[1] for arr in fit_range] 
-    range_h = [arr[2] for arr in fit_range] 
+    range_l, range_h = get_range(fit_range)
     delta = sum(range_h .- range_l)
     
     cumulative_prob = 0.0
@@ -314,12 +313,13 @@ function inverse_uniform_cdf(p, fit_range)
 end
 
 
-function generate_disjoint_uniform_samples(n, fit_range)
-    rands=[]
-    for i in 1:n
-        append!(rands,rand())
+function generate_disjoint_uniform_samples(n, fit_range; seed=nothing)
+    # fix the seed (if provided)
+    if seed !== nothing
+        Random.seed!(seed)  
     end
-    res = [inverse_uniform_cdf(rand,fit_range) for rand in rands]
+    rands = rand(n) 
+    res = [inverse_uniform_cdf(rand, fit_range) for rand in rands]
     return res
 end
 
