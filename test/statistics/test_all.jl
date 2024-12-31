@@ -8,4 +8,6 @@ Test.@testset "statistics" begin
     include("test_inverse_uniform_cdf.jl")
     include("test_generate_disjoint_uniform_samples.jl")
     include("test_get_bkg_info.jl")
+    include("test_norm_linear.jl")
+    include("test_exp_stable.jl")
 end

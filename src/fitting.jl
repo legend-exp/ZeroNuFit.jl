@@ -18,10 +18,30 @@ function get_bkg_info(config)
     return bkg_shape,bkg_shape_pars
 end
 
-function get_range(fit_range)
+function get_range(fit_range::Vector{Vector{Float64}})
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     return sort(range_l), sort(range_h)
+end
+
+
+"""
+    norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
+
+Normalised flat function defined by 1/norm.
+
+Parameters
+----------
+    - x::Real,     the x value to evaluate at
+"""    
+function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range::Vector{Vector{Float64}})
+    range_l, range_h = get_range(fit_range)
+    center = range_l[1]
+
+    norm =sum(range_h .- range_l)
+    return 1/norm
+ 
+
 end
 
 
@@ -35,7 +55,7 @@ Parameters
     - slope::Real, the slope of the background
     - x::Real,     the x value to evaluate at
 """
-function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range::Vector{Vector{Float64}})
     range_l, range_h = get_range(fit_range)
     center = range_l[1]
 
@@ -49,26 +69,6 @@ function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
     return (1+slope*(x-center)/delta)/norm
 end
 
-
-
-"""
-    norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
-
-Normalised linear function defined by (1+slope*(x-center)/260)/norm.
-
-Parameters
-----------
-    - x::Real,     the x value to evaluate at
-"""    
-function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
-    range_l, range_h = get_range(fit_range)
-    center = range_l[1]
-
-    norm =sum(range_h .- range_l)
-    return 1/norm
- 
-
-end
  
 function exp_stable(x::Float64)
     if (abs(x)<1E-6)
@@ -82,14 +82,14 @@ end
 """
     norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
 
-Normalised linear function defined by (1+slope*(x-center)/fit_range)/norm.
+Normalised exponential function defined by exp_stable((x-center)*Rt)/norm.
 
 Parameters
 ----------
     - slope::Real, the slope of the background
     - x::Real,     the x value to evaluate at
 """
-function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range::Vector{Vector{Float64}})
     range_l, range_h = get_range(fit_range)
     center = range_l[1]
 
