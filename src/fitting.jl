@@ -5,6 +5,11 @@ using Plots
 using Cuba
 using SpecialFunctions
 
+"""
+    get_bkg_info(config)
+
+Function that retrieves background information from config in input.
+"""  
 function get_bkg_info(config)
     bkg_shape=:uniform
     bkg_shape_pars=nothing
@@ -18,6 +23,33 @@ function get_bkg_info(config)
     return bkg_shape,bkg_shape_pars
 end
 
+
+"""
+    get_corr_info(config)
+
+Function that retrieves information about correlated background from config in input.
+"""   
+function get_corr_info(config)
+    if !(haskey(config["bkg"], "correlated"))  
+        return false, nothing, nothing
+    end
+    
+    if (haskey(config["bkg"],"correlated")) & (config["bkg"]["correlated"]["mode"]!="none")
+        corr= true
+        hier_mode =config["bkg"]["correlated"]["mode"]
+        hier_range =config["bkg"]["correlated"]["range"]
+        return corr,hier_mode,hier_range
+    else
+        return false,nothing,nothing
+    end
+end
+
+
+"""
+    get_range(fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
+
+Function that returns lower and upper edges of fit ranges.
+"""  
 function get_range(fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
@@ -137,16 +169,7 @@ Function to retrieve useful pieces (prior, likelihood, posterior), also in savin
 function get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
     settings=get_settings(config)
 
-    
-    if (haskey(config["bkg"],"correlated")) & (config["bkg"]["correlated"]["mode"]!="none")
-        corr= true
-        hier_mode =config["bkg"]["correlated"]["mode"]
-        hier_range =config["bkg"]["correlated"]["range"]
-    else
-        corr=false
-        hier_mode=nothing
-        hier_range=nothing
-    end
+    corr,hier_mode,hier_range = get_corr_info(config)
 
     bkg_shape,bkg_shape_pars = get_bkg_info(config)       
     
