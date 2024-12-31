@@ -280,7 +280,7 @@ function get_events(event_path::String,partitions)::Array{Vector{Float64}}
 end
 
 ## sampling 
-function inverse_uniform_cdf(p, fit_range)
+function inverse_uniform_cdf(p, fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
     range_l, range_h = get_range(fit_range)
     delta = sum(range_h .- range_l)
     
