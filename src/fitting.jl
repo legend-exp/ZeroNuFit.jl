@@ -31,7 +31,7 @@ Function that retrieves information about correlated background from config in i
 """   
 function get_corr_info(config)
     if !(haskey(config["bkg"], "correlated"))  
-        return false, nothing, nothing
+        return false,nothing,nothing
     end
     
     if (haskey(config["bkg"],"correlated")) & (config["bkg"]["correlated"]["mode"]!="none")
@@ -42,6 +42,24 @@ function get_corr_info(config)
     else
         return false,nothing,nothing
     end
+end
+
+
+"""
+    get_prior_info(bkg_only::Bool,config)
+
+Function that retrieves signal prior information.
+"""   
+function get_signal_prior_info(bkg_only::Bool,config)
+    sqrt_prior=false
+    s_max=nothing
+    if bkg_only==false
+        if (config["signal"]["prior"]=="sqrt")
+            sqrt_prior=true
+            s_max = Float64(config["signal"]["upper_bound"])
+        end
+    end
+    return sqrt_prior,s_max
 end
 
 
@@ -178,14 +196,7 @@ function get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_in
     @info "using a ",bkg_shape," bkg with ",bkg_shape_pars," parameters"
     @info "built prior"
     
-    sqrt_prior=false
-    s_max=nothing
-    if bkg_only==false
-        if (config["signal"]["prior"]=="sqrt")
-            sqrt_prior=true
-            s_max = Float64(config["signal"]["upper_bound"])
-        end
-    end
+    sqrt_prior,s_max = get_signal_prior_info(bkg_only,config)
    
     likelihood = build_likelihood_looping_partitions(partitions, events, part_event_index,settings,sqrt_prior,s_max,fit_ranges,bkg_shape=bkg_shape)
     @info "built likelihood"
