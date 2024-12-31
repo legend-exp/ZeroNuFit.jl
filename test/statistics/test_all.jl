@@ -10,4 +10,5 @@ Test.@testset "statistics" begin
     include("test_get_bkg_info.jl")
     include("test_norm_linear.jl")
     include("test_exp_stable.jl")
+    include("test_norm_exponential.jl")
 end

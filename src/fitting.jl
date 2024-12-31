@@ -40,8 +40,6 @@ function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range::Union{Vect
 
     norm =sum(range_h .- range_l)
     return 1/norm
- 
-
 end
 
 
@@ -93,15 +91,15 @@ function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range::Uni
     range_l, range_h = get_range(fit_range)
     center = range_l[1]
 
-    centers=[center,center,center]
-    # could be made faster?
+    centers=fill(center, length(range_l))
     R = p[Symbol(string(b_name)*"_slope")]
     delta = range_h[end] - range_l[1]
     Rt=R/delta
+    
     if (abs(Rt)>1E-6)
-        norm = (-sum(exp_stable.(-Rt*(centers-range_l)))+sum(exp_stable.(-Rt*(centers-range_h))))/Rt
+        norm = (-sum(exp_stable.((range_l-centers)*Rt))+sum(exp_stable.((range_h-centers)*Rt)))/Rt
     else
-        norm =sum(range_h .- range_l)
+        norm = sum(range_h .- range_l)
     end
 
     return exp_stable((x-center)*Rt)/norm
