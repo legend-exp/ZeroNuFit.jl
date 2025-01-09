@@ -43,16 +43,17 @@ end
 Get the resolution and bias
 """
 function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
+    # either fixed energy pars OR 0 events in the partition
     if (settings[:energy_scale_fixed]==true || idx_part_with_events==0)
         reso = part_k.width
         bias = part_k.bias
-
+    # CORRELATED energy pars (reso and bias are described by one global alpha parameter each)
     elseif (settings[:energy_scale_correlated]==true)
         energy_reso_group = part_k.energy_reso_name
         energy_bias_group = part_k.energy_bias_name
         reso = part_k.width+p[energy_reso_group]*part_k.width_sigma
         bias = part_k.bias+p[energy_bias_group]*part_k.bias_sigma
-        
+    # UNCORRELATED energy pars (reso and bias follow a pdf each, different for each partition)
     else
         reso = p.ω[idx_part_with_events]
         bias = p.𝛥[idx_part_with_events]

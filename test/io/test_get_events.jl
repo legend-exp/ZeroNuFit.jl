@@ -26,8 +26,6 @@ include("../../src/utils.jl")
     partitions = nothing
     events = nothing
     
-    partitions = nothing
-    fit_ranges = nothing
     partitions,fit_ranges = ZeroNuFit.get_partitions(config)
     try
         events = ZeroNuFit.get_events(config["events"][1],partitions)
