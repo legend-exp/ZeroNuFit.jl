@@ -8,7 +8,7 @@ include("../../main.jl")
 
 @testset "test_get_bkg_info" begin
     
-    @info "Testing gaussian signal for one partition and one close event @ 2039.05 keV (function 'get_bkg_info' in src/fitting.jl)"
+    @info "Testing function to retrieve background information from config in input (function 'get_bkg_info' in src/fitting.jl)"
     
     # default modeling, i.e. flat
     config = Dict(
