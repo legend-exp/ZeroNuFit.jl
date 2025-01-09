@@ -64,11 +64,11 @@ end
 
 
 """
-    get_range(fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
+    get_range(fit_range)
 
 Function that returns lower and upper edges of fit ranges.
 """  
-function get_range(fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
+function get_range(fit_range)
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     return sort(range_l), sort(range_h)
@@ -84,7 +84,7 @@ Parameters
 ----------
     - x::Real,     the x value to evaluate at
 """    
-function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
+function norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
     range_l, range_h = get_range(fit_range)
     center = range_l[1]
 
@@ -103,7 +103,7 @@ Parameters
     - slope::Real, the slope of the background
     - x::Real,     the x value to evaluate at
 """
-function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
+function norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
     range_l, range_h = get_range(fit_range)
     center = range_l[1]
 
@@ -137,7 +137,7 @@ Parameters
     - slope::Real, the slope of the background
     - x::Real,     the x value to evaluate at
 """
-function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
+function norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
     range_l, range_h = get_range(fit_range)
     center = range_l[1]
 

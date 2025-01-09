@@ -14,7 +14,7 @@ function get_bkg_pdf(bkg_shape::Symbol,evt_energy::Float64,p::NamedTuple,b_name:
     elseif (bkg_shape==:exponential)
         return norm_exponential(evt_energy,p,b_name,fit_range)
     else
-        @error "bkg shape",bkg_shape," is not yet implememnted"
+        @error "bkg shape",bkg_shape," is not yet implemented"
         exit(-1)
     end
 
@@ -30,7 +30,7 @@ function get_signal_pdf(evt_energy::Float64,Qbb::Float64,part_k::NamedTuple)
     elseif (signal_shape==:gaussian_plus_lowEtail)
         return gaussian_plus_lowEtail(evt_energy,Qbb,bias,reso,part_k)
     else
-        @error "signal shape",signal_shape," is not yet implememnted"
+        @error "signal shape ",signal_shape," is not yet implemented"
         exit(-1)
     end
 
@@ -176,15 +176,17 @@ end
 
 Function which creates the likelihood function for the fit (looping over partitions)
 
-Parameters:
------------
-    -partitions: Table - partitions input file
-    -events: Array      - list of events in each partitions (with their energy)
-    -nuis_prior:bool     - true if we want to include priors for nuisance parameters (bias, res, eff)
+# Parameters
+- `partitions::TypedTables.Table`: The partitions input table.
+- `events::Array{Vector{Float64}}`: A list of events (=energies) in each partition.
+- `part_event_index::Vector{Int}`: The index mapping events to the partitions.
+- `settings::Dict`: A dictionary of settings containing configuration for the likelihood calculation.
+- `sqrt_prior::Bool`: Whether to include the square root prior in the likelihood calculation. If `False`, a uniform prior is used.
+- `s_max::Union{Float64, Nothing}`: A maximum value used for scaling the square root prior. If `Nothing`, no prior is applied.
+- `fit_ranges`: The fitting ranges corresponding to the partitions.
+- `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
 
-Returns:
---------
-    DensityInterface.logfuncdensity - the likelihood function
+Returns the likelihood function (a `DensityInterface.logfuncdensity` object).
 """
 function build_likelihood_looping_partitions(partitions::TypedTables.Table, events::Array{Vector{Float64}},
     part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
