@@ -563,22 +563,3 @@ function build_prior(partitions,part_event_index,config,settings::Dict;hierachic
     end
 end
 
-
-function print_names(priors,pretty_names)
-
-    for (key, value) in pairs(priors)
-        @info "added $key  to the model"
-        if (pretty_names[key] isa Vector)
-            for (idx,pn) in enumerate(pretty_names[key])
-                 @info "added $key[$idx] ($pn)  to the model"
-            end
-        else
-            pn = pretty_names[key]
-            @info "added $key ($pn) to the model"
-
-        end
-
-    end
-
-end
-

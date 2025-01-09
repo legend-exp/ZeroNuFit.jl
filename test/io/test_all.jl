@@ -1,6 +1,6 @@
 using Test
 
-Test.@testset "likelihood" begin
+Test.@testset "io" begin
     include("test_get_settings.jl")
     include("test_get_partitions.jl")
     include("test_get_events.jl")
