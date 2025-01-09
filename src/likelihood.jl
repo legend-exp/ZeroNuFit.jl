@@ -76,24 +76,7 @@ function get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,s
     sig_units = constants.sig_units
     
     deltaE = sum([arr[2]-arr[1] for arr in fit_range])
-    eff= nothing
-    
-    # logic for efficiency it can be either correlated, uncorrelated or fixed
-    if settings[:bkg_only]==true 
-        eff =0
-
-    elseif (settings[:eff_correlated] == true)
-        eff_group = part_k.eff_name
-        eff = part_k.eff_tot + p[eff_group] * part_k.eff_tot_sigma
-
-    elseif (idx_part_with_events!=0 && 
-            settings[:eff_correlated]==false &&
-            settings[:eff_fixed]==false)
-
-        eff =p.ε[idx_part_with_events] 
-    else 
-        eff =part_k.eff_tot
-    end
+    eff = get_efficiency(p,part_k,idx_part_with_events,settings)
 
     if (settings[:bkg_only]==false)
         model_s_k = log(2) * N_A * part_k.exposure * (eff) * (p.S*sig_units) / m_76

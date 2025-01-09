@@ -279,6 +279,36 @@ function get_events(event_path::String,partitions)::Array{Vector{Float64}}
         
 end
 
+"""
+    get_efficiency(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict)
+
+Get the efficiency 
+"""
+function get_efficiency(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict)
+    eff = nothing
+    
+    # if background only fit, then there is no need to retrieve any efficiency 
+    # (enters only in the signal-related term) 
+    if settings[:bkg_only]==true 
+        eff =0
+
+    # correlated efficiency
+    elseif (settings[:eff_correlated] == true)
+        eff_group =part_k.eff_name
+        eff =part_k.eff_tot + p[eff_group] * part_k.eff_tot_sigma
+
+    elseif (idx_part_with_events!=0 && 
+            settings[:eff_correlated]==false &&
+            settings[:eff_fixed]==false)
+        eff =p.ε[idx_part_with_events] 
+
+    else 
+        eff =part_k.eff_tot
+    end
+    
+    return eff
+end
+
 ## sampling 
 function inverse_uniform_cdf(p, fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
     range_l, range_h = get_range(fit_range)
