@@ -11,6 +11,7 @@ include("../../src/utils.jl")
     @info "Testing function to retrieve partitions (function 'get_partitions' in src/utils.jl)"
     present_dir = @__DIR__
 
+    # one partition
     config = Dict(
         "bkg_only" => false,
         "bkg" => Dict(
@@ -86,5 +87,50 @@ include("../../src/utils.jl")
     @testset "Check fit_ranges accuracy" begin
         @test fit_ranges == expected_fit_ranges
     end
+
+    # more partitions
+    config["partitions"] = [
+        joinpath(present_dir, "../inputs/partitions_test.json"),
+        joinpath(present_dir, "../inputs/partitions_test_2.json"),
+    ]
+    partitions = nothing
+    fit_ranges = nothing
+    partitions, fit_ranges = ZeroNuFit.get_partitions(config)
+    expected_partitions = Table(
+        experiment = Array(["GERDA", "MJD"]),
+        fit_group = Array(Any["all_phase_II", "mjd-DS0"]),
+        bkg_name = Array(Any[:B_gerda_all_pII, Symbol("mjd-DS0")]),
+        signal_name = Array([:gaussian, :gaussian_plus_lowEtail]),
+        energy_reso_name = Array([:αr_all, :αr_all]),
+        energy_bias_name = Array([:αb_all, :αb_all]),
+        eff_name = Array([:αe_all, :αe_all]),
+        detector = Array(["ANG4", "DS0"]),
+        part_name = Array(["part00", "ds0"]),
+        start_ts = Array([1450622572, 0]),
+        end_ts = Array([1469119346, 5]),
+        eff_tot = Array([0.476981, 0.2]),
+        eff_tot_sigma = Array([0.0395483, 0.01]),
+        width = Array([1.328561380042463, 1.05]),
+        width_sigma = Array([0.08067940552016985, 0.04]),
+        exposure = Array([0.987039, 1.08]),
+        bias = Array([-0.33885135, 0.02]),
+        bias_sigma = Array([0.07638651, 0.08]),
+        frac = Array([nothing, 0.1]),
+        tau = Array([nothing, 1.05]),
+        sigma = Array([nothing, 1.1]),
+    )
+    expected_fit_ranges = Dict(
+        "all_phase_II" =>
+            [[1930.0, 2098.511], [2108.511, 2113.513], [2123.513, 2190.0]],
+        "mjd-DS0" => [
+            [1950.0, 2098.511],
+            [2108.511, 2113.513],
+            [2123.513, 2199.1],
+            [2209.1, 2350.0],
+        ],
+    )
+    #@test partitions == expected_partitions
+    @test partitions == expected_partitions
+    @test fit_ranges == expected_fit_ranges
 
 end
