@@ -7,17 +7,17 @@ using .ZeroNuFit
 include("../../main.jl")
 
 @testset "test_get_corr_info" begin
-    
+
     @info "Testing function to retrieve bkg correlation info (function 'get_corr_info' in src/fitting.jl)"
-    
+
     # no entry for correlated bkg
     config = Dict("bkg" => Dict())
-    
+
     corr = false
-    hier_mode=nothing
-    hier_range=nothing
+    hier_mode = nothing
+    hier_range = nothing
     try
-        corr,hier_mode,hier_range = ZeroNuFit.get_corr_info(config)
+        corr, hier_mode, hier_range = ZeroNuFit.get_corr_info(config)
     catch e
         @error "Error in 'get_corr_info' evaluation: $e"
         throw(e)
@@ -26,15 +26,15 @@ include("../../main.jl")
     @test corr == false
     @test hier_mode == nothing
     @test hier_range == nothing
-    
+
     # not-correlated bkg
     config = Dict("bkg" => Dict("correlated" => Dict("mode" => "none", "range" => "none")))
-    
+
     corr = false
-    hier_mode=nothing
-    hier_range=nothing
+    hier_mode = nothing
+    hier_range = nothing
     try
-        corr,hier_mode,hier_range = ZeroNuFit.get_corr_info(config)
+        corr, hier_mode, hier_range = ZeroNuFit.get_corr_info(config)
     catch e
         @error "Error in 'get_corr_info' evaluation: $e"
         throw(e)
@@ -43,20 +43,22 @@ include("../../main.jl")
     @test corr == false
     @test hier_mode == nothing
     @test hier_range == nothing
-    
+
     # correlated bkg
-    config = Dict("bkg" => Dict("correlated" => Dict("mode" => "lognormal", "range" => [0,0.1])))
-    
+    config = Dict(
+        "bkg" => Dict("correlated" => Dict("mode" => "lognormal", "range" => [0, 0.1])),
+    )
+
     corr = false
-    hier_mode=nothing
-    hier_range=nothing
+    hier_mode = nothing
+    hier_range = nothing
     try
-        corr,hier_mode,hier_range = ZeroNuFit.get_corr_info(config)
+        corr, hier_mode, hier_range = ZeroNuFit.get_corr_info(config)
     catch e
         @error "Error in 'get_corr_info' evaluation: $e"
         throw(e)
     end
-    
+
     expected_value = true
     @testset "Check corr accuracy" begin
         @test corr == expected_value
@@ -69,5 +71,5 @@ include("../../main.jl")
     @testset "Check hier_range accuracy" begin
         @test hier_range == expected_value
     end
-    
+
 end
