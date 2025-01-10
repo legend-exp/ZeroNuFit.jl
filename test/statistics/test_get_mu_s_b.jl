@@ -20,6 +20,7 @@ include("../../src/utils.jl")
     fit_ranges =
         Dict("l200a" => [[1930.0, 2098.511], [2108.511, 2113.513], [2123.513, 2190.0]])
 
+    # background + signal fit
     part_event_index = [1]
     partitions = Table(
         experiment = Array(["L200"]),
@@ -91,5 +92,29 @@ include("../../src/utils.jl")
         diff = abs(mu_b - expected_value)
         @test diff <= tolerance
     end
-
+    
+    # background only fit
+    settings[:bkg_only] = true
+    mu_s = nothing
+    mu_b = nothing
+    mu_s, mu_b = ZeroNuFit.get_mu_s_b(
+        p,
+        partitions[1],
+        1,
+        settings,
+        fit_ranges[partitions[1].fit_group],
+    )
+    expected_value = 0
+    tolerance = 1e-10
+    @testset "Check mu_s accuracy (background only fit)" begin
+        diff = abs(mu_s - expected_value)
+        @test diff <= tolerance
+    end
+    expected_value = 0.048
+    tolerance = 1e-3
+    @testset "Check mu_b accuracy (background only fit)" begin
+        diff = abs(mu_b - expected_value)
+        @test diff <= tolerance
+    end
+    
 end
