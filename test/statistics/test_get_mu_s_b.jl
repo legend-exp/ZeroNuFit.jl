@@ -92,7 +92,7 @@ include("../../src/utils.jl")
         diff = abs(mu_b - expected_value)
         @test diff <= tolerance
     end
-    
+
     # background only fit
     settings[:bkg_only] = true
     mu_s = nothing
@@ -116,5 +116,5 @@ include("../../src/utils.jl")
         diff = abs(mu_b - expected_value)
         @test diff <= tolerance
     end
-    
+
 end

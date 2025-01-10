@@ -129,6 +129,7 @@ function build_likelihood_per_partition(
     end
 
     ll_value += logpdf(Poisson(λ), length(events_k))
+    println("ll_value ", ll_value)
 
     for evt_energy in events_k
 
@@ -365,12 +366,15 @@ function get_signal_bkg_priors(config)
     elseif config["signal"]["prior"] == "loguniform"
         distrS = LogUniform(0.01, uppS)
     else
-        @error "distibution", config["signal"]["prior"], " is not yet defined"
+        @error "Distribution", config["signal"]["prior"], " is not yet defined"
         exit(-1)
     end
 
     if config["bkg"]["prior"] == "uniform"
         distrB = 0 .. uppB
+    else
+        @error "Distribution", config["bkg"]["prior"], " is not yet defined"
+        exit(-1)
     end
 
     return distrS, distrB
