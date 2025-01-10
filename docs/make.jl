@@ -7,14 +7,14 @@ push!(LOAD_PATH, "../src")
 using ZeroNuFit
 
 makedocs(
-    debug=true,
+    debug = true,
     modules = [ZeroNuFit],
     sitename = "ZeroNuFit.jl",
     authors = "S. Calgaro, T. Dixon",
     format = Documenter.HTML(
         # size thresholds for HTML generation
         size_threshold = 400 * 1024,       # hard limit
-        size_threshold_warn = 300 * 1024  # warning limit 
+        size_threshold_warn = 300 * 1024,  # warning limit 
     ),
     pages = [
         "Home" => "index.md",
