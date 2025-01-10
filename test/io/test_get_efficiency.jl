@@ -40,6 +40,7 @@ include("../../src/utils.jl")
     eff = nothing
     
     # fixed efficiency, 1 event in the partition
+    eff = nothing
     try
         eff = ZeroNuFit.get_efficiency(p,partitions[1],1,settings)
     catch e
@@ -51,28 +52,19 @@ include("../../src/utils.jl")
         @test !isnothing(eff)
     end
     
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [fixed efficiency, 1 event in the partition]" begin
         @test eff == 0.5
     end
     
     # fixed efficiency, 0 event in the partition
+    eff = nothing
     eff = ZeroNuFit.get_efficiency(p,partitions[1],0,settings)
-    @testset "Check eff accuracy" begin
-        @test eff == 0.5
-    end
-    
-    # not fixed efficiency, 0 event in the partition
-    settings =Dict(
-        :eff_fixed => false,
-        :eff_correlated => false,
-        :bkg_only => false
-    )
-    eff = ZeroNuFit.get_efficiency(p,partitions[1],0,settings)
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [fixed efficiency, 0 event in the partition]" begin
         @test eff == 0.5
     end
     
     # correlated efficiency, 1 event in the partition
+    eff = nothing
     settings =Dict(
         :eff_fixed => false,
         :eff_correlated => true,
@@ -81,11 +73,12 @@ include("../../src/utils.jl")
     eff = ZeroNuFit.get_efficiency(p,partitions[1],1,settings)
     energy_eff_group = partitions[1].eff_name
     expected_eff = partitions[1].eff_tot+p[energy_eff_group]*partitions[1].eff_tot_sigma
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [correlated efficiency, 1 event in the partition]" begin
         @test eff == expected_eff
     end
     
     # correlated efficiency, 0 event in the partition
+    eff = nothing
     settings =Dict(
         :eff_fixed => false,
         :eff_correlated => true,
@@ -94,40 +87,43 @@ include("../../src/utils.jl")
     eff = ZeroNuFit.get_efficiency(p,partitions[1],0,settings)
     energy_eff_group = partitions[1].eff_name
     expected_eff = partitions[1].eff_tot+p[energy_eff_group]*partitions[1].eff_tot_sigma
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [correlated efficiency, 0 event in the partition]" begin
         @test eff == expected_eff
     end
     
     # uncorrelated efficiency, 1 event in the partition
+    eff = nothing
     settings =Dict(
         :eff_fixed => false,
         :eff_correlated => false,
         :bkg_only => false
     )
     eff = ZeroNuFit.get_efficiency(p,partitions[1],1,settings)
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [uncorrelated efficiency, 1 event in the partition]" begin
         @test eff == 1
     end
     
     # uncorrelated efficiency, 0 event in the partition 
+    eff = nothing
     settings =Dict(
         :eff_fixed => false,
         :eff_correlated => false,
         :bkg_only => false
     )
     eff = ZeroNuFit.get_efficiency(p,partitions[1],0,settings)
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [uncorrelated efficiency, 0 event in the partition]" begin
         @test eff == 0.5
     end
     
     # only bkg
+    eff = nothing
     settings =Dict(
         :eff_fixed => false,
         :eff_correlated => false,
         :bkg_only => true
     )
     eff = ZeroNuFit.get_efficiency(p,partitions[1],0,settings)
-    @testset "Check eff accuracy" begin
+    @testset "Check eff accuracy [only bkg]" begin
         @test eff == 0
     end
     

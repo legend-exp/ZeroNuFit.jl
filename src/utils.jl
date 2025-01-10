@@ -290,24 +290,54 @@ function get_efficiency(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::I
     # if background only fit, then there is no need to retrieve any efficiency 
     # (enters only in the signal-related term) 
     if settings[:bkg_only]==true 
-        eff =0
+        return 0
+    end
 
-    # correlated efficiency
-    elseif (settings[:eff_correlated] == true)
+    # CORRELATED efficiency (eff is described by one global alpha parameter)
+    if (settings[:eff_correlated] == true)
         eff_group =part_k.eff_name
         eff =part_k.eff_tot + p[eff_group] * part_k.eff_tot_sigma
-
+    # UNCORRELATED efficiency (eff follows a pdf, different for each partition)
     elseif (idx_part_with_events!=0 && 
             settings[:eff_correlated]==false &&
             settings[:eff_fixed]==false)
         eff =p.ε[idx_part_with_events] 
-
+    # FIXED efficiency
     else 
         eff =part_k.eff_tot
     end
     
     return eff
 end
+
+
+""" 
+    get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
+
+Get the resolution and bias
+"""
+function get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
+    # either FIXED energy pars OR 0 events in the partition
+    if (settings[:energy_scale_fixed]==true || idx_part_with_events==0)
+        reso = part_k.width
+        bias = part_k.bias
+    # CORRELATED energy pars (reso and bias are described by one global alpha parameter each)
+    elseif (settings[:energy_scale_correlated]==true)
+        energy_reso_group = part_k.energy_reso_name
+        energy_bias_group = part_k.energy_bias_name
+        reso = part_k.width+p[energy_reso_group]*part_k.width_sigma
+        bias = part_k.bias+p[energy_bias_group]*part_k.bias_sigma
+    # UNCORRELATED energy pars (reso and bias follow a pdf each, different for each partition)
+    else
+        reso = p.ω[idx_part_with_events]
+        bias = p.𝛥[idx_part_with_events]
+    end
+
+    # convert into Float
+    return reso*1.0,bias*1.0
+
+end
+
 
 ## sampling 
 function inverse_uniform_cdf(p, fit_range::Union{Vector{Vector{Int}}, Vector{Vector{Float64}}})
