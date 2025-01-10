@@ -36,6 +36,7 @@ include("../../src/utils.jl")
         ),
     )
 
+    # 1 event case
     partitions = nothing
     part_event_index = nothing
     fit_ranges = nothing
@@ -53,8 +54,18 @@ include("../../src/utils.jl")
     end
 
     expected_part_event_index = [1]
-    @testset "Check part_event_index accuracy" begin
+    @testset "Check part_event_index accuracy (1 event)" begin
         @test part_event_index == expected_part_event_index
+    end
+
+    # no events case
+    events = Array{Vector{Float64}}(undef, length(partitions))
+    for (idx, part) in enumerate(partitions)
+        events[idx] = Vector{Float64}[]
+    end
+    part_event_index = ZeroNuFit.get_partition_event_index(events, partitions)
+    @testset "Check part_event_index accuracy (0 events)" begin
+        @test part_event_index == [0]
     end
 
 end

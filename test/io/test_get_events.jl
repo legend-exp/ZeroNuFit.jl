@@ -6,6 +6,8 @@ using .ZeroNuFit
 include("../../main.jl")
 include("../../src/utils.jl")
 
+Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
+
 @testset "test_get_events" begin
 
     @info "Testing function to retrieve events given partitions (function 'get_events' in src/utils.jl)"
@@ -54,4 +56,13 @@ include("../../src/utils.jl")
     @testset "Check events accuracy" begin
         @test events == expected_events
     end
+
+    # event with no partition
+    @test_throws ArgumentError ZeroNuFit.get_events(
+        joinpath(present_dir, "../inputs/events_fake.json"),
+        partitions,
+    )
+
+    # not-existing file
+    @test_throws ArgumentError ZeroNuFit.get_events("not_existing_file.json", partitions)
 end
