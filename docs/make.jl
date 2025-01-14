@@ -7,14 +7,14 @@ push!(LOAD_PATH, "../src")
 using ZeroNuFit
 
 makedocs(
+    debug = true,
     modules = [ZeroNuFit],
     sitename = "ZeroNuFit.jl",
     authors = "S. Calgaro, T. Dixon",
     format = Documenter.HTML(
-        #mathengine = MathJax(),
-        # Set size thresholds for HTML generation
-        size_threshold = 400 * 1024,       # Hard limit (e.g., 400 KiB)
-        size_threshold_warn = 300 * 1024  # Warning limit (e.g., 300 KiB)
+        # size thresholds for HTML generation
+        size_threshold = 400 * 1024,       # hard limit
+        size_threshold_warn = 300 * 1024,  # warning limit 
     ),
     pages = [
         "Home" => "index.md",
@@ -23,5 +23,7 @@ makedocs(
         "Partitions and events" => "inputs.md",
         "Generating toys" => "toys.md",
         "Tutorial" => "tutorial.md",
-    ]
+        #"API" => "internal_api.md",
+    ],
+    doctest = ("fixdoctests" in ARGS) ? :fix : true,
 )
