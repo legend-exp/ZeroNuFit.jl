@@ -1,0 +1,29 @@
+{
+    "fit_groups": {
+        "all_phase_II": {
+            "range": [
+                [1930.0, 2098.511], [2108.511, 2113.513], [2123.513, 2190.0]
+            ],
+            "model": "uniform",
+            "bkg_name": "B_gerda_all_pII"
+        }
+    },
+    "partitions": {
+        "all_phase_II": [
+            {
+                "experiment": "GERDA",
+                "detector": "ANG4",
+                "part_name": "part00",
+                "start_ts": 1450622572,
+                "end_ts": 1469119346,
+                "eff_tot": 0.476981,
+                "eff_tot_sigma": 0.0395483,
+                "exposure": 0.987039,
+                "bias": -0.33885135,
+                "bias_sigma": 0.07638651,
+                "width": 1.328561380042463,
+                "width_sigma": 0.08067940552016985
+            }
+        ]
+    }
+}

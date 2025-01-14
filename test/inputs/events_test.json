@@ -1,0 +1,10 @@
+{
+    "events": [
+        {
+            "experiment": "GERDA",
+            "energy": 1995.2452,
+            "timestamp": 1455109448,
+            "detector": "ANG4"
+        }
+    ]
+}

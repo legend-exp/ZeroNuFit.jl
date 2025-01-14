@@ -78,7 +78,8 @@ Pages = [
     "installation.md",
     "config.md",
     "inputs.md",
-    "toys.md"
+    "toys.md",
+    "tutorial.md"
 ]
 Depth = 1
 ```
