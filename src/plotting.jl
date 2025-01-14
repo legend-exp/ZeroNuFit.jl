@@ -34,45 +34,24 @@ function fit_model(
     settings::Dict,
     bkg_shape::Symbol,
     fit_range,
-    x,
+    x::Float64,
 )
     Qbb = constants.Qbb
     N_A = constants.N_A
     m_76 = constants.m_76
     sig_units = constants.sig_units
 
-    deltaE = sum([arr[2] - arr[1] for arr in fit_range])
-    eff = nothing
-
-    # logic for efficiency it can be either correlated, uncorrelated or fixed
-    if settings[:bkg_only] == true
-        eff = 0
-
-    elseif (settings[:eff_correlated] == true)
-        eff_group = part_k.eff_name
-        eff = part_k.eff_tot + p[eff_group] * part_k.eff_tot_sigma
-
-    elseif (
-        idx_part_with_events != 0 &&
-        settings[:eff_correlated] == false &&
-        settings[:eff_fixed] == false
-    )
-
-        eff = p.ε[idx_part_with_events]
-    else
-        eff = part_k.eff_tot
-    end
+    deltaE = get_deltaE(fit_range)
+    eff = get_efficiency(p, part_k, idx_part_with_events, settings)
 
     b_name = part_k.bkg_name
-    model_b_k = deltaE * part_k.exposure * p[b_name]
+    model_b_k = get_mu_b(deltaE, part_k.exposure, p[b_name])
     term1 = model_b_k * get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
 
     if (settings[:bkg_only] == false)
         reso, bias = get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
-        model_s_k = log(2) * N_A * part_k.exposure * (eff) * (p.S * sig_units) / m_76
-        term2 =
-            model_s_k *
-            get_signal_pdf(part_k.signal_name, x, Qbb, bias, reso, part_k, fit_range)
+        model_s_k = get_mu_s(part_k.exposure, eff, p.S)
+        term2 = model_s_k * get_signal_pdf(x, Qbb, part_k)
     else
         term2 = 0
     end
@@ -187,6 +166,7 @@ function plot_data(
     end
 
     # exclude the gamma lines
+    ### TO DO -> GENERALIZE TO WHATEVER REMOVED INTERVAL WITHIN THE MIN-MAX OF fit_ranges 
     shape_x = [
         constants.gamma_2113_keV,
         constants.gamma_2113_keV,

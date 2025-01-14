@@ -340,6 +340,7 @@ function get_efficiency(
     if (settings[:eff_correlated] == true)
         eff_group = part_k.eff_name
         eff = part_k.eff_tot + p[eff_group] * part_k.eff_tot_sigma
+
         # UNCORRELATED efficiency (eff follows a pdf, different for each partition)
     elseif (
         idx_part_with_events != 0 &&
@@ -347,6 +348,7 @@ function get_efficiency(
         settings[:eff_fixed] == false
     )
         eff = p.ε[idx_part_with_events]
+
         # FIXED efficiency
     else
         eff = part_k.eff_tot
@@ -676,7 +678,7 @@ function save_outputs(
     )
 
     if config["light_output"] == false
-        @info "plot 2D posterior"
+        @info "... now we plot 2D posterior"
         plot_two_dim_posteriors(
             samples,
             free_pars,

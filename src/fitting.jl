@@ -77,6 +77,16 @@ end
 
 
 """
+    get_deltaE(fit_range)
+
+Function that returns the net width of the fit range.
+"""
+function get_deltaE(fit_range)
+    return sum([arr[2] - arr[1] for arr in fit_range])
+end
+
+
+"""
     norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
 
 Normalised flat function defined by 1/norm.

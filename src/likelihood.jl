@@ -44,6 +44,28 @@ end
 
 
 """
+    get_mu_b(deltaE, exposure, bkg)
+
+Get the expected number of background counts in a partition
+"""
+function get_mu_b(deltaE, exposure, bkg_index)
+    return deltaE * exposure * bkg_index
+end
+
+"""
+    get_mu_s(deltaE, exposure, bkg)
+
+Get the expected number of signal counts in a partition
+"""
+function get_mu_s(exposure, eff, signal)
+    N_A = constants.N_A
+    m_76 = constants.m_76
+    sig_units = constants.sig_units
+    return log(2) * N_A * exposure * (eff) * (signal * sig_units) / m_76
+end
+
+
+"""
     get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict,fit_range)
 
 Get the expected number of signal and background counts in a partition
@@ -55,21 +77,18 @@ function get_mu_s_b(
     settings::Dict,
     fit_range,
 )
-    N_A = constants.N_A
-    m_76 = constants.m_76
-    sig_units = constants.sig_units
 
-    deltaE = sum([arr[2] - arr[1] for arr in fit_range])
+    deltaE = get_deltaE(fit_range)
     eff = get_efficiency(p, part_k, idx_part_with_events, settings)
 
     if (settings[:bkg_only] == false)
-        model_s_k = log(2) * N_A * part_k.exposure * (eff) * (p.S * sig_units) / m_76
+        model_s_k = get_mu_s(part_k.exposure, eff, p.S)
     else
         model_s_k = 0
     end
 
     b_name = part_k.bkg_name
-    model_b_k = deltaE * part_k.exposure * p[b_name]
+    model_b_k = get_mu_b(deltaE, part_k.exposure, p[b_name])
 
     return model_s_k, model_b_k
 end
@@ -129,7 +148,6 @@ function build_likelihood_per_partition(
     end
 
     ll_value += logpdf(Poisson(λ), length(events_k))
-    println("ll_value ", ll_value)
 
     for evt_energy in events_k
 
