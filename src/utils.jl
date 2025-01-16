@@ -187,10 +187,10 @@ function event_is_contained(event::Float64, fit_range)::Bool
             flag = true
         end
     end
-    return flag 
-end 
+    return flag
+end
 
-    
+
 """
     get_partitions_events(config::Dict{String, Any})
     
