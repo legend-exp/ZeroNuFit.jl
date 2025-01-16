@@ -133,6 +133,7 @@ function plot_data(
         return model
     end
 
+    # plot fit over data + CI band
     if plotflag["bandfit_and_data"]
         plot!(
             p,
@@ -165,8 +166,7 @@ function plot_data(
         )
     end
 
-    # exclude the gamma lines
-    ### TO DO -> GENERALIZE TO WHATEVER REMOVED INTERVAL WITHIN THE MIN-MAX OF fit_ranges 
+    # exclude gamma lines
     shape_x = [
         constants.gamma_2113_keV,
         constants.gamma_2113_keV,
