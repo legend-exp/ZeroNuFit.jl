@@ -8,6 +8,10 @@ on:
       - 'releases/**'
     tags: '*'
   pull_request:
+    branches:
+      - main
+      - dev
+      - 'releases/**'
   release:
 
 concurrency:
@@ -61,3 +65,4 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
+

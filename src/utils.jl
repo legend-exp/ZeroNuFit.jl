@@ -176,6 +176,22 @@ end
 
 
 """
+    event_is_contained(event::Float64, fit_ranges)
+    
+Returns true if the event is contained at least in one of the energy ranges
+"""
+function event_is_contained(event::Float64, fit_range)::Bool
+    flag = false
+    for range_pair in fit_range
+        if range_pair[1] <= event <= range_pair[2]
+            flag = true
+        end
+    end
+    return flag
+end
+
+
+"""
     get_partitions_events(config::Dict{String, Any})
     
 Get partition, event, and fit range info from input JSON files
@@ -194,11 +210,16 @@ function get_partitions_events(config::Dict{String,Any})
     events = Array{Vector{Float64}}(undef, length(partitions))
     for i = 1:length(partitions)
 
+        # get fit group (each one has its own fit range) 
+        fit_group = partitions[i].fit_group
+        fit_range = fit_ranges[fit_group]
         arr_tmp = Vector{Float64}()
         for sub in events_multi
             if (sub[i] != Float64[])
-
-                append!(arr_tmp, sub[i])
+                # check if the event is contained in the given fit range
+                if event_is_contained(sub[i][1], fit_range)
+                    append!(arr_tmp, sub[i])
+                end
             end
         end
 
@@ -225,7 +246,6 @@ This creates a vector where
 
 where the index counts the number of partitions with index<=i with, 
 events and corresponds to the index of the parameters.
-
 """
 function get_partition_event_index(
     events::Array{Vector{Float64}},
