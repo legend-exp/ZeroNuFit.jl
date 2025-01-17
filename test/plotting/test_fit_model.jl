@@ -77,7 +77,6 @@ include("../../src/plotting.jl")
         @test diff <= tolerance
     end
 
-
     settings[:bkg_only] = false
     total = nothing
     total = ZeroNuFit.fit_model(
