@@ -48,21 +48,37 @@ jobs:
             arch: x64
     steps:
       - uses: actions/checkout@v4
+
+      # Set up Julia
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+
+      # Update Julia packages
+      - name: Update Julia packages
+        run: |
+          julia -e 'using Pkg; Pkg.update()'  # Automatically update packages
+
+      # Cache dependencies
       - uses: julia-actions/cache@v2
+
+      # Build Julia package
       - uses: julia-actions/julia-buildpkg@v1
+
+      # Run tests
       - uses: julia-actions/julia-runtest@v1
         with:
           coverage: ${{ matrix.version == '1' && matrix.os == 'ubuntu-latest' && matrix.arch == 'x64' }}
+
+      # Process coverage (optional)
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.version == '1' && matrix.os == 'ubuntu-latest' && matrix.arch == 'x64'
+
+      # Upload to Codecov (optional)
       - uses: codecov/codecov-action@v5
         if: matrix.version == '1' && matrix.os == 'ubuntu-latest' && matrix.arch == 'x64'
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
-
