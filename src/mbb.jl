@@ -11,6 +11,7 @@ using Plots, LaTeXStrings
 using Base.Filesystem
 using PDFmerger: append_pdf!
 using Printf
+using Plots
 using ColorSchemes
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
 
@@ -29,7 +30,13 @@ default(
 tol_colors = ColorSchemes.tol_muted
 
 # inputs
-nme = (central = constants.nme_central, up = constants.nme_up, low = constants.nme_low)
+nme_belley = (
+    central = constants.nme_belley_central,
+    up = constants.nme_belley_up,
+    low = constants.nme_belley_low,
+)
+nme_adams = (up = constants.nme_adams_up, low = constants.nme_adams_low)
+nme_gerda = (up = constants.nme_gerda_up, low = constants.nme_gerda_low)
 phase_space = constants.phase_space
 gA = constants.gA
 
@@ -77,16 +84,22 @@ function plot_posterior(
         label = label,
         color = tol_colors[1],
         linewidth = 1.5,
+        tight = true,
     )
     if (quantiles)
-        vline!([quantile(post, 0.9)], linestyle = :dash, color = tol_colors[1], label = "")
+        vline!(
+            [quantile(post, 0.9)],
+            linestyle = :dash,
+            color = tol_colors[1],
+            label = "90% quantile",
+        )
     end
     if (line != nothing)
         vline!(
             [line],
             linestyle = :dash,
             color = tol_colors[4],
-            label = String("Central M") * L"_{0\nu}^{-1}" * String("value"),
+            label = "Central NME value",
         )
     end
     # plot the second histogram
@@ -105,7 +118,7 @@ function plot_posterior(
                 [quantile(post_other, 0.9)],
                 linestyle = :dash,
                 color = "orange",
-                label = "",
+                label = "90% quantile",
             )
         end
     end
@@ -119,7 +132,6 @@ function plot_posterior(
 
 end
 
-
 function plot_mbb_plots(file_path::String, output_path::String)
 
     # remove previous mbb pdf if already present
@@ -131,12 +143,43 @@ function plot_mbb_plots(file_path::String, output_path::String)
     samples = bat_read(file_path).result
     S_samples = get_S_posterior(samples)
 
-    M_dist = Truncated(Normal(nme.central, nme.up), 0, 10)
+    M_dist = Truncated(Normal(nme_belley.central, nme_belley.up), 0, 10)
     M_samples = rand(M_dist, length(S_samples))
 
-    # fixed NME
-    fixed_mbb_samples = mbb(S_samples, G = phase_space, M = nme.central)
-    fixed_mbb2_samples = mbb(S_samples, G = phase_space, M = nme.central)
+    # fixed NME (Belley's values)
+    fixed_belley_mbb_samples = mbb(S_samples, G = phase_space, M = nme_belley.central)
+    fixed_belley_mbb2_samples = mbb2(S_samples, G = phase_space, M = nme_belley.central)
+    # fixed NME (Adam's values)
+    fixed_adams_mbb_samples_up = mbb(S_samples, G = phase_space, M = nme_adams.up)
+    fixed_adams_mbb_samples_low = mbb(S_samples, G = phase_space, M = nme_adams.low)
+    fixed_adams_mbb2_samples_up = mbb2(S_samples, G = phase_space, M = nme_adams.up)
+    fixed_adams_mbb2_samples_low = mbb2(S_samples, G = phase_space, M = nme_adams.low)
+    # fixed NME (GERDA final results)
+    fixed_gerda_mbb_samples_up = mbb(S_samples, G = phase_space, M = nme_gerda.up)
+    fixed_gerda_mbb_samples_low = mbb(S_samples, G = phase_space, M = nme_gerda.low)
+    fixed_gerda_mbb2_samples_up = mbb2(S_samples, G = phase_space, M = nme_gerda.up)
+    fixed_gerda_mbb2_samples_low = mbb2(S_samples, G = phase_space, M = nme_gerda.low)
+
+    println(
+        "90% mbb quantile, fixing NME to Belley's best value: ",
+        quantile(fixed_belley_mbb_samples, 0.9) * 1000,
+    )
+    println(
+        "90% mbb quantile, fixing NME to lowest Adam's NME value: ",
+        quantile(fixed_adams_mbb_samples_low, 0.9) * 1000,
+    )
+    println(
+        "90% mbb quantile, fixing NME to highest Adam's NME value: ",
+        quantile(fixed_adams_mbb_samples_up, 0.9) * 1000,
+    )
+    println(
+        "90% mbb quantile, fixing NME to lowest GERDA's NME value: ",
+        quantile(fixed_gerda_mbb_samples_low, 0.9) * 1000,
+    )
+    println(
+        "90% mbb quantile, fixing NME to highest GERDA's NME value: ",
+        quantile(fixed_gerda_mbb_samples_up, 0.9) * 1000,
+    )
 
     # vary the NME
     marginalised_mbb_samples = mbb(S_samples, G = phase_space, M = M_samples)
@@ -148,10 +191,10 @@ function plot_mbb_plots(file_path::String, output_path::String)
     fixed_S_marginalised_mbb_samples = mbb(fix_S_samples, G = phase_space, M = M_samples)
     fixed_S_marginalised_mbb2_samples = mbb2(fix_S_samples, G = phase_space, M = M_samples)
 
-    fixed_S_mbb_samples = mbb(fix_S_samples, G = phase_space, M = nme.central)[1]
-    fixed_S_mbb2_samples = mbb2(fix_S_samples, G = phase_space, M = nme.central)[1]
+    fixed_S_mbb_samples = mbb(fix_S_samples, G = phase_space, M = nme_belley.central)[1]
+    fixed_S_mbb2_samples = mbb2(fix_S_samples, G = phase_space, M = nme_belley.central)[1]
 
-    # plot Mov
+    # SIGNAL posteriors
     plot_posterior(
         "S",
         S_samples,
@@ -165,48 +208,49 @@ function plot_mbb_plots(file_path::String, output_path::String)
         L"\sqrt{S}",
         S_samples .^ 0.5,
         10,
-        L"\sqrt{S} 10^{-27} yr^{-1/2}",
+        L"\sqrt{S}" * string(" [") * L"10^{-27} yr^{-1/2}]",
         "",
         true,
         output_path,
     )
 
+    # NME posteriors
     plot_posterior(
-        "M",
+        string("M") * L"_{0\nu}",
         M_samples,
         10,
         string("M") * L"_{0\nu}",
         "",
         false,
         output_path,
-        line = nme.central,
+        line = nme_belley.central,
     )
     plot_posterior(
-        L"M^{-1}",
+        string("M") * L"_{0\nu}^{-1}",
         M_samples .^ -1,
         1,
         string("M") * L"_{0\nu}^{-1}",
         "",
         false,
         output_path,
-        line = 1 / nme.central,
+        line = 1 / nme_belley.central,
     )
     plot_posterior(
-        L"M^{-2}",
+        string("M") * L"_{0\nu}^{-2}",
         M_samples .^ -2,
         1,
         string("M") * L"_{0\nu}^{-2}",
         "",
         false,
         output_path,
-        line = 1 / (nme.central^2),
+        line = 1 / (nme_belley.central^2),
     )
 
     # Fixed NME - mbb
     plot_posterior(
-        L"m_{\beta\beta}",
-        fixed_mbb_samples,
-        1.5,
+        L"m_{\beta\beta}" * String(" "),
+        fixed_belley_mbb_samples,
+        1.0,
         string("m") * L"_{\beta\beta}" * string(" [eV]"),
         "Fixed NME",
         true,
@@ -217,21 +261,20 @@ function plot_mbb_plots(file_path::String, output_path::String)
 
     # Fixed NME - mbb^2
     plot_posterior(
-        L"m_{\beta\beta}",
-        fixed_mbb_samples,
-        1.5,
+        L"m_{\beta\beta}^2" * String(" "),
+        fixed_belley_mbb2_samples,
+        0.5,
         string("m") * L"_{\beta\beta}^2" * string(" [eV") * L"^2]",
         "Fixed NME",
         true,
         output_path,
-        line = fixed_S_mbb_samples,
-        post_other = marginalised_mbb_samples,
+        post_other = marginalised_mbb2_samples,
         label_other = "Marginalised NME",
     )
 
-    # Marginalised NME - mbb
+    # Fixed S - mbb
     plot_posterior(
-        L"m_{\beta\beta}",
+        L"m_{\beta\beta}" * String(" (S=20 fixed)"),
         fixed_S_marginalised_mbb_samples,
         1.5,
         string("m") * L"_{\beta\beta}" * string(" [eV]"),
@@ -243,9 +286,9 @@ function plot_mbb_plots(file_path::String, output_path::String)
         label_other = nothing,
     )
 
-    # Marginalised NME - mbb^2
+    # Fixed S - mbb^2
     plot_posterior(
-        L"m_{\beta\beta}^2",
+        L"m_{\beta\beta}^2" * String(" (S=20 fixed)"),
         fixed_S_marginalised_mbb2_samples,
         0.7,
         string("m") * L"_{\beta\beta}^2" * string(" [eV") * L"^2]",
