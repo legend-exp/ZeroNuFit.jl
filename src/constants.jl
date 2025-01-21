@@ -22,6 +22,6 @@ const nme_adams_low = 2.35      # C. Adams et al., (2022), arXiv:2212.11099
 const nme_gerda_up = 6.04       # GERDA Phys. Rev. Lett. 125 (2020) 252502 [arXiv:2009.06079]
 const nme_gerda_low = 2.66      # GERDA Phys. Rev. Lett. 125 (2020) 252502 [arXiv:2009.06079]
 const phase_space = 0.237 * 10^-14
-const gA = 1.27
+const gA = 1.2724
 
 end

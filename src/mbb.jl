@@ -143,7 +143,8 @@ function plot_mbb_plots(file_path::String, output_path::String)
     samples = bat_read(file_path).result
     S_samples = get_S_posterior(samples)
 
-    M_dist = Truncated(Normal(nme_belley.central, nme_belley.up), 0, 10)
+    M_dist =
+        Truncated(Normal(nme_belley.central, (nme_belley.up + nme_belley.low) / 2), 0, 30)
     M_samples = rand(M_dist, length(S_samples))
 
     # fixed NME (Belley's values)
@@ -160,9 +161,22 @@ function plot_mbb_plots(file_path::String, output_path::String)
     fixed_gerda_mbb2_samples_up = mbb2(S_samples, G = phase_space, M = nme_gerda.up)
     fixed_gerda_mbb2_samples_low = mbb2(S_samples, G = phase_space, M = nme_gerda.low)
 
+    # vary the NME
+    marginalised_mbb_samples = mbb(S_samples, G = phase_space, M = M_samples)
+    marginalised_mbb2_samples = mbb2(S_samples, G = phase_space, M = M_samples)
+
+    # GERDA from freq. results
+    gerda_prl_up = mbb(1 / (1.83) * 10, G = phase_space, M = nme_gerda.up)
+    gerda_prl_low = mbb(1 / (1.83) * 10, G = phase_space, M = nme_gerda.low)
+
+    println("GERDA PRL: ", gerda_prl_up * 1000, " - ", gerda_prl_low * 1000)
     println(
         "90% mbb quantile, fixing NME to Belley's best value: ",
         quantile(fixed_belley_mbb_samples, 0.9) * 1000,
+    )
+    println(
+        "90% mbb quantile, varying Belley's NME: ",
+        quantile(marginalised_mbb_samples, 0.9) * 1000,
     )
     println(
         "90% mbb quantile, fixing NME to lowest Adam's NME value: ",
@@ -180,10 +194,6 @@ function plot_mbb_plots(file_path::String, output_path::String)
         "90% mbb quantile, fixing NME to highest GERDA's NME value: ",
         quantile(fixed_gerda_mbb_samples_up, 0.9) * 1000,
     )
-
-    # vary the NME
-    marginalised_mbb_samples = mbb(S_samples, G = phase_space, M = M_samples)
-    marginalised_mbb2_samples = mbb2(S_samples, G = phase_space, M = M_samples)
 
     # fix S and vary NME
     fix_S_samples = fill(20, 60000)
