@@ -1,5 +1,3 @@
-using Pkg
-Pkg.activate(".")
 using ArgParse
 using JSON
 using DataStructures
@@ -13,8 +11,6 @@ using PDFmerger: append_pdf!
 using Plots
 using ColorSchemes
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
-
-include("../constants.jl")
 
 # style
 default(
