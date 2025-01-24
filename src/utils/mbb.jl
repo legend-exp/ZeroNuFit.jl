@@ -14,7 +14,7 @@ using Plots
 using ColorSchemes
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
 
-include("constants.jl")
+include("../constants.jl")
 
 # style
 default(
