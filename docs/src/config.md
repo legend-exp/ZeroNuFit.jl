@@ -81,15 +81,14 @@ Parameters are then added to the model called `αr_\$name` (for resolution), `α
 ## Background shape and correlation
 There are several options to control the background in more detail. These can be added to the "bkg" section of the config:
 In particular:
- - "correlated" adds a hierarchical (correlated) background to the model, this key should have a dictionary giving details on the prior shape and ranges for example:
+ - "correlated" adds a hierarchical (correlated) background to the model, this key should have a dictionary giving details on the prior shape and ranges. The three options for the mode are: `none` (default), `lognormal` or `normal`. The range entry is associated to the range used for the uniform prior on the `\$sigma_B` parameter. For example:
 
 ```json
 "correlated":{"mode":"lognormal","range":[0,0.1]}
 ```
 
-The three options for the mode are 'lognormal', 'normal' or 'none'. While the range gives the range of the uniform prior on the `\sigma_B` parameter.
-- "shape" changes the shape of the background from uniform. The user should provide a dictionary giving details on the shape:
-for example:
+
+- "shape" changes the shape of the background from uniform. The user should provide a dictionary giving details on the shape. For example:
 
 ```json
 "shape":{

@@ -13,4 +13,5 @@ Test.@testset "statistics" begin
     include("test_exp_stable.jl")
     include("test_norm_exponential.jl")
     include("test_get_signal_bkg_priors.jl")
+    include("test_mbb.jl")
 end

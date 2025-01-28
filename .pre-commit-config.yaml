@@ -3,6 +3,6 @@ repos:
     rev: v0.2.0
     hooks:
       - id: julia-format
-        files: ^src/.*\.jl$
+        files: ^(src|test)/.*\.jl$
         #exclude: '(\.(py|json|toml|md)$|^(attic|docs|config|inputs)/.*$)'  
         args: [--project=./src/]  
