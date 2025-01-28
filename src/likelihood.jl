@@ -523,25 +523,12 @@ function build_prior(
         priors[:ε] = eff
     end
 
-    ### ENERGY scale prior
+    ### ENERGY BIAS prior
 
     if (
-        settings[:energy_scale_fixed] == false &&
-        settings[:energy_scale_correlated] == true
+        settings[:energy_bias_fixed] == false &&
+        settings[:energy_bias_correlated] == true
     )
-        all_width = partitions.width
-        all_width_sigma = partitions.width_sigma
-        ratio = -all_width ./ all_width_sigma
-        αr_min = maximum(ratio)
-
-        list_names = partitions.energy_reso_name
-        unique_list = unique(list_names)
-        for name in unique_list
-            priors[Symbol(name)] = Truncated(Normal(0, 1), αr_min, Inf)
-            pretty_names[Symbol(name)] = L"\alpha_{r} (" * split(String(name), "_")[2] * ")"
-            nuisance_info[string(name)] = [["combined", "", "", 0, 1, αr_min, Inf]]
-
-        end
 
         list_names = partitions.energy_bias_name
         unique_list = unique(list_names)
@@ -554,10 +541,6 @@ function build_prior(
         end
 
     else
-        res = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
-            undef,
-            maximum(part_event_index),
-        )
         bias = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),
@@ -575,24 +558,7 @@ function build_prior(
                     " " *
                     part.detector
                 if part.signal_name == :gaussian
-                    res[i_new] = Truncated(Normal(part.width, part.width_sigma), 0, Inf)
                     bias[i_new] = Truncated(Normal(part.bias, part.bias_sigma), -Inf, Inf)
-                    append!(
-                        pretty_names[:ω],
-                        ["Energy Resolution " * L"(\omega)" * " " * long_name * " [keV]"],
-                    )
-                    append!(
-                        nuisance_info["ω"],
-                        [[
-                            string(part.experiment),
-                            string(part.part_name),
-                            part.detector,
-                            part.width,
-                            part.width_sigma,
-                            0,
-                            Inf,
-                        ]],
-                    )
                     append!(
                         nuisance_info["𝛥"],
                         [[
@@ -608,37 +574,10 @@ function build_prior(
 
                 elseif part.signal_name == :gaussian_plus_lowEtail
                     # let's define some intervals in +-5σ (always with res>0)
-                    res_min = part.width - 5 * part.width_sigma
-                    res_min = res_min < 0 ? 0 : res_min
-                    res_max = part.width + 5 * part.width_sigma
                     bias_min = part.bias - 5 * part.bias_sigma
                     bias_max = part.bias + 5 * part.bias_sigma
-                    res[i_new] =
-                        Truncated(Normal(part.width, part.width_sigma), res_min, res_max)
                     bias[i_new] =
                         Truncated(Normal(part.bias, part.bias_sigma), bias_min, bias_max)
-                    append!(
-                        pretty_names[:ω],
-                        [
-                            "Resolution fractional uncertainty " *
-                            L"(\omega)" *
-                            " " *
-                            long_name *
-                            " [keV]",
-                        ],
-                    )
-                    append!(
-                        nuisance_info["ω"],
-                        [[
-                            string(part.experiment),
-                            string(part.part_name),
-                            part.detector,
-                            part.width,
-                            part.width_sigma,
-                            res_min,
-                            res_max,
-                        ]],
-                    )
                     append!(
                         nuisance_info["𝛥"],
                         [[
@@ -662,8 +601,101 @@ function build_prior(
                 )
             end
         end
-        priors[:ω] = res
         priors[:𝛥] = bias
+    end
+
+    ### ENERGY RESOLUTION prior
+    if (
+        settings[:energy_res_fixed] == false &&
+        settings[:energy_res_correlated] == true
+    )
+        all_width = partitions.width
+        all_width_sigma = partitions.width_sigma
+        ratio = -all_width ./ all_width_sigma
+        αr_min = maximum(ratio)
+
+        list_names = partitions.energy_reso_name
+        unique_list = unique(list_names)
+        for name in unique_list
+            priors[Symbol(name)] = Truncated(Normal(0, 1), αr_min, Inf)
+            pretty_names[Symbol(name)] = L"\alpha_{r} (" * split(String(name), "_")[2] * ")"
+            nuisance_info[string(name)] = [["combined", "", "", 0, 1, αr_min, Inf]]
+
+        end
+
+    else
+        res = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
+            undef,
+            maximum(part_event_index),
+        )
+
+        for (idx, part) in enumerate(partitions)
+
+            if (part_event_index[idx] != 0)
+                i_new = part_event_index[idx]
+
+                long_name =
+                    string(part.experiment) *
+                    " " *
+                    string(part.part_name) *
+                    " " *
+                    part.detector
+                if part.signal_name == :gaussian
+                    res[i_new] = Truncated(Normal(part.width, part.width_sigma), 0, Inf)
+                    append!(
+                        pretty_names[:ω],
+                        ["Energy Resolution " * L"(\omega)" * " " * long_name * " [keV]"],
+                    )
+                    append!(
+                        nuisance_info["ω"],
+                        [[
+                            string(part.experiment),
+                            string(part.part_name),
+                            part.detector,
+                            part.width,
+                            part.width_sigma,
+                            0,
+                            Inf,
+                        ]],
+                    )
+
+                elseif part.signal_name == :gaussian_plus_lowEtail
+                    # let's define some intervals in +-5σ (always with res>0)
+                    res_min = part.width - 5 * part.width_sigma
+                    res_min = res_min < 0 ? 0 : res_min
+                    res_max = part.width + 5 * part.width_sigma
+                    res[i_new] =
+                        Truncated(Normal(part.width, part.width_sigma), res_min, res_max)
+                    append!(
+                        pretty_names[:ω],
+                        [
+                            "Resolution fractional uncertainty " *
+                            L"(\omega)" *
+                            " " *
+                            long_name *
+                            " [keV]",
+                        ],
+                    )
+                    append!(
+                        nuisance_info["ω"],
+                        [[
+                            string(part.experiment),
+                            string(part.part_name),
+                            part.detector,
+                            part.width,
+                            part.width_sigma,
+                            res_min,
+                            res_max,
+                        ]],
+                    )
+
+                else
+                    @info "There is no specific name for the $(part.signal_name) peak shape, exit here"
+                    exit()
+                end
+            end
+        end
+        priors[:ω] = res
 
     end
 
