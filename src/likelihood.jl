@@ -483,8 +483,11 @@ function build_prior(
                 L"\alpha_{\varepsilon} (" * split(String(name), "_")[2] * ")"
             nuisance_info[string(name)] = [["combined", "", "", 0, 1, α_min, Inf]]
         end
-
-    else
+    end
+    if (
+        settings[:eff_fixed] == false &&
+        settings[:eff_correlated] == false
+    )
         eff = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),
@@ -539,8 +542,11 @@ function build_prior(
                 [["combined", "", "", part.detector, 0, 1, -Inf, Inf]]
 
         end
-
-    else
+    end
+    if (
+        settings[:energy_bias_fixed] == false &&
+        settings[:energy_bias_correlated] == false
+    )
         bias = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),
@@ -623,7 +629,12 @@ function build_prior(
 
         end
 
-    else
+    
+    end
+    if (
+        settings[:energy_res_fixed] == false &&
+        settings[:energy_res_correlated] == false
+    )
         res = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),
@@ -698,7 +709,6 @@ function build_prior(
         priors[:ω] = res
 
     end
-
 
     ## bkg shape priors
     if shape_pars != nothing
