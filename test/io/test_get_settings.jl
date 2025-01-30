@@ -25,7 +25,8 @@ include("../../src/utils.jl")
         "bat_fit" => Dict("nsteps" => 10000.0, "nchains" => 4),
         "nuisance" => Dict(
             "efficiency" => Dict("fixed" => true, "correlated" => true),
-            "energy_scale" => Dict("fixed" => true, "correlated" => false),
+            "energy_bias" => Dict("fixed" => true, "correlated" => false),
+            "energy_res" => Dict("fixed" => true, "correlated" => false),
         ),
         "plot" => Dict(
             "bandfit_and_data" => false,
@@ -50,9 +51,11 @@ include("../../src/utils.jl")
     expected_settings = Dict(
         :eff_correlated => true,
         :eff_fixed => true,
-        :energy_scale_fixed => true,
+        :energy_bias_fixed => true,
+        :energy_bias_correlated => false,
+        :energy_res_fixed => true,
+        :energy_res_correlated => false,
         :bkg_only => false,
-        :energy_scale_correlated => false,
     )
     @testset "Check settings accuracy" begin
         @test settings == expected_settings

@@ -26,7 +26,8 @@ include("../../src/utils.jl")
         "bat_fit" => Dict("nsteps" => 10000.0, "nchains" => 4),
         "nuisance" => Dict(
             "efficiency" => Dict("fixed" => true, "correlated" => true),
-            "energy_scale" => Dict("fixed" => true, "correlated" => false),
+            "energy_bias" => Dict("fixed" => true, "correlated" => false),
+            "energy_res" => Dict("fixed" => true, "correlated" => false),
         ),
         "plot" => Dict(
             "bandfit_and_data" => false,
