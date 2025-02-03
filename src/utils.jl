@@ -23,12 +23,16 @@ end
 function get_settings(config)
 
     check_key(config, "nuisance")
-    check_key(config["nuisance"], "energy_scale")
-    check_key(config["nuisance"]["energy_scale"], "fixed")
+    check_key(config["nuisance"], "energy_bias")
+    check_key(config["nuisance"], "energy_res")
+    check_key(config["nuisance"]["energy_bias"], "fixed")
+    check_key(config["nuisance"]["energy_res"], "fixed")
 
     settings = Dict()
-    settings[:energy_scale_fixed] = config["nuisance"]["energy_scale"]["fixed"]
-    settings[:energy_scale_correlated] = config["nuisance"]["energy_scale"]["correlated"]
+    settings[:energy_bias_fixed] = config["nuisance"]["energy_bias"]["fixed"]
+    settings[:energy_bias_correlated] = config["nuisance"]["energy_bias"]["correlated"]
+    settings[:energy_res_fixed] = config["nuisance"]["energy_res"]["fixed"]
+    settings[:energy_res_correlated] = config["nuisance"]["energy_res"]["correlated"]
     settings[:eff_fixed] = config["nuisance"]["efficiency"]["fixed"]
     settings[:eff_correlated] = config["nuisance"]["efficiency"]["correlated"]
     settings[:bkg_only] = config["bkg_only"]
@@ -390,18 +394,26 @@ function get_energy_scale_pars(
     idx_part_with_events,
 )
     # either FIXED energy pars OR 0 events in the partition
-    if (settings[:energy_scale_fixed] == true || idx_part_with_events == 0)
+    if (settings[:energy_res_fixed] == true || idx_part_with_events == 0)
         reso = part_k.width
-        bias = part_k.bias
         # CORRELATED energy pars (reso and bias are described by one global alpha parameter each)
-    elseif (settings[:energy_scale_correlated] == true)
+    elseif (settings[:energy_res_correlated] == true)
         energy_reso_group = part_k.energy_reso_name
-        energy_bias_group = part_k.energy_bias_name
         reso = part_k.width + p[energy_reso_group] * part_k.width_sigma
-        bias = part_k.bias + p[energy_bias_group] * part_k.bias_sigma
         # UNCORRELATED energy pars (reso and bias follow a pdf each, different for each partition)
     else
         reso = p.ω[idx_part_with_events]
+    end
+
+    # either FIXED energy pars OR 0 events in the partition
+    if (settings[:energy_bias_fixed] == true || idx_part_with_events == 0)
+        bias = part_k.bias
+        # CORRELATED energy pars (reso and bias are described by one global alpha parameter each)
+    elseif (settings[:energy_bias_correlated] == true)
+        energy_bias_group = part_k.energy_bias_name
+        bias = part_k.bias + p[energy_bias_group] * part_k.bias_sigma
+        # UNCORRELATED energy pars (reso and bias follow a pdf each, different for each partition)
+    else
         bias = p.𝛥[idx_part_with_events]
     end
 

@@ -44,7 +44,7 @@ include("../../src/utils.jl")
         𝛥 = [1.0],
         B_l200a_all = 2E-4,
     )
-    settings = Dict(:energy_scale_fixed => true, :energy_scale_correlated => false)
+    settings = Dict(:energy_bias_fixed => true, :energy_bias_correlated => false, :energy_res_fixed => true, :energy_res_correlated => false)
     reso = nothing
     bias = nothing
     # fixed nuisance, 1 event in the partition
@@ -81,7 +81,7 @@ include("../../src/utils.jl")
     # not fixed nuisance, 0 event in the partition
     reso = nothing
     bias = nothing
-    settings = Dict(:energy_scale_fixed => false, :energy_scale_correlated => false)
+    settings = Dict(:energy_bias_fixed => false, :energy_bias_correlated => false, :energy_res_fixed => false, :energy_res_correlated => false)
     reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
@@ -93,7 +93,7 @@ include("../../src/utils.jl")
     # correlated energy scale, 1 event in the partition
     reso = nothing
     bias = nothing
-    settings = Dict(:energy_scale_fixed => false, :energy_scale_correlated => true)
+    settings = Dict(:energy_bias_fixed => false, :energy_bias_correlated => true, :energy_res_fixed => false, :energy_res_correlated => true)
     reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 1)
     energy_reso_group = partitions[1].energy_reso_name
     energy_bias_group = partitions[1].energy_bias_name
@@ -107,7 +107,7 @@ include("../../src/utils.jl")
     # correlated energy scale, 0 event in the partition
     reso = nothing
     bias = nothing
-    settings = Dict(:energy_scale_fixed => false, :energy_scale_correlated => true)
+    settings = Dict(:energy_bias_fixed => false, :energy_bias_correlated => true, :energy_res_fixed => false, :energy_res_correlated => true)
     reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
@@ -119,7 +119,7 @@ include("../../src/utils.jl")
     # uncorrelated energy scale, 1 event in the partition
     reso = nothing
     bias = nothing
-    settings = Dict(:energy_scale_fixed => false, :energy_scale_correlated => false)
+    settings = Dict(:energy_bias_fixed => false, :energy_bias_correlated => false, :energy_res_fixed => false, :energy_res_correlated => false)
     reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 1)
     expected_reso = 1.0
     expected_bias = 1.0
@@ -131,7 +131,7 @@ include("../../src/utils.jl")
     # uncorrelated energy scale, 0 event in the partition
     reso = nothing
     bias = nothing
-    settings = Dict(:energy_scale_fixed => false, :energy_scale_correlated => false)
+    settings = Dict(:energy_bias_fixed => false, :energy_bias_correlated => false, :energy_res_fixed => false, :energy_res_correlated => false)
     reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
