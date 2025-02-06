@@ -14,16 +14,16 @@ import JLD2
 import HDF5
 
 """
-    check_key(config::Dict{String,Any}, k::String)
+    check_key(config::Dict, k::String)
 
 Function that checks the existence of a key in a dictionary.
 If the key is not found, the code exits here.
 
 ### Arguments
-- `config::Dict{String,Any}`: input dictionary.
+- `config::Dict`: input dictionary.
 - `k::String`: name of the key to check the existence of in `config`.
 """
-function check_key(config::Dict{String,Any}, k::String)
+function check_key(config::Dict, k::String)
     if !(k in keys(config))
         @error "'$k' not in config, exit here"
         exit(-1)
