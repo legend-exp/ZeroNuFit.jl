@@ -5,7 +5,19 @@ Pages = ["toys.md"]
 Depth = 3
 ```
 
-Another module is present for generating toys and running sensitivity studies. This can be run as
+## Running toys for posterior predictive distribution studies
+
+In order to check for any mis-modeling in the fits and to further understand the derived half-life limits, we performed "sensitivity" studies. 
+In a Bayesian context, the sensitivity is related to the concept of posterior predictive distributions.
+The prior predictive distribution is the expected distribution of data coming from a future experiment identical to that performed and repeated under the same conditions.
+This marginalizes the uncertainty in the model parameters, based on their prior distributions. 
+Alternatively, the posterior predictive distribution weights the data by the posterior obtained from the analysis.
+If the original data were modeled appropriately, then fake data generated under the given model should distribute similarly to the original data.
+
+Considering the observed signal counts as an observable of the data, we can thus extract "sensitivity curves" that can be interpreted as the distribution of expected future limits derived from repeating the identical experiment.
+This is distinct from a frequentist sensitivity since uncertainty on nuisance parameters are marginalized over.
+
+A module `sensitivity.jl` is present for generating toys and running sensitivity studies. The script can be run as
 
 ```
 $ julia sensitivity.jl -c config_fake_data.json -i N
@@ -40,13 +52,8 @@ Below, we show an example of bash file used for running sensitivity studies as m
 #SBATCH --constraint=cpu                                                                                                                                    
 #SBATCH -t 48:00:00
 #SBATCH -J sens_test                                                                                                                                         
-
-#SBATCH --mail-user=<your_email>
-#SBATCH --mail-type=ALL                                                                                                                                     
-#SBATCH --output output_path/parallel.log                                                     
-#SBATCH --error output_path/parallel.err  
-
-#SBATCH  --image=legendexp/legend-base:latest               
+#SBATCH --output parallel.log                                                     
+#SBATCH --error parallel.err  
 
 module load parallel
 module load julia
@@ -60,7 +67,7 @@ wait
 ```
 
 
-## Using already existing toys
+## Using already existing toys to test alternative models
 Another way to run the code is present if, for instance, an user wants to use toy data generated according to one model but fit them with another model.
 In this case, the path to the folder containing the already existing JSON files with toy data has to be provided together with the toy index:
 
@@ -76,16 +83,11 @@ Below, an updated version of a bash file that can be used for retrieving multipl
 #SBATCH --constraint=cpu                                                                                                                                    
 #SBATCH -t 48:00:00
 #SBATCH -J sens_test                                                                                                                                         
-
-#SBATCH --mail-user=<your_email>
-#SBATCH --mail-type=ALL                                                                                                                                     
-#SBATCH --output output_path/parallel.log                                                     
-#SBATCH --error output_path/parallel.err  
-
-#SBATCH  --image=legendexp/legend-base:latest               
+#SBATCH --output parallel.log                                                     
+#SBATCH --error parallel.err             
 
 # set the directory path to toys
-path_to_toys="output/fit_9_l200_1BI_new_data_coax_bkg_noS/sensitivity/fake_data" #"path/to/your/toys"
+path_to_toys="path_to_your_toys"
 all_files=("$path_to_toys"/*.json)
 full_paths=()
 for file in "${all_files[@]}"; do
@@ -103,7 +105,7 @@ fi
 # array to hold toy_idx
 toy_indices=()
 
-# Loop over available fake JSON toys
+# loop over available fake JSON toys
 for path in "${full_paths[@]}"; do
     base_name="${path%.json}"
     number_str="${base_name##*fake_data}"  
@@ -113,7 +115,6 @@ for path in "${full_paths[@]}"; do
 done
 echo "List of toy indices: ${toy_indices[*]}"
 
-# parallel execution - convert array to a space-separated list
 module load parallel
 module load julia
 srun="srun -N 1"

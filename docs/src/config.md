@@ -15,7 +15,7 @@ Before running the code, set the input config.json file with following entries:
     "events":    ["config/events_gerda.json","config/events_l200.json","config/events_mjd_new_part.json"],
     "output_path": "output/fit_mjd_l200_gerda_v2/",
     "overwrite":true,
-    "bat_fit": {"nsteps": 1e6, "nchains": 6},
+    "bat_fit": {"nchains": 6, "nsteps": 1e6},
     "plot": {
             "fit_and_data": false,
             "bandfit_and_data": false,
@@ -25,9 +25,9 @@ Before running the code, set the input config.json file with following entries:
     "bkg_only": false,
     "signal": {"upper_bound":1000, "prior": "uniform"},
     "bkg": {"upper_bound":0.1,
-             "prior": "uniform"
+             "prior": "uniform",
+             "correlated": {"mode": "none", "range": "none"}
              },
-
     ...
 }
 ```
@@ -38,7 +38,7 @@ where
 - `"events"`: list of events JSON inputs; it takes one entry per experiment;
 - `"output_path"`: path where to store outputs (logs, plots, mcmc results);
 - `"overwrite": true` if you want to overwrite a previous fit with same `output_path`; if set to `false` but no fits were previously performed (ie there are no outputs to overwrite), the code will save the output of this fit;
-- `"bat_fit"`: settings for the BAT fit;
+- `"bat_fit"`: settings for the BAT fit, `"nchains"` numer of MCMC chains to run, `"nsteps"` number of steps for each MCMC chain;
 - `"plot"`: settings for plotting; `"fit_and_data": true` plots fit line over data (and CI bands if `"bandfit_and_data": true`); `"scheme":"red"` and `"alpha":0.3` are used for customizing output appearances;
 - `"bkg_only": true` if we fit assuming no signal (S=0), false otherwise;
 - `"signal"`: select `"upper_bound"` for the prior and the `"prior"` shape (`uniform`, `sqrt`, ...);
@@ -50,10 +50,14 @@ Moreover, the config requires the following block for nuisance parameters, ie en
     {
     ...
     "nuisance": { 
-        "energy_scale" : {
-            "correlated": true,
-            "fixed":     false
-            },
+         "energy_bias": {
+            "fixed": false,
+            "correlated": false
+         },
+         "energy_res": {
+            "fixed": false,
+            "correlated": false
+         },
          "efficiency" : {
             "correlated": true,
             "fixed": false
@@ -63,17 +67,14 @@ Moreover, the config requires the following block for nuisance parameters, ie en
 
 In particular, you can set `"correlated": true` if you want to use one variable to correlate the nuisance parameters (eg to speed up the computation times), and `"fixed": false` if you want to include a prior for nuisance parameters (otherwise these parameters they will be fixed to their partition value and not constrained).
  
-If a variable is correlated (either `energy_scale` or `efficiency`), the code will search for a field in the `fit_groups` block of the partitions JSON file to use a correlated variable per each fit group. 
+If a variable is correlated (either `energy_bias` or `energy_res` or `efficiency`), the code will search for a field in the `fit_groups` block of the partitions JSON file to use a correlated variable per each fit group. 
 In particular, the field has to be specified as:
+- `"energy_bias_group_name": "..."`
+- `"energy_res_group_name": "..."`
 - `"efficiency_group_name": "..."`
-- `"energy_scale_group_name": "..."`
-
-!!! note
-
-    If the key doesn't exist, this defaults to "all"
  
 Parameters are then added to the model called `αr_\$name` (for resolution), `αe_\$name` for efficiency and `αb_\$name` for bias.
- 
+
 !!! warning
 
     The $\alpha$ parameter names default to `_all`, if you want one different per experiment this must be explicitly specified in the fit groups entry
@@ -84,20 +85,20 @@ In particular:
  - "correlated" adds a hierarchical (correlated) background to the model, this key should have a dictionary giving details on the prior shape and ranges. The three options for the mode are: `none` (default), `lognormal` or `normal`. The range entry is associated to the range used for the uniform prior on the `\$sigma_B` parameter. For example:
 
 ```json
-"correlated":{"mode":"lognormal","range":[0,0.1]}
+"correlated": {"mode":"lognormal","range":[0,1]}
 ```
 
 
-- "shape" changes the shape of the background from uniform. The user should provide a dictionary giving details on the shape. For example:
+- `"shape"` changes the shape of the background from uniform. The user should provide a dictionary giving details on the shape. For example:
 
 ```json
-"shape":{
+"shape": {
             "name":"exponential",
             "pars":{"slope":[-10,10]}
         },
 ```
 
-The "pars" subdictionary describes the range of the priors on the parameters of the model, currently implemented shapes are "uniform", "linear" and "exponential". These names correspond to functions in `fitting.jl` and logical conditions in `get_bkg_pdf` in `likelihood.jl`.
+The `"pars"` subdictionary describes the range of the priors on the parameters of the model, currently implemented shapes are `"uniform"`, `"linear"` and `"exponential"`. These names correspond to functions in `fitting.jl` and logical conditions in `get_bkg_pdf` in `likelihood.jl`.
 
 This will add parameters `${bkg_name}_slope` or similar to the model (and then call them). This names therefore must correspond to the names in the functions in `fitting.jl`. To add a new shape simply define a new method in `fitting.jl` and a new logical condition in `get_bkg_pdf` in `likelihood.jl`.
 
