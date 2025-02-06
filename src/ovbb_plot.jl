@@ -171,7 +171,7 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
     ax.legend(
         [data_art, (band, line), limit_area],
         [
-            string(raw"LEGEND-200 data [", round(exp_tot, digits=2), " kg yr]")
+            string(raw"LEGEND-200 data [", round(exp_tot, digits=2), " kg yr]"),
             raw"Background best fit and 68% C.I. interval",
             raw"$T^{0\nu}_{1/2} > 0.4 \times 10^{26}$ yr [90% C.I.]",
         ],
