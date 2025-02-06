@@ -4,5 +4,5 @@ repos:
     hooks:
       - id: julia-format
         files: ^(src|test)/.*\.jl$
-        #exclude: '(\.(py|json|toml|md)$|^(attic|docs|config|inputs)/.*$)'  
+        exclude: ^src/ovbb_plot.jl$ 
         args: [--project=./src/]  
