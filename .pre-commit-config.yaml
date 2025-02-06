@@ -1,7 +1,7 @@
-exclude: ^(attic|config|docs|inputs|src/ovbb_plot.jl|Manifest.toml|Project.toml|README.md) 
 repos:
   - repo: https://github.com/qiaojunfeng/pre-commit-julia-format
     rev: v0.2.0
     hooks:
       - id: julia-format
+        files: ^(src|test)/.*\.jl$
         args: [--project=./src/]  
