@@ -176,9 +176,11 @@ end
 """
     build_likelihood_looping_partitions(partitions::TypedTables.Table,events::Array{Vector{Float64}},part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
 
-Function which creates the likelihood function for the fit (looping over partitions)
+Function which creates the likelihood function for the fit (looping over partitions).
 
-# Parameters
+Returns the likelihood function (a `DensityInterface.logfuncdensity` object).
+
+### Arguments
 - `partitions::TypedTables.Table`: The partitions input table.
 - `events::Array{Vector{Float64}}`: A list of events (=energies) in each partition.
 - `part_event_index::Vector{Int}`: The index mapping events to the partitions.
@@ -187,8 +189,6 @@ Function which creates the likelihood function for the fit (looping over partiti
 - `s_max::Union{Float64, Nothing}`: A maximum value used for scaling the square root prior. If `Nothing`, no prior is applied.
 - `fit_ranges`: The fitting ranges corresponding to the partitions.
 - `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
-
-Returns the likelihood function (a `DensityInterface.logfuncdensity` object).
 """
 function build_likelihood_looping_partitions(
     partitions::TypedTables.Table,
@@ -484,10 +484,7 @@ function build_prior(
             nuisance_info[string(name)] = [["combined", "", "", 0, 1, α_min, Inf]]
         end
     end
-    if (
-        settings[:eff_fixed] == false &&
-        settings[:eff_correlated] == false
-    )
+    if (settings[:eff_fixed] == false && settings[:eff_correlated] == false)
         eff = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),
@@ -528,10 +525,7 @@ function build_prior(
 
     ### ENERGY BIAS prior
 
-    if (
-        settings[:energy_bias_fixed] == false &&
-        settings[:energy_bias_correlated] == true
-    )
+    if (settings[:energy_bias_fixed] == false && settings[:energy_bias_correlated] == true)
 
         list_names = partitions.energy_bias_name
         unique_list = unique(list_names)
@@ -543,10 +537,7 @@ function build_prior(
 
         end
     end
-    if (
-        settings[:energy_bias_fixed] == false &&
-        settings[:energy_bias_correlated] == false
-    )
+    if (settings[:energy_bias_fixed] == false && settings[:energy_bias_correlated] == false)
         bias = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),
@@ -611,10 +602,7 @@ function build_prior(
     end
 
     ### ENERGY RESOLUTION prior
-    if (
-        settings[:energy_res_fixed] == false &&
-        settings[:energy_res_correlated] == true
-    )
+    if (settings[:energy_res_fixed] == false && settings[:energy_res_correlated] == true)
         all_width = partitions.width
         all_width_sigma = partitions.width_sigma
         ratio = -all_width ./ all_width_sigma
@@ -629,12 +617,9 @@ function build_prior(
 
         end
 
-    
+
     end
-    if (
-        settings[:energy_res_fixed] == false &&
-        settings[:energy_res_correlated] == false
-    )
+    if (settings[:energy_res_fixed] == false && settings[:energy_res_correlated] == false)
         res = Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(
             undef,
             maximum(part_event_index),

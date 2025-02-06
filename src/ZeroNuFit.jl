@@ -5,7 +5,6 @@ include("utils.jl")
 include("constants.jl")
 include("likelihood.jl")
 include("fitting.jl")
-include("mbb.jl")
 using JSON
 
 export run_analysis

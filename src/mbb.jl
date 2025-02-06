@@ -1,3 +1,6 @@
+using Pkg
+Pkg.activate(".") # activate the environment
+#Pkg.instantiate() # instantiate the environment
 using ArgParse
 using JSON
 using DataStructures
@@ -71,6 +74,82 @@ function get_asymmetric_gaussian(S_samples, xmin, xmax, mu, sigma_low, sigma_hig
         end
     end
     return asymm_gaussian_samples
+end
+
+using DelimitedFiles, StatsBase, Distributions, Plots
+function plot_true_Belley()
+
+    # Load the data, skipping the first 3 rows and using the second column (index 2)
+    data = readdlm("attic/belley_posterior_PDF_samples.csv", ',', skipstart = 3)[:, 2]
+    data = data[data.>=0]
+    bins = range(0, 10, length = 200)
+    binwidth = step(bins)
+
+    plot_posterior(
+        string("M") * L"_{0\nu}",
+        data,
+        10,
+        string("M") * L"_{0\nu}",
+        "",
+        false,
+        ".",
+        "true_belley.pdf",
+        line = nme_belley.central,
+    )
+    plot_posterior(
+        string("M") * L"_{0\nu}^{-1}",
+        data .^ -1,
+        1,
+        string("M") * L"_{0\nu}^{-1}",
+        "",
+        false,
+        ".",
+        "true_belley.pdf",
+        line = 1 / nme_belley.central,
+    )
+    plot_posterior(
+        string("M") * L"_{0\nu}^{-2}",
+        data .^ -2,
+        1,
+        string("M") * L"_{0\nu}^{-2}",
+        "",
+        false,
+        ".",
+        "true_belley.pdf",
+        line = 1 / nme_belley.central / nme_belley.central,
+    )
+
+    # sampling from Belley's NME posterior
+    M_dist =
+        Truncated(Normal(nme_belley.central, (nme_belley.up + nme_belley.low) / 2), 0, 30)
+    M_samples = rand(M_dist, length(data))
+    p = plot()
+    vline!([2.60], linestyle = :dash, color = :gray, label = "Belley's central value")
+    hist = append!(Histogram(0:10/200:10), data)
+    plot!(
+        hist,
+        st = :steps,
+        label = "Belley's pdf",
+        color = tol_colors[1],
+        linewidth = 1.8,
+        tight = true,
+    )
+    hist = append!(Histogram(0:10/200:10), M_samples)
+    plot!(
+        hist,
+        st = :steps,
+        label = "Symmetric Gaussian",
+        color = tol_colors[2],
+        linewidth = 1.5,
+        tight = true,
+    )
+
+    xaxis!(String("M") * L"_{0\nu}")
+    yaxis!("Proability Density")
+    xlims!(0, 10)
+    ylims!(0, ylims()[2])
+    savefig(p, "belley_vs_symm_gaussian.pdf")
+
 end
 
 function plot_posterior(
@@ -156,9 +235,13 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     S_samples = get_S_posterior(samples)
 
     # sampling from Belley's NME posterior
-    M_dist =
-        Truncated(Normal(nme_belley.central, (nme_belley.up + nme_belley.low) / 2), 0, 30)
-    M_samples = rand(M_dist, length(S_samples))
+    data = readdlm("attic/belley_posterior_PDF_samples.csv", ',', skipstart = 3)[:, 2]
+    data = data[data.>=0]
+    M_samples = data
+    # outdated symm truncated gaussian
+    #M_dist = Truncated(Normal(nme_belley.central, (nme_belley.up + nme_belley.low) / 2), 0, 30)
+    #M_samples = rand(M_dist, length(S_samples))
+
     # asymmetric Belley's pdf
     M_asymm_samples = get_asymmetric_gaussian(
         S_samples,
@@ -181,10 +264,10 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
         mbb(S_samples, G = phase_space, M = nme_belley.central + nme_belley.up)
     fixed_belley_mbb2_samples = mbb2(S_samples, G = phase_space, M = nme_belley.central)
     # fixed NME (Adam's values)
-    #fixed_adams_mbb_samples_up = mbb(S_samples, G = phase_space, M = nme_adams.up)
-    #fixed_adams_mbb_samples_low = mbb(S_samples, G = phase_space, M = nme_adams.low)
-    #fixed_adams_mbb2_samples_up = mbb2(S_samples, G = phase_space, M = nme_adams.up)
-    #fixed_adams_mbb2_samples_low = mbb2(S_samples, G = phase_space, M = nme_adams.low)
+    fixed_adams_mbb_samples_up = mbb(S_samples, G = phase_space, M = nme_adams.up)
+    fixed_adams_mbb_samples_low = mbb(S_samples, G = phase_space, M = nme_adams.low)
+    fixed_adams_mbb2_samples_up = mbb2(S_samples, G = phase_space, M = nme_adams.up)
+    fixed_adams_mbb2_samples_low = mbb2(S_samples, G = phase_space, M = nme_adams.low)
     # fixed NME (GERDA final results)
     fixed_gerda_mbb_samples_up = mbb(S_samples, G = phase_space, M = nme_gerda.up)
     fixed_gerda_mbb_samples_low = mbb(S_samples, G = phase_space, M = nme_gerda.low)
@@ -216,6 +299,10 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     quantile(fixed_gerda_mbb_samples_low, 0.9) * 1000
     @info "90% mbb quantile, fixing NME to highest GERDA's NME value: ",
     quantile(fixed_gerda_mbb_samples_up, 0.9) * 1000
+    @info "90% mbb quantile, fixing NME to lowest ADAM's NME value: ",
+    quantile(fixed_adam_mbb_samples_low, 0.9) * 1000
+    @info "90% mbb quantile, fixing NME to highest ADAM's NME value: ",
+    quantile(fixed_adam_mbb_samples_up, 0.9) * 1000
     @info "90% mbb quantile, varying NME uniformly between min and max values: ",
     quantile(marginalised_mbb_samples_uniformNME, 0.9) * 1000
 
@@ -288,7 +375,7 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     plot_posterior(
         string("M") * L"_{0\nu} (uniform)",
         NME_samples,
-        nme_gerda.up + 1,
+        nme_adams.up + 1,
         string("M") * L"_{0\nu}",
         "",
         false,
@@ -299,7 +386,7 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     plot_posterior(
         string("M") * L"_{0\nu}^{-1} (uniform)",
         NME_samples .^ -1,
-        (nme_gerda.low - 1) .^ -1,
+        (nme_adams.low - 1) .^ -1,
         string("M") * L"_{0\nu}^{-1}",
         "",
         false,
@@ -310,7 +397,7 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     plot_posterior(
         string("M") * L"_{0\nu}^{-2} (uniform)",
         NME_samples .^ -2,
-        (nme_gerda.low - 1) .^ -2,
+        (nme_adams.low - 1) .^ -2,
         string("M") * L"_{0\nu}^{-2}",
         "",
         false,
@@ -358,8 +445,8 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
         output_path,
         filename,
         col1 = tol_colors[2],
-        post_other = fixed_gerda_mbb_samples_up,
-        label_other = "NME fixed to max. value " * string(nme_gerda.up),
+        post_other = fixed_adam_mbb_samples_up,
+        label_other = "NME fixed to max. value " * string(nme_adams.up),
     )
     # Fixed NME - mbb - uniform NME sampling VS min NME value
     plot_posterior(
@@ -372,8 +459,8 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
         output_path,
         filename,
         col1 = tol_colors[2],
-        post_other = fixed_gerda_mbb_samples_low,
-        label_other = "NME fixed to min. value " * string(nme_gerda.low),
+        post_other = fixed_adam_mbb_samples_low,
+        label_other = "NME fixed to min. value " * string(nme_adams.low),
     )
 
     # Fixed NME - mbb^2 - uniform NME sampling VS max NME value
@@ -387,8 +474,8 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
         output_path,
         filename,
         col1 = tol_colors[2],
-        post_other = fixed_gerda_mbb2_samples_up,
-        label_other = "NME fixed to max. value " * string(nme_gerda.up),
+        post_other = fixed_adam_mbb2_samples_up,
+        label_other = "NME fixed to max. value " * string(nme_adams.up),
     )
     # Fixed NME - mbb^2 - uniform NME sampling VS min NME value
     plot_posterior(
@@ -401,8 +488,8 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
         output_path,
         filename,
         col1 = tol_colors[2],
-        post_other = fixed_gerda_mbb2_samples_low,
-        label_other = "NME fixed to min. value " * string(nme_gerda.low),
+        post_other = fixed_adam_mbb2_samples_low,
+        label_other = "NME fixed to min. value " * string(nme_adams.low),
     )
 
     # Fixed S - mbb
@@ -462,8 +549,8 @@ function plot_mbb_Belley_studies(
     mycol = "orange"
 
     for (idx, nme) in enumerate([-2.5, -1.5, 0, 1.5, 2.5])
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
 
@@ -493,8 +580,8 @@ function plot_mbb_Belley_studies(
     mycol = "orange"
 
     for (idx, nme) in enumerate([-2.5, -1.5, 0, 1.5, 2.5])
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
 
@@ -522,8 +609,8 @@ function plot_mbb_Belley_studies(
 
     p = plot()
     for (idx, nme) in enumerate([-2.5, -1.5, 0, 1.5, 2.5])
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
 
@@ -552,8 +639,8 @@ function plot_mbb_Belley_studies(
 
     for (idx, nme) in enumerate([-2.5, -1.5, 0, 1.5, 2.5])
         p = plot()
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
 
@@ -578,8 +665,8 @@ function plot_mbb_Belley_studies(
     end
     for (idx, nme) in enumerate([-2.5, -1.5, 0, 1.5, 2.5])
         p = plot()
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
 
@@ -610,8 +697,8 @@ function plot_mbb_Belley_studies(
     mycol = "orange"
 
     for (idx, nme) in enumerate([-2.5, -2.0, -1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5, 2.0, 2.5])
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
         marginalised_mbb_samples_uniformNME =
@@ -655,8 +742,8 @@ function plot_mbb_Belley_studies(
     mycol = "orange"
 
     for (idx, nme) in enumerate([-2.5, -2.0, -1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5, 2.0, 2.5])
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         NME_dist = Uniform(minNME, maxNME)
         uniform_samples = rand(NME_dist, length(S_samples))
         marginalised_mbb2_samples_uniformNME =
@@ -690,15 +777,15 @@ function plot_mbb_Belley_studies(
 
     # limits vs NME for shifted uniformly sampled NMEs (fixed range width)
     p = plot()
-    vline!([nme_gerda.low], linestyle = :dash, color = "black")
-    vline!([nme_gerda.up], linestyle = :dash, color = "black")
+    vline!([nme_adams.low], linestyle = :dash, color = "black")
+    vline!([nme_adams.up], linestyle = :dash, color = "black")
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_up) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_low) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
@@ -708,8 +795,8 @@ function plot_mbb_Belley_studies(
     )
 
     for (idx, nme) in enumerate([-2.5, -2.0, -1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5, 2.0, 2.5])
-        maxNME = nme_gerda.up + nme
-        minNME = round(nme_gerda.low + nme; digits = 2)
+        maxNME = nme_adams.up + nme
+        minNME = round(nme_adams.low + nme; digits = 2)
         mycol = "orange"
         mycol2 = "navy"
         limit = uniform_limits[idx] * 1000
@@ -956,10 +1043,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_up) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_low) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
@@ -1046,10 +1133,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_up) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_low) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
@@ -1123,10 +1210,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_up) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_gerda_low) *
+        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
