@@ -19,3 +19,4 @@ jobs:
         with:
           version: '1' # Set `version` to '1.0.54' if you need to use JuliaFormatter.jl v1.0.54 (default: '1')
           suggestion-label: 'format-suggest' # leave this unset or empty to show suggestions for all PRs
+          config: '.pre-commit-config.yaml'
