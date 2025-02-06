@@ -3,5 +3,6 @@ repos:
     rev: v0.2.0
     hooks:
       - id: julia-format
-        files: ^(src|test)/((?!ovbb_plot\.jl).)*\.jl$
+        files: ^(src|test)/.*\.jl$
+        exclude: ^(src/ovbb_plot.jl) 
         args: [--project=./src/]  
