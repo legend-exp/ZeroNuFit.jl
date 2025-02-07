@@ -7,10 +7,10 @@ using BAT
 import HDF5
 using IntervalSets: (..)
 
-include("utils.jl")
-include("fitting.jl")
-include("constants.jl")
-include("likelihood.jl")
+include("../src/utils.jl")
+include("../src/fitting.jl")
+include("../src/constants.jl")
+include("../src/likelihood.jl")
 
 # this function calculates the observable counts density at a certain energy
 # and given the samples. "density" means that there is no integral over energy

@@ -28,23 +28,33 @@ default(
 tol_colors = ColorSchemes.tol_muted
 tol_mk15 = ColorSchemes.mk_15
 
+const nme_belley_central = 2.60 # A. Belley et al., Phys. Rev. Lett. 132, 182502 (2024), arXiv:2308.15634
+const nme_belley_up = 1.28      # A. Belley et al., Phys. Rev. Lett. 132, 182502 (2024), arXiv:2308.15634
+const nme_belley_low = 1.36     # A. Belley et al., Phys. Rev. Lett. 132, 182502 (2024), arXiv:2308.15634
+const nme_adams_up = 6.34       # C. Adams et al., (2022), arXiv:2212.11099
+const nme_adams_low = 2.35      # C. Adams et al., (2022), arXiv:2212.11099
+const nme_gerda_up = 6.04       # GERDA Phys. Rev. Lett. 125 (2020) 252502 [arXiv:2009.06079]
+const nme_gerda_low = 2.66      # GERDA Phys. Rev. Lett. 125 (2020) 252502 [arXiv:2009.06079]
+const phase_space = 0.237 * 10^-14
+const gA = 1.2724
+
 # inputs
 nme_belley = (
-    central = constants.nme_belley_central,
-    up = constants.nme_belley_up,
-    low = constants.nme_belley_low,
+    central = nme_belley_central,
+    up = nme_belley_up,
+    low = nme_belley_low,
 )
-nme_adams = (up = constants.nme_adams_up, low = constants.nme_adams_low)
-nme_gerda = (up = constants.nme_gerda_up, low = constants.nme_gerda_low)
-phase_space = constants.phase_space
-gA = constants.gA
+nme_adams = (up = nme_adams_up, low = nme_adams_low)
+nme_gerda = (up = nme_gerda_up, low = nme_gerda_low)
+phase_space = phase_space
+gA = gA
 
-function mbb(S; G = 1, M = 1, gA = constants.gA, me = constants.me_keV * 1000)
+function mbb(S; G = 1, M = 1, gA = gA, me = me_keV * 1000)
     return sqrt.(S) .* M .^ -1 * sqrt(10.0^-27 * me^2 * G^-1 * gA^-4)
 end
 
 
-function mbb2(S; G = 1, M = 1, gA = constants.gA, me = constants.me_keV * 1000)
+function mbb2(S; G = 1, M = 1, gA = gA, me = me_keV * 1000)
     return S .* M .^ -2 * (10.0^-27 * me^2 * G^-1 * gA^-4)
 end
 
@@ -782,10 +792,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
@@ -1043,10 +1053,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
@@ -1133,10 +1143,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
@@ -1210,10 +1220,10 @@ function plot_mbb_Belley_studies(
 
     gerda_T12 = 1.83
     gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_up) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
         1000
     gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = constants.phase_space, M = constants.nme_adams_low) *
+        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
         1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
