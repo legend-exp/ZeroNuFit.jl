@@ -15,8 +15,6 @@ jobs:
   code-style:
     runs-on: ubuntu-latest
     steps:
-      - name: Install pre-commit hooks
-        run: pre-commit install
 
       - name: Clear pre-commit cache
         run: pre-commit clean
