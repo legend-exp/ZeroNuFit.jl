@@ -13,14 +13,35 @@ using FileIO
 import JLD2
 import HDF5
 
-function check_key(config, k)
+"""
+    check_key(config::Dict, k::String)
+
+Function that checks the existence of a key in a dictionary.
+If the key is not found, the code exits here.
+
+### Arguments
+- `config::Dict`: input dictionary.
+- `k::String`: name of the key to check the existence of in `config`.
+"""
+function check_key(config::Dict, k::String)
     if !(k in keys(config))
         @error "'$k' not in config, exit here"
         exit(-1)
     end
 end
 
-function get_settings(config)
+
+"""
+    get_settings(config::Dict{String,Any})
+
+Function that retrieves useful settings information from the input configuration dictionary.
+
+Returns a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
+
+### Arguments
+- `config::Dict{String,Any}`: input dictionary.
+"""
+function get_settings(config::Dict{String,Any})
 
     check_key(config, "nuisance")
     check_key(config["nuisance"], "energy_bias")
@@ -44,7 +65,12 @@ end
 """
     get_partitions_new(part_path::String)
 
-Get the partition info from a JSON file and save to a Table
+Get the partition information from a JSON file and save to a Table.
+
+Returns a Table of partitions, a dictionary of fit groups, a dictionary of fit ranges.
+
+### Arguments
+- `part_path::String`: path to a given partition JSON file.
 """
 function get_partitions_new(part_path::String)
     if !isfile(part_path)
@@ -182,7 +208,13 @@ end
 """
     event_is_contained(event::Float64, fit_ranges)
     
-Returns true if the event is contained at least in one of the energy ranges
+Function to check the containment of an energy event.
+
+Returns true if the event is contained at least in one of the selected energy ranges.
+
+### Arguments
+- `event::Float64`: energy event.
+- fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`
 """
 function event_is_contained(event::Float64, fit_range)::Bool
     flag = false
@@ -198,7 +230,12 @@ end
 """
     get_partitions_events(config::Dict{String, Any})
     
-Get partition, event, and fit range info from input JSON files
+Get partition, event, and fit range info from the configuration dictionary given in input.
+
+Returns an object descirbing if a partition has an event by assigning indexes, an array of energy events, a Table of partitions, and fit ranges.
+
+### Arguments
+- `config::Dict{String,Any}`: input dictionary.
 """
 function get_partitions_events(config::Dict{String,Any})
 
@@ -242,14 +279,17 @@ end
 """
     get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
 
-Gets an object descirbing if a partition has an event and giving them indexes
+Returns an object descirbing if a partition has an event and giving them indexes.
 This creates a vector where
 
-- V[i]=0 if partition i has no events
-- V[i]=idx if partition i has events
+- `V[i]=0` if partition `i` has no events,
+- `V[i]=idx` if partition `i` has events,
 
-where the index counts the number of partitions with index<=i with, 
-events and corresponds to the index of the parameters.
+where the index counts the number of partitions with `index<=i`.
+
+### Arguments
+- `events::Array{Vector{Float64}}`: array of energy events.
+- `partitions::TypedTables.Table`: table of partitions.
 """
 function get_partition_event_index(
     events::Array{Vector{Float64}},
@@ -273,7 +313,10 @@ end
 """
     get_partitions(config::Dict{String, Any})
 
-Get the partition info from a JSON file 
+Function to retrieve a Table of partitions and a dictionary of fit ranges.
+
+### Arguments
+- `config::Dict{String,Any}`: input dictionary.
 """
 function get_partitions(config::Dict{String,Any})
 
@@ -303,7 +346,12 @@ end
 """
     get_events(event_path::String,partitions)::Array{Vector{Float64}}
 
-Get the event info from a JSON file and save to a Table
+Function that returns an Array of Vectors filled with energy events per each partition.
+The code exits here if an event can't be associated to any existing partition.
+
+### Arguments
+- `event_path::String`: path to the input JSON file with energy events.
+- `partitions`: Table of retrieve partitions.
 """
 function get_events(event_path::String, partitions)::Array{Vector{Float64}}
     if !isfile(event_path)
@@ -341,10 +389,18 @@ function get_events(event_path::String, partitions)::Array{Vector{Float64}}
 
 end
 
+
 """
     get_efficiency(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict)
 
-Get the efficiency 
+Returns the efficiency for a given partition, depending on the specified settings (e.g. if correlated or not, if fixed or not).
+If you are fitting with a background-only model, then efficiency=0.
+
+### Arguments
+- `p::NamedTuple`: 
+- `part_k::NamedTuple`: 
+- `idx_part_with_events::Int`: 
+- `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
 """
 function get_efficiency(
     p::NamedTuple,
@@ -424,10 +480,7 @@ end
 
 
 ## sampling 
-function inverse_uniform_cdf(
-    p,
-    fit_range::Union{Vector{Vector{Int}},Vector{Vector{Float64}}},
-)
+function inverse_uniform_cdf(p, fit_range)
     range_l, range_h = get_range(fit_range)
     delta = sum(range_h .- range_l)
 
@@ -694,20 +747,22 @@ function save_outputs(
         )
     end
 
-    @info "... now we plot marginalized posteriors (and priors)"
-    plot_marginal_distr(
-        partitions,
-        samples,
-        free_pars,
-        output_path,
-        priors = priors,
-        par_names = par_names,
-        plot_config = config["plot"],
-        s_max = s_max,
-        sqrt_prior = sqrt_prior,
-        hier = hier,
-        toy_idx = toy_idx,
-    )
+    if config["light_output"] == false
+        @info "... now we plot marginalized posteriors (and priors)"
+        plot_marginal_distr(
+            partitions,
+            samples,
+            free_pars,
+            output_path,
+            priors = priors,
+            par_names = par_names,
+            plot_config = config["plot"],
+            s_max = s_max,
+            sqrt_prior = sqrt_prior,
+            hier = hier,
+            toy_idx = toy_idx,
+        )
+    end
 
     if config["light_output"] == false
         @info "... now we plot 2D posterior"

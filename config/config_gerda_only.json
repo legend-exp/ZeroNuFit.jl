@@ -1,13 +1,13 @@
 {
     "debug":false,
-    "partitions":["config/partitions_gerda_new.json"],
-    "events":    ["config/events_gerda.json"],
-    "output_path": "output/fit_alpha_high_stat_true_v4/",
+    "partitions":["legend-0vbb-config/partitions_gerda_new.json"],
+    "events":    ["legend-0vbb-config/events_gerda.json"],
+    "output_path": "output/gerda_og_phaseII_test/",
     "overwrite": true,
     "light_output": false,
     "bat_fit": {
-        "nsteps": 1e5,
-         "nchains": 4
+        "nsteps": 1e6,
+         "nchains": 6
     },
     "plot": { 
         "fit_and_data": true,
@@ -26,10 +26,14 @@
     },
     "bkg_only": false,
     "nuisance": { 
-        "energy_scale" : {
-            "correlated":false,
-            "fixed":     false
-            },
+         "energy_bias": {
+            "fixed": false,
+            "correlated": false
+         },
+         "energy_res": {
+            "fixed": false,
+            "correlated": false
+         },
          "efficiency" : {
             "correlated":true,
             "fixed": false

@@ -26,10 +26,14 @@
     },
     "bkg_only": false,
     "nuisance": { 
-        "energy_scale" : {
-            "correlated":false,
-            "fixed":     false
-            },
+         "energy_bias": {
+            "fixed": false,
+            "correlated": false
+         },
+         "energy_res": {
+            "fixed": false,
+            "correlated": false
+         },
          "efficiency" : {
             "correlated":true,
             "fixed": false

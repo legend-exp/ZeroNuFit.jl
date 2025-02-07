@@ -18,6 +18,7 @@ makedocs(
     ),
     pages = [
         "Home" => "index.md",
+        "Likelihood implementation" => "likelihood.md",
         "First steps" => "installation.md",
         "Configuration file" => "config.md",
         "Partitions and events" => "inputs.md",
