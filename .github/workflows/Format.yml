@@ -16,9 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Clear pre-commit cache
-        run: pre-commit clean
-        
       - name: Run Julia formatter
         uses: julia-actions/julia-format@v3
         with:
