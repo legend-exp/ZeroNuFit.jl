@@ -82,3 +82,4 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
+          args: '--exclude ext/*'
