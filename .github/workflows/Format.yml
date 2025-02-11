@@ -15,6 +15,20 @@ jobs:
   code-style:
     runs-on: ubuntu-latest
     steps:
+      - name: Clean pre-commit cache
+        run: pre-commit clean
+
+      - name: Check .pre-commit-config.yaml
+        run: cat .pre-commit-config.yaml
+
+      - name: List files in src, test, attic
+        run: |
+            echo "Files in src:"
+            find src
+            echo "Files in test:"
+            find test
+            echo "Files in attic:"
+            find attic
 
       - name: Run Julia formatter
         uses: julia-actions/julia-format@v3
