@@ -4,5 +4,5 @@ repos:
     hooks:
       - id: julia-format
         files: ^(src|test)/.*\.jl$
-        exclude: ^(ext|attic)/.*$
+        exclude: ^attic/.*$
         args: [--project=.]  
