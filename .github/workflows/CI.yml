@@ -20,6 +20,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
+exclude: ^(attic|ext)
+
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -54,21 +56,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-
-            # Conda setup for 32-bit environment (if x86 architecture)
-      - name: Set up Conda (32-bit)
-        if: matrix.arch == 'x86'
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          miniconda-version: 'latest'
-          auto-update-conda: true
-          conda-arch: x86  # Ensure Conda installs 32-bit Python
-
-      # Install Python and necessary dependencies (numpy for PyCall)
-      - name: Install dependencies for 32-bit Python
-        if: matrix.arch == 'x86'
-        run: |
-          conda install -y python=3.8 numpy
 
       # Update Julia packages
       - name: Update Julia packages
