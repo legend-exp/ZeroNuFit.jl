@@ -1,25 +1,3 @@
-name: CI
-
-on:
-  push:
-    branches:
-      - main
-      - dev
-      - 'releases/**'
-    tags: '*'
-  pull_request:
-    branches:
-      - main
-      - dev
-      - 'releases/**'
-  release:
-
-concurrency:
-  # Skip intermediate builds: always.
-  # Cancel intermediate builds: only if it is a pull request build.
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
-
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -46,6 +24,10 @@ jobs:
           - version: 1
             os: windows-latest
             arch: x64
+          # Add a job for 32-bit
+          - version: 1
+            os: ubuntu-latest
+            arch: i686  # for 32-bit architecture
     steps:
       - uses: actions/checkout@v4
 
@@ -55,16 +37,17 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
 
-      # Conda setup for 32-bit environment (if x86 architecture)
-      - name: Set up Conda (32-bit)
-        if: matrix.arch == 'x86'
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          miniconda-version: 'latest'
-          auto-update-conda: true
-          conda-arch: x86  # Ensure Conda installs 32-bit Python
+      # Set up Conda for 32-bit
+      - name: Set up Conda for 32-bit
+        run: |
+          if [[ "${{ matrix.arch }}" == "i686" ]]; then
+            export CONDA_ARCH=i686
+          else
+            export CONDA_ARCH=x86_64
+          fi
+          julia -e 'using Conda; Conda.add("python", channel="defaults", arch=ENV["CONDA_ARCH"])'
 
-      # Update Julia packages
+      # Install packages and run tests
       - name: Update Julia packages
         run: |
           julia -e 'using Pkg; Pkg.update()'  # Automatically update packages
