@@ -4,5 +4,7 @@ repos:
     hooks:
       - id: julia-format
         files: ^(src|test)/.*\.jl$
-        exclude: attic/.*
+        args:
+          - "--exclude-file=attica/ovbb_plot.jl"
+          - "--exclude-file=attic/mbb.jl"
         args: [--project=.]  
