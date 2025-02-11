@@ -9,7 +9,6 @@ on:
     tags: '*'
     paths-ignore:
       - 'attic/**'
-      - 'ext/**'
   pull_request:
     branches:
       - main
@@ -17,7 +16,6 @@ on:
       - 'releases/**'
     paths-ignore:
       - 'attic/**'
-      - 'ext/**'
   release:
 
 concurrency:
