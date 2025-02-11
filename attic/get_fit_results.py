@@ -51,7 +51,7 @@ def main():
     print("*****************")
     print("SIGNAL UPPER LIMIT")
     if 'S' in quantiles.keys():
-        print(f" T1/2 > {1/(quantiles['S']*1e-27)} x 10^27 yr")
+        print(f" T1/2 > {1/(quantiles['S']*1e-27)} yr")
         print(f" S < {quantiles['S']} x 10^-27 yr^-1")
 
     print("")
@@ -68,7 +68,7 @@ def main():
     print("BACKGROUND PARAMETERS")
     for par in gms.keys():
         if "B" not in par: continue
-        marg_par = json_file['marginalized_modes'][par]*1e4
+        marg_par = json_file['marginalized_modes_highest_bin'][par]*1e4
         gm_par = json_file['refined_global_modes'][par]*1e4
         c68low = c68[par][0]['left']*1e4
         c68high = c68[par][0]['right']*1e4
@@ -77,10 +77,12 @@ def main():
         print("Marginalized mode:", marg_par, "1e-4 ckky")
         print("Global mode:", gm_par, "1e-4 ckky")
         print("Smallest 68% CI:", f"[{c68low}, {c68high}]", "1e-4 ckky")
+        print("Low sigma:", gm_par-c68low, "1e-4 ckky")
+        print("High sigma:", c68high-gm_par, "1e-4 ckky")
 
     for par in gms.keys():
-        if "ph" not in par: continue
-        marg_par = json_file['marginalized_modes'][par]*1e4
+        if "mod" not in par: continue
+        marg_par = json_file['marginalized_modes_highest_bin'][par]*1e4
         gm_par = json_file['refined_global_modes'][par]*1e4
         c68low = c68[par][0]['left']*1e4
         c68high = c68[par][0]['right']*1e4
@@ -95,11 +97,11 @@ def main():
         print("*****************")
         print("NUISANCE PARAMETERS")
         for par in gms.keys():
-            if "S" in par or "ph" in par or "B" in par: continue
+            if par=="S" or "ph" in par or "B" in par: continue
 
             # the parameter has 1 entry
             if not isinstance(gms[par], list):
-                marg_par = json_file['marginalized_modes'][par]
+                marg_par = json_file['marginalized_modes_highest_bin'][par]
                 gm_par = json_file['refined_global_modes'][par]
                 c68low = c68[par][0]['left']
                 c68high = c68[par][0]['right']
@@ -111,7 +113,7 @@ def main():
             # the parameter is a list of entries
             else:
                 for idx,entry in enumerate(gms[par]):
-                    marg_par = json_file['marginalized_modes'][par]
+                    marg_par = json_file['marginalized_modes_highest_bin'][par]
                     gm_par = json_file['refined_global_modes'][par]
                     c68low = c68[par][idx][0]['left']
                     c68high = c68[par][idx][0]['right']
