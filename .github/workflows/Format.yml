@@ -7,8 +7,12 @@ on:
       - dev
       - 'releases/**'
     tags: '*'
+    paths-ignore:
+      - 'attic/**'
   pull_request:
     types: [opened, reopened, synchronize, labeled, unlabeled]
+    paths-ignore:
+      - 'attic/**'
   release:
 
 jobs:
