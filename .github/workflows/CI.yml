@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies for 32-bit Python
         if: matrix.arch == 'x86'
         run: |
-          conda install -y python=3.7 numpy
+          conda install -y python=3.8 numpy
 
       # Update Julia packages
       - name: Update Julia packages
