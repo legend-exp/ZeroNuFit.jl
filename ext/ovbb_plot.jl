@@ -156,7 +156,6 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
     # let's use a narrow region around Qbb for the 90% CI on the signal
     energies = 2034.0:0.2:2044.0
     s_90 = Vector(undef, length(energies))
-
     b_mode_all_window = Vector(undef, length(energies_all_window))
     
     if bkg_shape == nothing
@@ -252,6 +251,13 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
     ax.set_yscale("log")
     plt.axvspan(2099, 2109, facecolor="black", alpha=0.4)
     plt.axvspan(2114, 2124, facecolor="black", alpha=0.4)
+
+    output = "../ZeroNuFit-dev/output_correct_inputs_uncorrelated_nuisances/v3/fit_9_l200_uniform_1BI_CorrEff"#config["output"]
+    fit_results = JSON.parsefile(joinpath(output, "mcmc_files/fit_results.json"))["quantile90"]
+    limit_signal = fit_results["S"]
+    limit_half_life = round(10/(limit_signal), digits=1)
+    @info "limit_signal -> ", limit_signal
+    @info "limit_half_life -> ", limit_half_life
     ax.legend(
         [data_art, (band, line), limit_area],
         [
@@ -262,13 +268,6 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
         loc = "upper left",
         fontsize = "small",
     )
-
-    output = "../ZeroNuFit-dev/output_correct_inputs_uncorrelated_nuisances/v3/fit_9_l200_uniform_1BI_CorrEff"#config["output"]
-    fit_results = JSON.parsefile(joinpath(output, "mcmc_files/fit_results.json"))["quantile90"]
-    limit_signal = fit_results["S"]
-    limit_half_life = round(10/(limit_signal), digits=1)
-    @info "limit_signal -> ", limit_signal
-    @info "limit_half_life -> ", limit_half_life
     ax.set_xlim(1930, 2190)
     ax.set_xlabel("Energy [keV]", loc = "right")
     ax.set_ylabel("Counts / (keV kg yr)")
