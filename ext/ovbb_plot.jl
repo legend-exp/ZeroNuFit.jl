@@ -31,12 +31,9 @@ function counts_density_obs(partitions, energy, S, α, pars, fit_ranges; shape=n
             fit_range = fit_ranges[P.fit_group]
             range_l, range_h = get_range(fit_range)
             center = range_l[1]
-            sum_range = sum(range_h .- range_l)
-            sum_range_sq = sum(range_h .^ 2 .- range_l .^ 2)
             delta = range_h[end] - range_l[1]
-            norm = sum_range * (1 - slope * center / delta) + slope * sum_range_sq / (2 * delta)
 
-            μbk = pars[b_name] * P.exposure * (1 + slope * (energy - center) / delta) #/ norm
+            μbk = pars[b_name] * P.exposure * (1 + slope * (energy - center) / delta) 
 
         elseif shape == "exponential"
             b_name = P.bkg_name
@@ -46,20 +43,10 @@ function counts_density_obs(partitions, energy, S, α, pars, fit_ranges; shape=n
             fit_range = fit_ranges[P.fit_group]
             range_l, range_h = get_range(fit_range)
             center = range_l[1]
-            centers = fill(center, length(range_l))
             R = p[Symbol(string(b_name) * "_slope")]
             delta = range_h[end] - range_l[1]
             Rt = R / delta
-            if (abs(Rt) > 1E-6)
-                norm =
-                    (
-                        -sum(exp_stable.((range_l - centers) * Rt)) +
-                        sum(exp_stable.((range_h - centers) * Rt))
-                    ) / Rt
-            else
-                norm = sum(range_h .- range_l)
-            end
-            μbk = pars[b_name] * P.exposure * exp_stable((energy - center) * Rt) #/ norm
+            μbk = pars[b_name] * P.exposure * exp_stable((energy - center) * Rt)
             
         else
             b_name = P.bkg_name
@@ -165,8 +152,6 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
         bkg_only = config["bkg_only"],
     )
     _, best_fit_pars = get_global_mode(samples, posterior)
-    println("best_fit_pars --> ", best_fit_pars)
-    println("fit_range --> ", fit_ranges)
 
     # let's use a narrow region around Qbb for the 90% CI on the signal
     energies = 2034.0:0.2:2044.0
@@ -188,7 +173,6 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
         Threads.@threads for i = 1:length(energies_all_window)
             E = energies_all_window[i]
             b_mode_all_window[i] = counts_density_kgyr_l200_mode(E, best_fit_pars, partitions, fit_ranges, shape=bkg_shape, signal = false)
-            println("energy: ", E, " - mode: ", b_mode_all_window[i])
         end
     end
 
@@ -206,7 +190,6 @@ function plot_l200_result(samples, part_event_index, events, partitions, fit_ran
     fig, ax = plt.subplots(figsize = (5, 2.5))
 
     # ...background 68%
-    println("68% CI BI --> ", b_68)
     if bkg_shape == nothing
         band = plt.fill_between(
             [1930, 2190],
