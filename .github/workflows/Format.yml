@@ -45,14 +45,6 @@ jobs:
           find test
           echo "Files in attic:"
           find attic
-          
-      - name: Set up cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.julia/artifacts
-          key: ${{ runner.os }}-julia-${{ hashFiles('**/*.jl') }}
-          restore-keys: |
-            ${{ runner.os }}-julia-
 
       - name: Run Julia formatter
         uses: julia-actions/julia-format@v3
