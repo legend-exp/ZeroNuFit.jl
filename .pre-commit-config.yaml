@@ -3,14 +3,5 @@ repos:
     rev: v0.2.0
     hooks:
       - id: julia-format
+        files: ^(src|test)/.*\.jl$
         args: [--project=.]  
-        exclude: >-
-          (?x)^(
-              attic/.*|
-              docs/.*|
-              inputs/.*|
-              src/.*|
-              test/.*\.md|
-              test/.*\.toml|
-              test/.*\.json|
-          )$

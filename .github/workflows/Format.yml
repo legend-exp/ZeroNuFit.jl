@@ -7,12 +7,8 @@ on:
       - dev
       - 'releases/**'
     tags: '*'
-    paths-ignore:
-      - 'attic/**'
   pull_request:
     types: [opened, reopened, synchronize, labeled, unlabeled]
-    paths-ignore:
-      - 'attic/**'
   release:
 
 jobs:
@@ -37,19 +33,8 @@ jobs:
       - name: Check .pre-commit-config.yaml
         run: cat .pre-commit-config.yaml  # Check the content of the config file
 
-      - name: List files in src, test, attic
-        run: |
-          echo "Files in src:"
-          find src
-          echo "Files in test:"
-          find test
-          echo "Files in attic:"
-          find attic
-
       - name: Run Julia formatter
         uses: julia-actions/julia-format@v3
         with:
           version: '1'  # Set `version` to '1.0.54' if you need to use JuliaFormatter.jl v1.0.54 (default: '1')
           suggestion-label: 'format-suggest'  # leave this unset or empty to show suggestions for all PRs
-          extra_args: |
-            --exclude "attic/.*\.jl$"
