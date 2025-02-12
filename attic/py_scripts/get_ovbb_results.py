@@ -1,3 +1,8 @@
+### get_ovbb_results.py
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 import os, json, h5py
 import csv
 import base64
@@ -9,7 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
-output = "../ZeroNuFit-dev/output_correct_inputs_uncorrelated_nuisances/v3/fit_9_l200_uniform_1BI_CorrEff"#config["output"]
+output = "../ZeroNuFit-dev/output_correct_inputs_uncorrelated_nuisances/v3/fit_9_l200_uniform_1BI_CorrEff"
 fit_results = json.load(open(os.path.join(output, "mcmc_files/fit_results.json")))["quantile90"]
 limit_signal = fit_results["S"]
 limit_half_life = round(10/(limit_signal),1)
@@ -80,7 +85,6 @@ if unbinned:
     # NOTE: comment the following if the stem has a length!
     data_art.set_zorder(99)
     data_art.set_clip_on(False)
-
     stemlines.set_linewidth(0.6)
 else:
     w = 1 / exp_tot

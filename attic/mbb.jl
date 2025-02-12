@@ -1,6 +1,11 @@
+### mbb.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 using Pkg
-Pkg.activate(".") # activate the environment
-#Pkg.instantiate() # instantiate the environment
+Pkg.activate(".")
+Pkg.instantiate()
 using ArgParse
 using JSON
 using DataStructures
@@ -241,7 +246,7 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     S_samples = get_S_posterior(samples)
 
     # sampling from Belley's NME posterior
-    data = readdlm("attic/belley_posterior_PDF_samples.csv", ',', skipstart = 3)[:, 2]
+    data = readdlm("inputs/belley_posterior_PDF_samples.csv", ',', skipstart = 3)[:, 2]
     data = data[data.>=0]
     M_samples = data
     # outdated symm truncated gaussian

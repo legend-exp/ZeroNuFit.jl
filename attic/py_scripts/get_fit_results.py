@@ -1,7 +1,8 @@
-"""
-Script to load main output results from a fit
-Main Authors: Sofia Calgaro, Toby Dixon
-"""
+### get_fit_results.py
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 import os,json
 import argparse
 

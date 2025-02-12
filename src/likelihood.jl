@@ -1,3 +1,8 @@
+### likelihood.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
 using BAT, DensityInterface, IntervalSets
 

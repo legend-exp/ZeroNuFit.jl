@@ -1,3 +1,8 @@
+### utils.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 using PropertyFunctions
 using JSON
 using Logging

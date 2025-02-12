@@ -1,3 +1,8 @@
+### ovbb_plot.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon, Luigi Pertoldi
+# 
+###
 using Pkg
 Pkg.activate(".")
 Pkg.instantiate()

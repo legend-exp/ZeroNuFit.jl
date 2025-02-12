@@ -1,3 +1,8 @@
+### runtests.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 using Test
 
 @info "Running tests with $(Base.Threads.nthreads()) Julia threads active."

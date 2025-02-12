@@ -1,7 +1,8 @@
-"""
-Script to print and save some marginalized posterior distributions and compare different background models (if present)
-Main Authors: Sofia Calgaro, Toby Dixon
-"""
+### plot_marginalized_posteriors.py
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 import os,json,h5py,math
 import numpy as np
 import matplotlib

@@ -1,7 +1,8 @@
-"""
-Script to plot distribution of MC toys results and extract a median sensitivity
-Main Authors: Sofia Calgaro, Toby Dixon
-"""
+### plot_toys_results.py
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 import sys
 import json
 import argparse

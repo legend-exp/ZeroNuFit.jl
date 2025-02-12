@@ -1,3 +1,8 @@
+### read_bi.py
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 import os,json,h5py,math
 import numpy as np
 import matplotlib
@@ -48,13 +53,7 @@ nbins = np.arange(xmin, xmax + bin_width, bin_width)
 with h5py.File('../bi_tot_all.h5', 'r') as f:
     bkg = f['background'][:]
 
-print(len(bkg))
-
 marg_mode, ci_low, ci_high = smallest_68_ci(bkg, nbins)
-print(marg_mode, ci_low, ci_high)
-print(ci_high-marg_mode)
-print(marg_mode-ci_low)
-
 
 bkg_name ="B_l200a_all"
 fig, ax = plt.subplots(figsize=(5,3.3))
@@ -66,7 +65,7 @@ max_bin_index = np.argmax(counts)
 max_bin_count = counts[max_bin_index]
 max_bin_start = bin_edges[max_bin_index]
 max_bin_end = bin_edges[max_bin_index + 1]
-print("Marginalized mode:", (max_bin_end+max_bin_start)/2*1e4)
+marginalized_mode = (max_bin_end+max_bin_start)/2*1e4
 plt.axvline((max_bin_end+max_bin_start)/2, color='r', linestyle="--", label="Marginalized mode")
 plt.axvline(ci_low, color='r', linestyle=":", label="Smallest 68% CI")
 plt.axvline(ci_high, color='r', linestyle=":")
