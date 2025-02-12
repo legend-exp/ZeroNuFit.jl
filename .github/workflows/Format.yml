@@ -45,6 +45,11 @@ jobs:
           echo "Files in attic:"
           find attic
 
+       - name: List all files being checked by pre-commit
+         run: |
+          git ls-files
+          pre-commit run --all-files --verbose
+
       - name: Run Julia formatter
         uses: julia-actions/julia-format@v3
         with:
