@@ -14,13 +14,24 @@ include("../src/likelihood.jl")
 # this function calculates the observable counts density at a certain energy
 # and given the samples. "density" means that there is no integral over energy
 # (i.e. no multiplication by ΔE)
-function counts_density_obs(partitions, energy, S, α, pars, fit_ranges; shape="flat", bkg = true, signal = true)
+function counts_density_obs(
+    partitions,
+    energy,
+    S,
+    α,
+    pars,
+    fit_ranges;
+    shape = "flat",
+    bkg = true,
+    signal = true,
+)
     μk_tot = 0
 
     for P in partitions
         ϵk = P.eff_tot
         ϵk_sigma = P.eff_tot_sigma
-        μsk = S * log(2) * constants.N_A * P.exposure .* (ϵk .+ α * ϵk_sigma) / constants.m_76
+        μsk =
+            S * log(2) * constants.N_A * P.exposure .* (ϵk .+ α * ϵk_sigma) / constants.m_76
 
         if shape == "linear"
             b_name = P.bkg_name
@@ -32,7 +43,7 @@ function counts_density_obs(partitions, energy, S, α, pars, fit_ranges; shape="
             center = range_l[1]
             delta = range_h[end] - range_l[1]
 
-            μbk = pars[b_name] * P.exposure * (1 + slope * (energy - center) / delta) 
+            μbk = pars[b_name] * P.exposure * (1 + slope * (energy - center) / delta)
         end
 
         if shape == "exponential"
@@ -48,13 +59,17 @@ function counts_density_obs(partitions, energy, S, α, pars, fit_ranges; shape="
             Rt = R / delta
             μbk = pars[b_name] * P.exposure * exp_stable((energy - center) * Rt)
         end
-        
+
         if shape == "flat"
             b_name = P.bkg_name
             μbk = pars[b_name] * P.exposure
         end
 
-        μk = (bkg ? μbk : 0) .+ (signal ? μsk .* get_signal_pdf(energy, constants.Qbb, P) * constants.sig_units : 0)
+        μk =
+            (bkg ? μbk : 0) .+ (
+                signal ?
+                μsk .* get_signal_pdf(energy, constants.Qbb, P) * constants.sig_units : 0
+            )
         μk_tot += μk
     end
 
@@ -69,9 +84,25 @@ function counts_density_kgyr_l200_post(energy, samples, partitions, fit_ranges; 
 end
 
 # this function calculates the posterior of the counts density/(kg yr) at a certain energy, for bkg fixed at the best fit value
-function counts_density_kgyr_l200_bkg_mode(energy, mode, samples, partitions, fit_ranges; kwargs...)
+function counts_density_kgyr_l200_bkg_mode(
+    energy,
+    mode,
+    samples,
+    partitions,
+    fit_ranges;
+    kwargs...,
+)
     @info "calculating posterior for energy $energy"
-    f = s -> counts_density_obs(partitions, energy, s.S, s.αe_all, mode, fit_ranges; kwargs...)
+    f =
+        s -> counts_density_obs(
+            partitions,
+            energy,
+            s.S,
+            s.αe_all,
+            mode,
+            fit_ranges;
+            kwargs...,
+        )
     return broadcast(f, samples.v) ./ sum(partitions.exposure)
 end
 
@@ -82,7 +113,7 @@ function counts_density_kgyr_l200_mode(energy, best_fit, partitions, fit_ranges;
         energy,
         best_fit.S,
         best_fit.αe_all,
-        best_fit, 
+        best_fit,
         fit_ranges;
         kwargs...,
     )
@@ -118,24 +149,39 @@ function plot_l200_result(samples, config)
     # if flat, evaluate 68% band at one energy value (eg 2000 keV)
     if bkg_shape == "flat"
         b_68 = Vector(undef, 1)
-        posterior = counts_density_kgyr_l200_post(2000, _samples, partitions, fit_ranges, shape=bkg_shape, signal = false)
+        posterior = counts_density_kgyr_l200_post(
+            2000,
+            _samples,
+            partitions,
+            fit_ranges,
+            shape = bkg_shape,
+            signal = false,
+        )
         _int = BAT.smallest_credible_intervals(posterior, _weights, nsigma_equivalent = 1)
         length(_int) != 1 && @warn "[2000 keV] 68% interval is disjoint", _int
         b_68[1] = first(_int)
-    # if not flat, ...
+        # if not flat, ...
     else
         # now we have a vector with as many entries as the energies we selected
         b_68 = Vector(undef, length(energies_all_window))
         # let's speed this up with multi-threading
         Threads.@threads for i = 1:length(energies_all_window)
             E = energies_all_window[i]
-            posterior = counts_density_kgyr_l200_post(E, _samples, partitions, fit_ranges, shape=bkg_shape, signal = false)
-            _int = BAT.smallest_credible_intervals(posterior, _weights, nsigma_equivalent = 1)
+            posterior = counts_density_kgyr_l200_post(
+                E,
+                _samples,
+                partitions,
+                fit_ranges,
+                shape = bkg_shape,
+                signal = false,
+            )
+            _int =
+                BAT.smallest_credible_intervals(posterior, _weights, nsigma_equivalent = 1)
             length(_int) != 1 && @warn "[$E keV] 68% interval is disjoint: ", _int
             b_68[i] = first(_int)
         end
-    end   
-    
+    end
+
     # best fit results    
     _, _, posterior, _, _ = get_stat_blocks(
         partitions,
@@ -151,30 +197,59 @@ function plot_l200_result(samples, config)
     energies = 2034.0:4:2044.0
     s_90 = Vector(undef, length(energies))
     b_mode_all_window = 0
-    
+
     if bkg_shape == "flat"
         b_mode = Vector(undef, 1)
-        b_mode[1] = counts_density_kgyr_l200_mode(2000, best_fit_pars, partitions, fit_ranges, shape=bkg_shape, signal = false)
+        b_mode[1] = counts_density_kgyr_l200_mode(
+            2000,
+            best_fit_pars,
+            partitions,
+            fit_ranges,
+            shape = bkg_shape,
+            signal = false,
+        )
     else
         # we use the same energies of the signal (this will be used when plotting the signal)
         b_mode = Vector(undef, length(energies))
         Threads.@threads for i = 1:length(energies)
             E = energies[i]
-            b_mode[i] = counts_density_kgyr_l200_mode(E, best_fit_pars, partitions, fit_ranges, shape=bkg_shape, signal = false)
+            b_mode[i] = counts_density_kgyr_l200_mode(
+                E,
+                best_fit_pars,
+                partitions,
+                fit_ranges,
+                shape = bkg_shape,
+                signal = false,
+            )
         end
 
         # we use all energies for the mode all over the fit window
         b_mode_all_window = Vector(undef, length(energies_all_window))
         Threads.@threads for i = 1:length(energies_all_window)
             E = energies_all_window[i]
-            b_mode_all_window[i] = counts_density_kgyr_l200_mode(E, best_fit_pars, partitions, fit_ranges, shape=bkg_shape, signal = false)
+            b_mode_all_window[i] = counts_density_kgyr_l200_mode(
+                E,
+                best_fit_pars,
+                partitions,
+                fit_ranges,
+                shape = bkg_shape,
+                signal = false,
+            )
         end
     end
 
     # extract signal upper limits
     Threads.@threads for i = 1:length(energies)
         E = energies[i]
-        posterior = counts_density_kgyr_l200_bkg_mode(E, best_fit_pars, _samples, partitions, fit_ranges, shape=bkg_shape, bkg=false)
+        posterior = counts_density_kgyr_l200_bkg_mode(
+            E,
+            best_fit_pars,
+            _samples,
+            partitions,
+            fit_ranges,
+            shape = bkg_shape,
+            bkg = false,
+        )
         if bkg_shape == "flat"
             println(b_mode[1], "   ", quantile(posterior, _weights, 0.9))
             s_90[i] = b_mode[1] .. quantile(posterior, _weights, 0.9)
@@ -217,17 +292,17 @@ function get_total_bi(samples, part_event_index, events, partitions, fit_ranges,
     energy = 2000
 
     function get_bi(partitions, energy, pars)
-        μb_tot = 0        
+        μb_tot = 0
         for P in partitions
             b_name = P.bkg_name
             μbk = pars[b_name] * P.exposure
-            μb_tot+= μbk
+            μb_tot += μbk
         end
         return μb_tot
     end
 
     f = samples -> get_bi(partitions, energy, samples)
-    bi_tot = broadcast(f, samples.v)  ./ sum(partitions.exposure)
+    bi_tot = broadcast(f, samples.v) ./ sum(partitions.exposure)
     HDF5.h5write("bi_tot_all.h5", "background", bi_tot)
 end
 
