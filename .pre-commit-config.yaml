@@ -5,3 +5,4 @@ repos:
       - id: julia-format
         files: ^(src|test)/.*\.jl$
         args: [--project=.]  
+exclude: 'attic/.*'
