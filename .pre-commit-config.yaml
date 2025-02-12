@@ -3,5 +3,5 @@ repos:
     rev: v0.2.0
     hooks:
       - id: julia-format
-        files: ^(src|test)/.*\.jl$
+        files: ^(src|test|attic)/.*\.jl$
         args: [--project=.]  
