@@ -9,7 +9,6 @@ include("plotting.jl")
 include("utils.jl")
 include("constants.jl")
 include("likelihood.jl")
-include("fitting.jl")
 include("analysis.jl")
 
 end

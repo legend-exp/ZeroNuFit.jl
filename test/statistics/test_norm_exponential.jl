@@ -7,7 +7,7 @@ using .ZeroNuFit
 
 @testset "test_norm_exponential" begin
 
-    @info "Testing normalised exponential function (function 'norm_exponential' in src/fitting.jl)"
+    @info "Testing normalised exponential function (function 'norm_exponential' in src/likelihood.jl)"
 
     # high Rt value
     x = 1965.0

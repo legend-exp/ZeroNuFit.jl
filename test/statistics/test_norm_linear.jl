@@ -7,7 +7,7 @@ using .ZeroNuFit
 
 @testset "test_norm_linear" begin
 
-    @info "Testing normalised linear function (function 'norm_linear' in src/fitting.jl)"
+    @info "Testing normalised linear function (function 'norm_linear' in src/likelihood.jl)"
 
     x = 1965.0
     p = (
