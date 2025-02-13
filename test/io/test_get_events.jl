@@ -63,5 +63,8 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     )
 
     # not-existing file
-    @test_throws ArgumentError ZeroNuFit.Utils.get_events("not_existing_file.json", partitions)
+    @test_throws ArgumentError ZeroNuFit.Utils.get_events(
+        "not_existing_file.json",
+        partitions,
+    )
 end

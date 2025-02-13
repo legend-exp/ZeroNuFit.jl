@@ -393,7 +393,8 @@ function build_likelihood_per_partition(
         if (settings[:bkg_only] == false)
 
             # get the correct reso and bias 
-            reso, bias = Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+            reso, bias =
+                Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
             term2 = model_s_k * get_signal_pdf(evt_energy, Qbb, part_k)
         else
             term2 = 0
@@ -565,7 +566,7 @@ function generate_data(
             for i = 1:n_s
 
                 reso, bias =
-                Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+                    Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
 
                 append!(events, rand(Normal(Qbb - bias, reso)))
 

@@ -7,9 +7,7 @@ using Plots
 using Cuba
 using SpecialFunctions
 
-export
-  run_analysis,
-  retrieve_real_fit_results
+export run_analysis, retrieve_real_fit_results
 
 include("utils.jl")
 include("likelihood.jl")

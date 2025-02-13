@@ -2,7 +2,14 @@
 using ZeroNuFit
 
 # List of submodules in ZeroNuFit
-submodules = [ZeroNuFit.Analysis, ZeroNuFit.Constants, ZeroNuFit.Fitting, ZeroNuFit.Likelihood, ZeroNuFit.Plotting, ZeroNuFit.Utils]
+submodules = [
+    ZeroNuFit.Analysis,
+    ZeroNuFit.Constants,
+    ZeroNuFit.Fitting,
+    ZeroNuFit.Likelihood,
+    ZeroNuFit.Plotting,
+    ZeroNuFit.Utils,
+]
 
 # Function to list functions in a submodule
 function get_functions(mod)

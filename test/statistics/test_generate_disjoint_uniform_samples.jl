@@ -13,7 +13,8 @@ using .ZeroNuFit
     one_energy = nothing
     fit_range = [[1920.0, 1930.0]]
     try
-        one_energy = ZeroNuFit.Utils.generate_disjoint_uniform_samples(1, fit_range; seed = 123)
+        one_energy =
+            ZeroNuFit.Utils.generate_disjoint_uniform_samples(1, fit_range; seed = 123)
     catch e
         @error "Error in 'generate_disjoint_uniform_samples' evaluation: $e"
         throw(e)

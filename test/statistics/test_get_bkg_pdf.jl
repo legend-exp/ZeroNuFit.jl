@@ -74,5 +74,11 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     end
 
     # not-existing bkg shape
-    @test_throws ArgumentError ZeroNuFit.Likelihood.get_bkg_pdf(:fancy_bkg, x, p, b_name, fit_range)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.get_bkg_pdf(
+        :fancy_bkg,
+        x,
+        p,
+        b_name,
+        fit_range,
+    )
 end

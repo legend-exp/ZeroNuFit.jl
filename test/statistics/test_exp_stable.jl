@@ -11,9 +11,12 @@ using .ZeroNuFit
 
     # small values where Taylor expansion is valid
     @test abs(ZeroNuFit.Likelihood.exp_stable(0.0) - 1.0) < 1E-12
-    @test abs(ZeroNuFit.Likelihood.exp_stable(1E-7) - (1 + 1E-7 + (1E-7)^2 / 2 + (1E-7)^3 / 6)) < 1E-12
-    @test abs(ZeroNuFit.Likelihood.exp_stable(-1E-7) - (1 - 1E-7 + (-1E-7)^2 / 2 + (-1E-7)^3 / 6)) <
-          1E-12
+    @test abs(
+        ZeroNuFit.Likelihood.exp_stable(1E-7) - (1 + 1E-7 + (1E-7)^2 / 2 + (1E-7)^3 / 6),
+    ) < 1E-12
+    @test abs(
+        ZeroNuFit.Likelihood.exp_stable(-1E-7) - (1 - 1E-7 + (-1E-7)^2 / 2 + (-1E-7)^3 / 6),
+    ) < 1E-12
 
     # large values where exp(x) is valid
     @test abs(ZeroNuFit.Likelihood.exp_stable(1.0) - exp(1.0)) < 1E-12

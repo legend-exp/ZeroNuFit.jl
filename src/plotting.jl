@@ -14,7 +14,7 @@ using PDFmerger: append_pdf!
 using ColorSchemes
 using OrderedCollections
 
-using ZeroNuFit  
+using ZeroNuFit
 
 default(
     framestyle = :box,               # Grid line transparency
