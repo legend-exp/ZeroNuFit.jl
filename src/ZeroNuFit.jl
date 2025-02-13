@@ -1,3 +1,8 @@
+### ZerNuFit.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 module ZeroNuFit
 
 include("plotting.jl")

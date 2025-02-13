@@ -1,6 +1,11 @@
+### mbb.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 using Pkg
-Pkg.activate(".") # activate the environment
-#Pkg.instantiate() # instantiate the environment
+Pkg.activate(".")
+Pkg.instantiate()
 using ArgParse
 using JSON
 using DataStructures
@@ -39,11 +44,7 @@ const phase_space = 0.237 * 10^-14
 const gA = 1.2724
 
 # inputs
-nme_belley = (
-    central = nme_belley_central,
-    up = nme_belley_up,
-    low = nme_belley_low,
-)
+nme_belley = (central = nme_belley_central, up = nme_belley_up, low = nme_belley_low)
 nme_adams = (up = nme_adams_up, low = nme_adams_low)
 nme_gerda = (up = nme_gerda_up, low = nme_gerda_low)
 phase_space = phase_space
@@ -245,7 +246,7 @@ function plot_mbb_plots(file_path::String, output_path::String; filename = "mbb.
     S_samples = get_S_posterior(samples)
 
     # sampling from Belley's NME posterior
-    data = readdlm("attic/belley_posterior_PDF_samples.csv", ',', skipstart = 3)[:, 2]
+    data = readdlm("inputs/belley_posterior_PDF_samples.csv", ',', skipstart = 3)[:, 2]
     data = data[data.>=0]
     M_samples = data
     # outdated symm truncated gaussian
@@ -791,12 +792,8 @@ function plot_mbb_Belley_studies(
     vline!([nme_adams.up], linestyle = :dash, color = "black")
 
     gerda_T12 = 1.83
-    gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
-        1000
-    gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
-        1000
+    gerda_low_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) * 1000
+    gerda_upp_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) * 1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
         fillrange = 1,
@@ -1052,12 +1049,8 @@ function plot_mbb_Belley_studies(
     vline!([2.6], linestyle = :dash, color = "black", label = "Belley's central value")
 
     gerda_T12 = 1.83
-    gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
-        1000
-    gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
-        1000
+    gerda_low_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) * 1000
+    gerda_upp_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) * 1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
         fillrange = 1,
@@ -1142,12 +1135,8 @@ function plot_mbb_Belley_studies(
     vline!([2.6], linestyle = :dash, color = "black", label = "Belley's central value")
 
     gerda_T12 = 1.83
-    gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
-        1000
-    gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
-        1000
+    gerda_low_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) * 1000
+    gerda_upp_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) * 1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
         fillrange = 1,
@@ -1219,12 +1208,8 @@ function plot_mbb_Belley_studies(
     vline!([2.6], linestyle = :dash, color = "black", label = "Belley's central value")
 
     gerda_T12 = 1.83
-    gerda_low_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) *
-        1000
-    gerda_upp_limit =
-        mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) *
-        1000
+    gerda_low_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_up) * 1000
+    gerda_upp_limit = mbb(1 / gerda_T12 * 10, G = phase_space, M = nme_adams_low) * 1000
     hspan!(
         [gerda_low_limit, gerda_upp_limit],
         fillrange = 1,

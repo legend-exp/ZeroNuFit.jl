@@ -7,11 +7,15 @@ on:
       - dev
       - 'releases/**'
     tags: '*'
+    paths-ignore:
+      - 'attic/**'
   pull_request:
     branches:
       - main
       - dev
       - 'releases/**'
+    paths-ignore:
+      - 'attic/**'
   release:
 
 concurrency:

@@ -1,3 +1,8 @@
+### plotting.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
 using Plots
 using BAT, DensityInterface, IntervalSets

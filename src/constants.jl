@@ -1,7 +1,11 @@
+### constants.jl
+#
+# Authors: Sofia Calgaro, Toby Dixon
+# 
+###
 module constants
 
 # define global constants
-
 const Qbb = 2039.06 # keV
 const N_A = 6.022E23
 const me_keV = 510.99895000 # PDG
