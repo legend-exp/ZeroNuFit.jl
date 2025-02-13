@@ -104,7 +104,7 @@ function main()
     set_logger(config, output_path)
 
     # Call the analysis function from ZeroNuFit
-    ZeroNuFit.run_analysis(config, output_path = output_path, toy_idx = nothing)
+    ZeroNuFit.Analysis.run_analysis(config, output_path = output_path, toy_idx = nothing)
 
 end
 

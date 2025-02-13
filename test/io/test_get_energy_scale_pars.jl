@@ -3,8 +3,7 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_get_energy_scale_pars" begin
 
@@ -54,7 +53,7 @@ include("../../src/utils.jl")
     bias = nothing
     # fixed nuisance, 1 event in the partition
     try
-        reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 1)
+        reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 1)
     catch e
         @error "Error in get_energy_scale_pars: $e"
         throw(e)
@@ -75,7 +74,7 @@ include("../../src/utils.jl")
     # fixed nuisance, 0 event in the partition
     reso = nothing
     bias = nothing
-    reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
+    reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
     @testset "Check resolution/bias accuracy [fixed nuisance, 0 event in the partition]" begin
@@ -92,7 +91,7 @@ include("../../src/utils.jl")
         :energy_res_fixed => false,
         :energy_res_correlated => false,
     )
-    reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
+    reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
     @testset "Check resolution/bias accuracy [not fixed nuisance, 0 event in the partition]" begin
@@ -109,7 +108,7 @@ include("../../src/utils.jl")
         :energy_res_fixed => false,
         :energy_res_correlated => true,
     )
-    reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 1)
+    reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 1)
     energy_reso_group = partitions[1].energy_reso_name
     energy_bias_group = partitions[1].energy_bias_name
     expected_reso = partitions[1].width + p[energy_reso_group] * partitions[1].width_sigma
@@ -128,7 +127,7 @@ include("../../src/utils.jl")
         :energy_res_fixed => false,
         :energy_res_correlated => true,
     )
-    reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
+    reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
     @testset "Check resolution/bias accuracy [correlated energy scale, 0 event in the partition]" begin
@@ -145,7 +144,7 @@ include("../../src/utils.jl")
         :energy_res_fixed => false,
         :energy_res_correlated => false,
     )
-    reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 1)
+    reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 1)
     expected_reso = 1.0
     expected_bias = 1.0
     @testset "Check resolution/bias accuracy [uncorrelated energy scale, 1 event in the partition]" begin
@@ -162,7 +161,7 @@ include("../../src/utils.jl")
         :energy_res_fixed => false,
         :energy_res_correlated => false,
     )
-    reso, bias = ZeroNuFit.get_energy_scale_pars(partitions[1], p, settings, 0)
+    reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(partitions[1], p, settings, 0)
     expected_reso = 0.5
     expected_bias = 0.5
     @testset "Check resolution/bias accuracy [uncorrelated energy scale, 0 event in the partition]" begin

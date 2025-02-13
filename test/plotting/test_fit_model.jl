@@ -3,8 +3,7 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/plotting.jl")
+using TypedTables
 
 @testset "test_fit_model" begin
 
@@ -54,7 +53,7 @@ include("../../src/plotting.jl")
 
     total = nothing
     try
-        total = ZeroNuFit.fit_model(
+        total = ZeroNuFit.Plotting.fit_model(
             part_event_index[1],
             partitions[1],
             p,
@@ -81,7 +80,7 @@ include("../../src/plotting.jl")
 
     settings[:bkg_only] = false
     total = nothing
-    total = ZeroNuFit.fit_model(
+    total = ZeroNuFit.Plotting.fit_model(
         part_event_index[1],
         partitions[1],
         p,

@@ -4,9 +4,6 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
-include("../../src/constants.jl")
 
 @testset "test_norm_exponential" begin
 
@@ -26,7 +23,7 @@ include("../../src/constants.jl")
     fit_range = [[1920.0, 1930.0], [1960.0, 1970.0]]
     expo_func = nothing
     try
-        expo_func = ZeroNuFit.norm_exponential(x, p, b_name, fit_range)
+        expo_func = ZeroNuFit.Likelihood.norm_exponential(x, p, b_name, fit_range)
     catch e
         @error "Error in 'norm_exponential' evaluation: $e"
         throw(e)
@@ -54,7 +51,7 @@ include("../../src/constants.jl")
     )
     expo_func = nothing
     try
-        expo_func = ZeroNuFit.norm_exponential(x, p, b_name, fit_range)
+        expo_func = ZeroNuFit.Likelihood.norm_exponential(x, p, b_name, fit_range)
     catch e
         @error "Error in 'norm_exponential' evaluation: $e"
         throw(e)

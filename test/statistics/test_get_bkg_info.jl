@@ -4,11 +4,10 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
 
 @testset "test_get_bkg_info" begin
 
-    @info "Testing function to retrieve background information from config in input (function 'get_bkg_info' in src/fitting.jl)"
+    @info "Testing function to retrieve background information from config in input (function 'get_bkg_info' in src/utils.jl)"
 
     # default modeling, i.e. flat
     config = Dict("bkg" => Dict())
@@ -16,7 +15,7 @@ include("../../main.jl")
     bkg_shape = nothing
     bkg_shape_pars = nothing
     try
-        bkg_shape, bkg_shape_pars = ZeroNuFit.get_bkg_info(config)
+        bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
     catch e
         @error "Error in 'get_bkg_info' evaluation: $e"
         throw(e)
@@ -41,7 +40,7 @@ include("../../main.jl")
     bkg_shape = nothing
     bkg_shape_pars = nothing
     try
-        bkg_shape, bkg_shape_pars = ZeroNuFit.get_bkg_info(config)
+        bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
     catch e
         @error "Error in 'get_bkg_info' evaluation: $e"
         throw(e)
@@ -67,7 +66,7 @@ include("../../main.jl")
     bkg_shape = nothing
     bkg_shape_pars = nothing
     try
-        bkg_shape, bkg_shape_pars = ZeroNuFit.get_bkg_info(config)
+        bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
     catch e
         @error "Error in 'get_bkg_info' evaluation: $e"
         throw(e)

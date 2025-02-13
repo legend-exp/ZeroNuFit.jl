@@ -4,9 +4,7 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
-include("../../src/constants.jl")
+using TypedTables
 
 Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
@@ -43,7 +41,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
     signal_pdf = nothing
     try
-        signal_pdf = ZeroNuFit.get_signal_pdf(event, constants.Qbb, partitions[1])
+        signal_pdf = ZeroNuFit.Likelihood.get_signal_pdf(event, ZeroNuFit.Constants.Qbb, partitions[1])
     catch e
         @error "Error in 'get_signal_pdf' evaluation: $e"
         throw(e)
@@ -89,7 +87,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
     signal_pdf = nothing
     try
-        signal_pdf = ZeroNuFit.get_signal_pdf(event, constants.Qbb, partitions[1])
+        signal_pdf = ZeroNuFit.Likelihood.get_signal_pdf(event, ZeroNuFit.Constants.Qbb, partitions[1])
     catch e
         @error "Error in 'get_signal_pdf' evaluation: $e"
         throw(e)
@@ -131,5 +129,5 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
         tau = Array([1.5]),
         sigma = Array([1.1]),
     )
-    @test_throws ArgumentError ZeroNuFit.get_signal_pdf(event, constants.Qbb, partitions[1])
+    @test_throws ArgumentError ZeroNuFit.Likelihood.get_signal_pdf(event, ZeroNuFit.Constants.Qbb, partitions[1])
 end

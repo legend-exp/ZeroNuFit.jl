@@ -3,8 +3,7 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_get_efficiency" begin
 
@@ -49,7 +48,7 @@ include("../../src/utils.jl")
     # fixed efficiency, 1 event in the partition
     eff = nothing
     try
-        eff = ZeroNuFit.get_efficiency(p, partitions[1], 1, settings)
+        eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 1, settings)
     catch e
         @error "Error in get_efficiency: $e"
         throw(e)
@@ -65,7 +64,7 @@ include("../../src/utils.jl")
 
     # fixed efficiency, 0 event in the partition
     eff = nothing
-    eff = ZeroNuFit.get_efficiency(p, partitions[1], 0, settings)
+    eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 0, settings)
     @testset "Check eff accuracy [fixed efficiency, 0 event in the partition]" begin
         @test eff == 0.5
     end
@@ -73,7 +72,7 @@ include("../../src/utils.jl")
     # correlated efficiency, 1 event in the partition
     eff = nothing
     settings = Dict(:eff_fixed => false, :eff_correlated => true, :bkg_only => false)
-    eff = ZeroNuFit.get_efficiency(p, partitions[1], 1, settings)
+    eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 1, settings)
     energy_eff_group = partitions[1].eff_name
     expected_eff = partitions[1].eff_tot + p[energy_eff_group] * partitions[1].eff_tot_sigma
     @testset "Check eff accuracy [correlated efficiency, 1 event in the partition]" begin
@@ -83,7 +82,7 @@ include("../../src/utils.jl")
     # correlated efficiency, 0 event in the partition
     eff = nothing
     settings = Dict(:eff_fixed => false, :eff_correlated => true, :bkg_only => false)
-    eff = ZeroNuFit.get_efficiency(p, partitions[1], 0, settings)
+    eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 0, settings)
     energy_eff_group = partitions[1].eff_name
     expected_eff = partitions[1].eff_tot + p[energy_eff_group] * partitions[1].eff_tot_sigma
     @testset "Check eff accuracy [correlated efficiency, 0 event in the partition]" begin
@@ -93,7 +92,7 @@ include("../../src/utils.jl")
     # uncorrelated efficiency, 1 event in the partition
     eff = nothing
     settings = Dict(:eff_fixed => false, :eff_correlated => false, :bkg_only => false)
-    eff = ZeroNuFit.get_efficiency(p, partitions[1], 1, settings)
+    eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 1, settings)
     @testset "Check eff accuracy [uncorrelated efficiency, 1 event in the partition]" begin
         @test eff == 1
     end
@@ -101,7 +100,7 @@ include("../../src/utils.jl")
     # uncorrelated efficiency, 0 event in the partition 
     eff = nothing
     settings = Dict(:eff_fixed => false, :eff_correlated => false, :bkg_only => false)
-    eff = ZeroNuFit.get_efficiency(p, partitions[1], 0, settings)
+    eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 0, settings)
     @testset "Check eff accuracy [uncorrelated efficiency, 0 event in the partition]" begin
         @test eff == 0.5
     end
@@ -109,7 +108,7 @@ include("../../src/utils.jl")
     # only bkg
     eff = nothing
     settings = Dict(:eff_fixed => false, :eff_correlated => false, :bkg_only => true)
-    eff = ZeroNuFit.get_efficiency(p, partitions[1], 0, settings)
+    eff = ZeroNuFit.Utils.get_efficiency(p, partitions[1], 0, settings)
     @testset "Check eff accuracy [only bkg]" begin
         @test eff == 0
     end

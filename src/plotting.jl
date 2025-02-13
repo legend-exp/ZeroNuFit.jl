@@ -3,6 +3,7 @@
 # Authors: Sofia Calgaro, Toby Dixon
 # 
 ###
+module Plotting
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
 using Plots
 using BAT, DensityInterface, IntervalSets
@@ -12,6 +13,8 @@ using Base.Filesystem
 using PDFmerger: append_pdf!
 using ColorSchemes
 using OrderedCollections
+
+using ZeroNuFit  
 
 default(
     framestyle = :box,               # Grid line transparency
@@ -41,22 +44,22 @@ function fit_model(
     fit_range,
     x::Float64,
 )
-    Qbb = constants.Qbb
-    N_A = constants.N_A
-    m_76 = constants.m_76
-    sig_units = constants.sig_units
+    Qbb = Constants.Qbb
+    N_A = Constants.N_A
+    m_76 = Constants.m_76
+    sig_units = Constants.sig_units
 
-    deltaE = get_deltaE(fit_range)
-    eff = get_efficiency(p, part_k, idx_part_with_events, settings)
+    deltaE = Utils.get_deltaE(fit_range)
+    eff = Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
 
     b_name = part_k.bkg_name
-    model_b_k = get_mu_b(deltaE, part_k.exposure, p[b_name])
-    term1 = model_b_k * get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
+    model_b_k = Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name])
+    term1 = model_b_k * Likelihood.get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
 
     if (settings[:bkg_only] == false)
-        reso, bias = get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
-        model_s_k = get_mu_s(part_k.exposure, eff, p.S)
-        term2 = model_s_k * get_signal_pdf(x, Qbb, part_k)
+        reso, bias = Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+        model_s_k = Likelihood.get_mu_s(part_k.exposure, eff, p.S)
+        term2 = model_s_k * Likelihood.get_signal_pdf(x, Qbb, part_k)
     else
         term2 = 0
     end
@@ -150,7 +153,7 @@ function plot_data(
             globalmode = false,
             fillalpha = 0.3,
         ) #TO DO: take only some samples
-        _, best_fit_pars = get_global_mode(samples, posterior)
+        _, best_fit_pars = Utils.get_global_mode(samples, posterior)
         plot!(
             p,
             min_x:0.1:max_x,
@@ -160,7 +163,7 @@ function plot_data(
             color = "red",
         )
     else
-        _, best_fit_pars = get_global_mode(samples, posterior)
+        _, best_fit_pars = Utils.get_global_mode(samples, posterior)
         plot!(
             p,
             min_x:0.1:max_x,
@@ -173,22 +176,22 @@ function plot_data(
 
     # exclude gamma lines
     shape_x = [
-        constants.gamma_2113_keV,
-        constants.gamma_2113_keV,
-        constants.gamma_2123_keV,
-        constants.gamma_2123_keV,
+        Constants.gamma_2113_keV,
+        Constants.gamma_2113_keV,
+        Constants.gamma_2123_keV,
+        Constants.gamma_2123_keV,
     ]
     shape_x2 = [
-        constants.gamma_2098_keV,
-        constants.gamma_2098_keV,
-        constants.gamma_2108_keV,
-        constants.gamma_2108_keV,
+        Constants.gamma_2098_keV,
+        Constants.gamma_2098_keV,
+        Constants.gamma_2108_keV,
+        Constants.gamma_2108_keV,
     ]
     shape_x3 = [
-        constants.gamma_2199_keV,
-        constants.gamma_2199_keV,
-        constants.gamma_2209_keV,
-        constants.gamma_2209_keV,
+        Constants.gamma_2199_keV,
+        Constants.gamma_2199_keV,
+        Constants.gamma_2209_keV,
+        Constants.gamma_2209_keV,
     ]
     shape_y = [0, ymax, ymax, 0]
 
@@ -245,8 +248,8 @@ function plot_fit_and_data(
 )
 
     plotflag = config["plot"]
-    settings = get_settings(config)
-    bkg_shape, _ = get_bkg_info(config)
+    settings = Utils.get_settings(config)
+    bkg_shape, _ = Utils.get_bkg_info(config)
 
     # create histo with energies 
     energies = []
@@ -332,8 +335,8 @@ function plot_two_dim_posteriors(
                 continue
             end
 
-            x = get_par_posterior(samples, par_x, idx = nothing)
-            y = get_par_posterior(samples, par_y, idx = nothing)
+            x = Utils.get_par_posterior(samples, par_x, idx = nothing)
+            y = Utils.get_par_posterior(samples, par_y, idx = nothing)
 
             p = histogram2d(
                 x,
@@ -413,7 +416,7 @@ function plot_marginal_distr(
         # checking if it is a 'AbstractFloat' helps avoiding cases were multivariate parameters have 1 entry only
         if (length(par_entry) == 1 && par_entry isa AbstractFloat)
 
-            post = get_par_posterior(samples, par, idx = nothing)
+            post = Utils.get_par_posterior(samples, par, idx = nothing)
             if (par == :S || par == :B)
                 mini = 0
             else
@@ -490,7 +493,7 @@ function plot_marginal_distr(
             # multivariate parameters    
         else
             for idx = 1:length(par_entry)
-                post = get_par_posterior(samples, par, idx = idx)
+                post = Utils.get_par_posterior(samples, par, idx = idx)
 
                 xlab = string("$(par)[$(idx)]")
                 ylab = string("Probability Density")
@@ -544,4 +547,5 @@ function plot_marginal_distr(
         end
     end
 
+end
 end

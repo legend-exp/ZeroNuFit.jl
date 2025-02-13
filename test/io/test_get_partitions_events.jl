@@ -3,8 +3,7 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_get_partitions_events" begin
 
@@ -42,7 +41,7 @@ include("../../src/utils.jl")
     fit_ranges = nothing
     try
         part_event_index, events, partitions, fit_ranges =
-            ZeroNuFit.get_partitions_events(config)
+            ZeroNuFit.Utils.get_partitions_events(config)
     catch e
         @error "Error in get_partitions_events: $e"
         throw(e)

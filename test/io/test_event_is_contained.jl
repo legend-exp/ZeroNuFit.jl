@@ -3,8 +3,6 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
 
 @testset "" begin
 
@@ -15,7 +13,7 @@ include("../../src/utils.jl")
     event = 1950.0
     flag = nothing
     try
-        flag = ZeroNuFit.event_is_contained(event, fit_range)
+        flag = ZeroNuFit.Utils.event_is_contained(event, fit_range)
     catch e
         @error "Error in event_is_contained: $e"
         throw(e)
@@ -28,6 +26,6 @@ include("../../src/utils.jl")
 
     # event outside fit window
     event = 150.0
-    flag = ZeroNuFit.event_is_contained(event, fit_range)
+    flag = ZeroNuFit.Utils.event_is_contained(event, fit_range)
     @test flag == false
 end

@@ -4,8 +4,6 @@ Pkg.instantiate() # instantiate the environment
 
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
 
 @testset "test_get_partition_event_index" begin
 
@@ -41,10 +39,10 @@ include("../../src/utils.jl")
     partitions = nothing
     part_event_index = nothing
     fit_ranges = nothing
-    partitions, fit_ranges = ZeroNuFit.get_partitions(config)
-    events = ZeroNuFit.get_events(config["events"][1], partitions)
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
     try
-        part_event_index = ZeroNuFit.get_partition_event_index(events, partitions)
+        part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
     catch e
         @error "Error in get_partition_event_index: $e"
         throw(e)
@@ -64,7 +62,7 @@ include("../../src/utils.jl")
     for (idx, part) in enumerate(partitions)
         events[idx] = Vector{Float64}[]
     end
-    part_event_index = ZeroNuFit.get_partition_event_index(events, partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
     @testset "Check part_event_index accuracy (0 events)" begin
         @test part_event_index == [0]
     end

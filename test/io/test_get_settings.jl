@@ -3,8 +3,6 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
 
 @testset "test_get_settings" begin
 
@@ -38,7 +36,7 @@ include("../../src/utils.jl")
 
     settings = nothing
     try
-        settings = ZeroNuFit.get_settings(config)
+        settings = ZeroNuFit.Utils.get_settings(config)
     catch e
         @error "Error in get_settings: $e"
         throw(e)

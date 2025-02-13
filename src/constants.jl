@@ -3,7 +3,7 @@
 # Authors: Sofia Calgaro, Toby Dixon
 # 
 ###
-module constants
+module Constants
 
 # define global constants
 const Qbb = 2039.06 # keV

@@ -3,8 +3,6 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
 
 Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
@@ -41,9 +39,9 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     partitions = nothing
     events = nothing
 
-    partitions, fit_ranges = ZeroNuFit.get_partitions(config)
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
     try
-        events = ZeroNuFit.get_events(config["events"][1], partitions)
+        events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
     catch e
         @error "Error in get_events: $e"
         throw(e)
@@ -59,11 +57,11 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     end
 
     # event with no partition
-    @test_throws ArgumentError ZeroNuFit.get_events(
+    @test_throws ArgumentError ZeroNuFit.Utils.get_events(
         joinpath(present_dir, "../inputs/events_fake.json"),
         partitions,
     )
 
     # not-existing file
-    @test_throws ArgumentError ZeroNuFit.get_events("not_existing_file.json", partitions)
+    @test_throws ArgumentError ZeroNuFit.Utils.get_events("not_existing_file.json", partitions)
 end

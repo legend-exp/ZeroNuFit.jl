@@ -3,10 +3,11 @@
 # Authors: Sofia Calgaro, Toby Dixon
 # 
 ###
+module Utils
 using PropertyFunctions
 using JSON
 using Logging
-using Random, LinearAlgebra, Statistics, Distributions, StatsBase
+using Random, LinearAlgebra, Statistics, Distributions, StatsBase, BAT
 using PropDicts
 using FilePathsBase
 using DataStructures
@@ -17,6 +18,69 @@ using Optim
 using FileIO
 import JLD2
 import HDF5
+
+
+"""
+    get_corr_info(config)
+
+Function that retrieves information about correlated background from config in input.
+"""
+function get_corr_info(config)
+    if !(haskey(config["bkg"], "correlated"))
+        return false, nothing, nothing
+    end
+
+    if (haskey(config["bkg"], "correlated")) &
+       (config["bkg"]["correlated"]["mode"] != "none")
+        corr = true
+        hier_mode = config["bkg"]["correlated"]["mode"]
+        hier_range = config["bkg"]["correlated"]["range"]
+        return corr, hier_mode, hier_range
+    else
+        return false, nothing, nothing
+    end
+end
+
+
+function get_par_posterior(samples, par; idx)
+
+    pars = []
+
+    for samp in samples
+        v = samp.v
+        weight = samp.weight
+        for w = 1:1:weight
+            if (idx == nothing)
+                append!(pars, v[par])
+            else
+                append!(pars, v[par][idx])
+            end
+        end
+    end
+
+    return pars
+end
+
+
+"""
+    get_bkg_info(config)
+
+Function that retrieves background information from config in input.
+"""
+function get_bkg_info(config)
+    bkg_shape = :uniform
+    bkg_shape_pars = nothing
+
+    if (haskey(config["bkg"], "shape"))
+        bkg_shape = Symbol(config["bkg"]["shape"]["name"])
+        if (haskey(config["bkg"]["shape"], "pars"))
+            bkg_shape_pars = config["bkg"]["shape"]["pars"]
+        end
+    end
+    return bkg_shape, bkg_shape_pars
+end
+
+
 
 """
     check_key(config::Dict, k::String)
@@ -687,115 +751,25 @@ end
 
 
 """
-    save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
+    get_deltaE(fit_range)
 
-Function to plot and save results, as well as inputs
+Function that returns the net width of the fit range.
 """
-function save_outputs(
-    partitions,
-    events,
-    part_event_index,
-    samples,
-    posterior,
-    nuisance_info,
-    config,
-    output_path,
-    fit_ranges;
-    priors = nothing,
-    par_names = nothing,
-    toy_idx = nothing,
-)
-    if (haskey(config["bkg"], "correlated")) &
-       (config["bkg"]["correlated"]["mode"] != "none")
-        hier = true
-    else
-        hier = false
-    end
-    if (config["signal"]["prior"] == "sqrt")
-        sqrt_prior = true
-        s_max = config["signal"]["upper_bound"]
-    else
-        sqrt_prior = false
-        s_max = nothing
-    end
-    first_sample = samples.v[1]
-    free_pars = keys(first_sample) # in format (:B, :S, ...) 
-    @info "... these are the parameters that were included: ", free_pars
+function get_deltaE(fit_range)
+    return sum([arr[2] - arr[1] for arr in fit_range])
+end
 
-    @info "... now we save samples (untouched if we do not want to overwrite)"
-    if config["light_output"] == false
-        if config["overwrite"] == true ||
-           !isfile(joinpath(config["output_path"], "mcmc_files/samples.h5"))
-            save_generated_samples(samples, output_path)
-            @info "...done!"
-        end
-    end
 
-    @info "... now we save other useful results + config entries"
-    save_results_into_json(
-        samples,
-        posterior,
-        nuisance_info,
-        config,
-        output_path,
-        par_names = par_names,
-        toy_idx = toy_idx,
-    )
-    @info "...done!"
+"""
+    get_range(fit_range)
 
-    if config["light_output"] == false
-        plot_correlation_matrix(
-            samples,
-            output_path,
-            par_names = par_names,
-            toy_idx = toy_idx,
-        )
-    end
+Function that returns lower and upper edges of fit ranges.
+"""
+function get_range(fit_range)
+    range_l = [arr[1] for arr in fit_range]
+    range_h = [arr[2] for arr in fit_range]
+    return sort(range_l), sort(range_h)
+end
 
-    if config["light_output"] == false
-        @info "... now we plot marginalized posteriors (and priors)"
-        plot_marginal_distr(
-            partitions,
-            samples,
-            free_pars,
-            output_path,
-            priors = priors,
-            par_names = par_names,
-            plot_config = config["plot"],
-            s_max = s_max,
-            sqrt_prior = sqrt_prior,
-            hier = hier,
-            toy_idx = toy_idx,
-        )
-    end
-
-    if config["light_output"] == false
-        @info "... now we plot 2D posterior"
-        plot_two_dim_posteriors(
-            samples,
-            free_pars,
-            output_path,
-            par_names = par_names,
-            toy_idx = toy_idx,
-        )
-        @info "...done!"
-    end
-
-    if config["plot"]["bandfit_and_data"] || config["plot"]["fit_and_data"]
-        @info "... now we plot fit & data"
-        plot_fit_and_data(
-            partitions,
-            events,
-            part_event_index,
-            samples,
-            posterior,
-            free_pars,
-            output_path,
-            config,
-            fit_ranges,
-            toy_idx = toy_idx,
-        )
-        @info "...done!"
-    end
 
 end

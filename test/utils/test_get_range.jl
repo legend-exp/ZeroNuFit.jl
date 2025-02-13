@@ -3,18 +3,17 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
 
 @testset "test_get_range" begin
 
-    @info "Testing function to retrieve lower and upper range edges (function 'get_range' in src/fitting.jl)"
+    @info "Testing function to retrieve lower and upper range edges (function 'get_range' in src/utils.jl)"
 
     # 1 entry in fit ranges
     fit_ranges = [[1930.0, 1950.0]]
     range_l = nothing
     range_h = nothing
     try
-        range_l, range_h = ZeroNuFit.get_range(fit_ranges)
+        range_l, range_h = ZeroNuFit.Utils.get_range(fit_ranges)
     catch e
         @error "Error in get_range: $e"
         throw(e)
@@ -41,7 +40,7 @@ include("../../main.jl")
     range_l = nothing
     range_h = nothing
     try
-        range_l, range_h = ZeroNuFit.get_range(fit_ranges)
+        range_l, range_h = ZeroNuFit.Utils.get_range(fit_ranges)
     catch e
         @error "Error in get_range: $e"
         throw(e)
