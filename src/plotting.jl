@@ -14,7 +14,12 @@ using PDFmerger: append_pdf!
 using ColorSchemes
 using OrderedCollections
 
-using ZeroNuFit
+include("utils.jl")
+include("constants.jl")
+include("likelihood.jl")
+using .Utils
+using .Constants
+using .Likelihood
 
 default(
     framestyle = :box,               # Grid line transparency
