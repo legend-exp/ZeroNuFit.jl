@@ -4,9 +4,6 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
-include("../../src/constants.jl")
 
 Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
@@ -28,7 +25,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     fit_range = [[1920.0, 1930.0], [1960.0, 1970.0]]
     bkg = nothing
     try
-        bkg = ZeroNuFit.get_bkg_pdf(:exponential, x, p, b_name, fit_range)
+        bkg = ZeroNuFit.Likelihood.get_bkg_pdf(:exponential, x, p, b_name, fit_range)
     catch e
         @error "Error in 'get_bkg_pdf' evaluation: $e"
         throw(e)
@@ -59,7 +56,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     fit_range = [[1920.0, 1930.0], [1960.0, 1970.0]]
     bkg = nothing
     try
-        bkg = ZeroNuFit.get_bkg_pdf(:linear, x, p, b_name, fit_range)
+        bkg = ZeroNuFit.Likelihood.get_bkg_pdf(:linear, x, p, b_name, fit_range)
     catch e
         @error "Error in 'get_bkg_pdf' evaluation: $e"
         throw(e)
@@ -77,5 +74,11 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     end
 
     # not-existing bkg shape
-    @test_throws ArgumentError ZeroNuFit.get_bkg_pdf(:fancy_bkg, x, p, b_name, fit_range)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.get_bkg_pdf(
+        :fancy_bkg,
+        x,
+        p,
+        b_name,
+        fit_range,
+    )
 end

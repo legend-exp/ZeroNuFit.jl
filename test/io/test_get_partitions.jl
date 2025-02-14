@@ -3,8 +3,7 @@ Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_get_partitions" begin
 
@@ -40,7 +39,7 @@ include("../../src/utils.jl")
     partitions = nothing
     fit_ranges = nothing
     try
-        partitions, fit_ranges = ZeroNuFit.get_partitions(config)
+        partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
     catch e
         @error "Error in get_partitions: $e"
         throw(e)
@@ -96,7 +95,7 @@ include("../../src/utils.jl")
     ]
     partitions = nothing
     fit_ranges = nothing
-    partitions, fit_ranges = ZeroNuFit.get_partitions(config)
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
     expected_partitions = Table(
         experiment = Array(["GERDA", "MJD"]),
         fit_group = Array(Any["all_phase_II", "mjd-DS0"]),

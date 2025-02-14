@@ -4,8 +4,7 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_get_mu_s_b" begin
 
@@ -61,7 +60,7 @@ include("../../src/utils.jl")
     mu_s = nothing
     mu_b = nothing
     try
-        mu_s, mu_b = ZeroNuFit.get_mu_s_b(
+        mu_s, mu_b = ZeroNuFit.Likelihood.get_mu_s_b(
             p,
             partitions[1],
             1,
@@ -97,7 +96,7 @@ include("../../src/utils.jl")
     settings[:bkg_only] = true
     mu_s = nothing
     mu_b = nothing
-    mu_s, mu_b = ZeroNuFit.get_mu_s_b(
+    mu_s, mu_b = ZeroNuFit.Likelihood.get_mu_s_b(
         p,
         partitions[1],
         1,

@@ -4,8 +4,7 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_build_likelihood_per_partition" begin
 
@@ -61,7 +60,7 @@ include("../../src/utils.jl")
 
     ll_value = nothing
     try
-        ll_value = ZeroNuFit.build_likelihood_per_partition(
+        ll_value = ZeroNuFit.Likelihood.build_likelihood_per_partition(
             1,
             part_event_index[1],
             partitions[1],

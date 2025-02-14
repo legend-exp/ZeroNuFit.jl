@@ -5,12 +5,11 @@ using Random
 using Test
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
+using TypedTables
 
 @testset "test_likelihood_one_partition_0_evts" begin
 
-    @info "Testing likelihood for one partition but 0 events (function 'build_likelihood_zero_obs_evts' in src/build_likelihood_zero_obs_evts.jl)"
+    @info "Testing likelihood for one partition but 0 events (function 'build_likelihood_zero_obs_evts' in src/likelihood.jl)"
 
     events = [[]]
 
@@ -57,7 +56,7 @@ include("../../src/utils.jl")
 
     ll_value = nothing
     try
-        ll_value = ZeroNuFit.build_likelihood_zero_obs_evts(
+        ll_value = ZeroNuFit.Likelihood.build_likelihood_zero_obs_evts(
             partitions[1],
             p,
             settings,

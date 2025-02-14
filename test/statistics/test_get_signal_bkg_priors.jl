@@ -5,9 +5,7 @@ using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
 using IntervalSets
-include("../../main.jl")
-include("../../src/utils.jl")
-include("../../src/constants.jl")
+using Distributions
 
 Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
@@ -44,7 +42,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     distrS = nothing
     distrB = nothing
     try
-        distrS, distrB = ZeroNuFit.get_signal_bkg_priors(config)
+        distrS, distrB = ZeroNuFit.Likelihood.get_signal_bkg_priors(config)
     catch e
         @error "Error in 'get_signal_bkg_priors' evaluation: $e"
         throw(e)
@@ -66,21 +64,21 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     config["signal"]["prior"] = "fancy_prior"
     distrS = nothing
     distrB = nothing
-    @test_throws ArgumentError ZeroNuFit.get_signal_bkg_priors(config)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.get_signal_bkg_priors(config)
 
     # not existing background prior
     config["signal"]["prior"] = "uniform"
     config["bkg"]["prior"] = "fancy_prior"
     distrS = nothing
     distrB = nothing
-    @test_throws ArgumentError ZeroNuFit.get_signal_bkg_priors(config)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.get_signal_bkg_priors(config)
 
     # sqrt signal prior
     config["signal"]["prior"] = "sqrt"
     config["bkg"]["prior"] = "uniform"
     distrS = nothing
     distrB = nothing
-    distrS, distrB = ZeroNuFit.get_signal_bkg_priors(config)
+    distrS, distrB = ZeroNuFit.Likelihood.get_signal_bkg_priors(config)
     expected_distrS = IntervalSets.ClosedInterval(0, 1000)
     @test distrS == expected_distrS
 
@@ -88,7 +86,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     config["signal"]["prior"] = "loguniform"
     distrS = nothing
     distrB = nothing
-    distrS, distrB = ZeroNuFit.get_signal_bkg_priors(config)
+    distrS, distrB = ZeroNuFit.Likelihood.get_signal_bkg_priors(config)
     expected_distrS = LogUniform(0.01, 1000)
     @test distrS == expected_distrS
 end

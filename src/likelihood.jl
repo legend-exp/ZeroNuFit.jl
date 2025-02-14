@@ -3,6 +3,7 @@
 # Authors: Sofia Calgaro, Toby Dixon
 # 
 ###
+module Likelihood
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase
 using BAT, DensityInterface, IntervalSets
 
@@ -10,6 +11,232 @@ using TypedTables
 using Plots, LaTeXStrings
 using Cuba
 using OrderedCollections
+using SpecialFunctions
+
+using ZeroNuFit
+
+"""
+    get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
+
+Function to retrieve useful pieces (prior, likelihood, posterior), also in saving values
+"""
+function get_stat_blocks(
+    partitions,
+    events::Array{Vector{Float64}},
+    part_event_index,
+    fit_ranges;
+    config,
+    bkg_only,
+)
+    settings = ZeroNuFit.Utils.get_settings(config)
+
+    corr, hier_mode, hier_range = ZeroNuFit.Utils.get_corr_info(config)
+
+    bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
+
+    prior, par_names, nuisance_info = Likelihood.build_prior(
+        partitions,
+        part_event_index,
+        config,
+        settings,
+        hierachical = corr,
+        hierachical_mode = hier_mode,
+        hierachical_range = hier_range,
+        bkg_shape = bkg_shape,
+        shape_pars = bkg_shape_pars,
+    )
+    @info "using a ", bkg_shape, " bkg with ", bkg_shape_pars, " parameters"
+    @info "built prior"
+
+    sqrt_prior, s_max = Likelihood.get_signal_prior_info(bkg_only, config)
+
+    likelihood = Likelihood.build_likelihood_looping_partitions(
+        partitions,
+        events,
+        part_event_index,
+        settings,
+        sqrt_prior,
+        s_max,
+        fit_ranges,
+        bkg_shape = bkg_shape,
+    )
+    @info "built likelihood"
+
+    posterior = PosteriorMeasure(likelihood, prior)
+    @info "got posterior"
+
+    return prior, likelihood, posterior, par_names, nuisance_info
+end
+
+
+"""
+    run_fit_over_partitions(partitions,events::Array{Vector{Float64}},part_event_index::Vector{Int}, config,fit_ranges)
+
+Function to run the fit looping over partitions
+"""
+function run_fit_over_partitions(
+    partitions,
+    events::Array{Vector{Float64}},
+    part_event_index::Vector{Int},
+    config,
+    fit_ranges,
+)
+    bkg_only = config["bkg_only"]
+    prior, likelihood, posterior, par_names, nuisance_info = get_stat_blocks(
+        partitions,
+        events,
+        part_event_index,
+        fit_ranges,
+        config = config,
+        bkg_only = bkg_only,
+    )
+
+    Ns = Int(config["bat_fit"]["nsteps"])
+    Nc = Int(config["bat_fit"]["nchains"])
+    return bat_sample(
+        posterior,
+        MCMCSampling(mcalg = MetropolisHastings(), nsteps = Ns, nchains = Nc),
+    ).result,
+    prior,
+    par_names
+end
+
+"""
+    get_signal_prior_info(bkg_only::Bool,config)
+
+Function that retrieves signal prior information.
+"""
+function get_signal_prior_info(bkg_only::Bool, config)
+    sqrt_prior = false
+    s_max = nothing
+    if bkg_only == false
+        if (config["signal"]["prior"] == "sqrt")
+            sqrt_prior = true
+            s_max = Float64(config["signal"]["upper_bound"])
+        end
+    end
+    return sqrt_prior, s_max
+end
+
+
+"""
+    norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
+
+Normalised flat function defined by 1/norm.
+
+Parameters
+----------
+    - x::Real,     the x value to evaluate at
+"""
+function norm_uniform(x::Real, p::NamedTuple, b_name::Symbol, fit_range)
+    range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
+    center = range_l[1]
+
+    norm = sum(range_h .- range_l)
+    return 1 / norm
+end
+
+
+"""
+    norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+
+Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+
+Parameters
+----------
+    - slope::Real, the slope of the background
+    - x::Real,     the x value to evaluate at
+"""
+function norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+    range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
+    center = range_l[1]
+
+    sum_range = sum(range_h .- range_l)
+    sum_range_sq = sum(range_h .^ 2 .- range_l .^ 2)
+    slope = p[Symbol(string(b_name) * "_slope")]
+
+    delta = range_h[end] - range_l[1]
+    norm = sum_range * (1 - slope * center / delta) + slope * sum_range_sq / (2 * delta)
+
+    return (1 + slope * (x - center) / delta) / norm
+end
+
+
+function exp_stable(x::Float64)
+    if (abs(x) < 1E-6)
+        return 1 + x + x^2 / 2 + x^3 / 6
+    else
+        return exp(x)
+    end
+end
+
+
+"""
+    norm_exponential(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
+
+Normalised exponential function defined by exp_stable((x-center)*Rt)/norm.
+
+Parameters
+----------
+    - slope::Real, the slope of the background
+    - x::Real,     the x value to evaluate at
+"""
+function norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+    range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
+    center = range_l[1]
+
+    centers = fill(center, length(range_l))
+    R = p[Symbol(string(b_name) * "_slope")]
+    delta = range_h[end] - range_l[1]
+    Rt = R / delta
+
+    if (abs(Rt) > 1E-6)
+        norm =
+            (
+                -sum(exp_stable.((range_l - centers) * Rt)) +
+                sum(exp_stable.((range_h - centers) * Rt))
+            ) / Rt
+    else
+        norm = sum(range_h .- range_l)
+    end
+
+    return exp_stable((x - center) * Rt) / norm
+
+end
+
+
+
+"""
+    gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple)
+
+Signal model based on the peak shape used for the MJD analysis. The peak shape derives from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
+"""
+function gaussian_plus_lowEtail(
+    evt_energy::Float64,
+    Qbb::Float64,
+    bias::Float64,
+    reso::Float64,
+    part_k::NamedTuple,
+)
+    γ = reso
+    # following params are ALWAYS fixed
+    f = part_k.frac
+    τ = part_k.tau
+    σ = part_k.sigma
+
+    term1 = (1 - f) * pdf(Normal(Qbb - bias, γ * σ), evt_energy)
+
+    term2 =
+        f / (2 * γ * τ) *
+        exp(((γ * σ)^2) / (2 * (γ * τ)^2) + (evt_energy - (Qbb - bias)) / (γ * τ))
+    term2 =
+        term2 * erfc(σ / (sqrt(2) * τ) + (evt_energy - (Qbb - bias)) / (sqrt(2) * γ * σ))
+
+    return term1 + term2
+end
+
+
+
 
 function get_bkg_pdf(
     bkg_shape::Symbol,
@@ -35,7 +262,7 @@ function get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple)
     signal_shape = part_k.signal_name
     bias = part_k.bias
     reso = part_k.width
-    #@info part_k.experiment, signal_shape
+
     if (signal_shape == :gaussian)
         return pdf(Normal(Qbb - bias, reso), evt_energy)
     elseif (signal_shape == :gaussian_plus_lowEtail)
@@ -63,9 +290,9 @@ end
 Get the expected number of signal counts in a partition
 """
 function get_mu_s(exposure, eff, signal)
-    N_A = constants.N_A
-    m_76 = constants.m_76
-    sig_units = constants.sig_units
+    N_A = ZeroNuFit.Constants.N_A
+    m_76 = ZeroNuFit.Constants.m_76
+    sig_units = ZeroNuFit.Constants.sig_units
     return log(2) * N_A * exposure * (eff) * (signal * sig_units) / m_76
 end
 
@@ -83,8 +310,8 @@ function get_mu_s_b(
     fit_range,
 )
 
-    deltaE = get_deltaE(fit_range)
-    eff = get_efficiency(p, part_k, idx_part_with_events, settings)
+    deltaE = ZeroNuFit.Utils.get_deltaE(fit_range)
+    eff = ZeroNuFit.Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
 
     if (settings[:bkg_only] == false)
         model_s_k = get_mu_s(part_k.exposure, eff, p.S)
@@ -137,7 +364,7 @@ function build_likelihood_per_partition(
     bkg_shape::Symbol,
     fit_range,
 )
-    Qbb = constants.Qbb
+    Qbb = ZeroNuFit.Constants.Qbb
 
     ll_value = 0
 
@@ -162,7 +389,12 @@ function build_likelihood_per_partition(
         if (settings[:bkg_only] == false)
 
             # get the correct reso and bias 
-            reso, bias = get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+            reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(
+                part_k,
+                p,
+                settings,
+                idx_part_with_events,
+            )
             term2 = model_s_k * get_signal_pdf(evt_energy, Qbb, part_k)
         else
             term2 = 0
@@ -293,7 +525,7 @@ function generate_data(
     seed = nothing,
     bkg_only = false,
 )
-    Qbb = constants.Qbb
+    Qbb = ZeroNuFit.Constants.Qbb
 
     # seed the seed
     output = OrderedDict("events" => [])
@@ -329,12 +561,19 @@ function generate_data(
 
         n_s = rand(Poisson(model_s_k))
         n_b = rand(Poisson(model_b_k))
-        events = generate_disjoint_uniform_samples(n_b, fit_ranges[part_k.fit_group])
+        events = ZeroNuFit.Utils.generate_disjoint_uniform_samples(
+            n_b,
+            fit_ranges[part_k.fit_group],
+        )
         if (bkg_only == false)
             for i = 1:n_s
 
-                reso, bias =
-                    get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+                reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(
+                    part_k,
+                    p,
+                    settings,
+                    idx_part_with_events,
+                )
 
                 append!(events, rand(Normal(Qbb - bias, reso)))
 
@@ -769,4 +1008,5 @@ function build_prior(
 
         return hd, pretty_names, nuisance_info
     end
+end
 end

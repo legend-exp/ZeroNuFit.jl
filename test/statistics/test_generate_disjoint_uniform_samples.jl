@@ -4,8 +4,6 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
 
 @testset "test_generate_disjoint_uniform_samples" begin
 
@@ -15,7 +13,8 @@ include("../../src/utils.jl")
     one_energy = nothing
     fit_range = [[1920.0, 1930.0]]
     try
-        one_energy = ZeroNuFit.generate_disjoint_uniform_samples(1, fit_range; seed = 123)
+        one_energy =
+            ZeroNuFit.Utils.generate_disjoint_uniform_samples(1, fit_range; seed = 123)
     catch e
         @error "Error in 'generate_disjoint_uniform_samples' evaluation: $e"
         throw(e)
@@ -42,7 +41,7 @@ include("../../src/utils.jl")
     # random seed generator (1 energy, 1 range)
     one_energy = nothing
     try
-        one_energy = ZeroNuFit.generate_disjoint_uniform_samples(1, fit_range)
+        one_energy = ZeroNuFit.Utils.generate_disjoint_uniform_samples(1, fit_range)
     catch e
         @error "Error in 'generate_disjoint_uniform_samples' evaluation: $e"
         throw(e)
@@ -65,7 +64,7 @@ include("../../src/utils.jl")
     # random seed generator (more energies, 1 range)
     more_energies = nothing
     try
-        more_energies = ZeroNuFit.generate_disjoint_uniform_samples(10, fit_range)
+        more_energies = ZeroNuFit.Utils.generate_disjoint_uniform_samples(10, fit_range)
     catch e
         @error "Error in 'generate_disjoint_uniform_samples' evaluation: $e"
         throw(e)
@@ -84,7 +83,7 @@ include("../../src/utils.jl")
     more_energies = nothing
     fit_range = [[1920.0, 1930.0], [1970.0, 1980.0], [2100.0, 2250.0]]
     try
-        more_energies = ZeroNuFit.generate_disjoint_uniform_samples(10, fit_range)
+        more_energies = ZeroNuFit.Utils.generate_disjoint_uniform_samples(10, fit_range)
     catch e
         @error "Error in 'generate_disjoint_uniform_samples' evaluation: $e"
         throw(e)

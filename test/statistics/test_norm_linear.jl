@@ -4,13 +4,10 @@ Pkg.instantiate()
 using Random
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
-include("../../main.jl")
-include("../../src/utils.jl")
-include("../../src/constants.jl")
 
 @testset "test_norm_linear" begin
 
-    @info "Testing normalised linear function (function 'norm_linear' in src/fitting.jl)"
+    @info "Testing normalised linear function (function 'norm_linear' in src/likelihood.jl)"
 
     x = 1965.0
     p = (
@@ -25,7 +22,7 @@ include("../../src/constants.jl")
     fit_range = [[1920.0, 1930.0], [1960.0, 1970.0]]
     linear_func = nothing
     try
-        linear_func = ZeroNuFit.norm_linear(x, p, b_name, fit_range)
+        linear_func = ZeroNuFit.Likelihood.norm_linear(x, p, b_name, fit_range)
     catch e
         @error "Error in 'norm_linear' evaluation: $e"
         throw(e)

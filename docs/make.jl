@@ -10,7 +10,7 @@ makedocs(
     debug = true,
     modules = [ZeroNuFit],
     sitename = "ZeroNuFit.jl",
-    authors = "S. Calgaro, T. Dixon",
+    authors = "Sofia Calgaro, Toby Dixon, Luigi Pertoldi",
     format = Documenter.HTML(
         # size thresholds for HTML generation
         size_threshold = 400 * 1024,       # hard limit
@@ -24,7 +24,6 @@ makedocs(
         "Partitions and events" => "inputs.md",
         "Generating toys" => "toys.md",
         "Tutorial" => "tutorial.md",
-        #"API" => "internal_api.md",
+        "API" => "api.md",
     ],
-    doctest = ("fixdoctests" in ARGS) ? :fix : true,
 )
