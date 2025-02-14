@@ -26,5 +26,4 @@ makedocs(
         "Tutorial" => "tutorial.md",
         "API" => "api.md",
     ],
-    doctest = ("fixdoctests" in ARGS) ? :fix : true,
 )

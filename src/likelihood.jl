@@ -13,11 +13,7 @@ using Cuba
 using OrderedCollections
 using SpecialFunctions
 
-
-include("utils.jl")
-include("constants.jl")
-using .Utils
-using .Constants
+using ZeroNuFit
 
 """
     get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
@@ -32,11 +28,11 @@ function get_stat_blocks(
     config,
     bkg_only,
 )
-    settings = Utils.get_settings(config)
+    settings = ZeroNuFit.Utils.get_settings(config)
 
-    corr, hier_mode, hier_range = Utils.get_corr_info(config)
+    corr, hier_mode, hier_range = ZeroNuFit.Utils.get_corr_info(config)
 
-    bkg_shape, bkg_shape_pars = Utils.get_bkg_info(config)
+    bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
 
     prior, par_names, nuisance_info = Likelihood.build_prior(
         partitions,
@@ -133,7 +129,7 @@ Parameters
     - x::Real,     the x value to evaluate at
 """
 function norm_uniform(x::Real, p::NamedTuple, b_name::Symbol, fit_range)
-    range_l, range_h = Utils.get_range(fit_range)
+    range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
     norm = sum(range_h .- range_l)
@@ -152,7 +148,7 @@ Parameters
     - x::Real,     the x value to evaluate at
 """
 function norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
-    range_l, range_h = Utils.get_range(fit_range)
+    range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
     sum_range = sum(range_h .- range_l)
@@ -186,7 +182,7 @@ Parameters
     - x::Real,     the x value to evaluate at
 """
 function norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
-    range_l, range_h = Utils.get_range(fit_range)
+    range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
     centers = fill(center, length(range_l))
@@ -294,9 +290,9 @@ end
 Get the expected number of signal counts in a partition
 """
 function get_mu_s(exposure, eff, signal)
-    N_A = Constants.N_A
-    m_76 = Constants.m_76
-    sig_units = Constants.sig_units
+    N_A = ZeroNuFit.Constants.N_A
+    m_76 = ZeroNuFit.Constants.m_76
+    sig_units = ZeroNuFit.Constants.sig_units
     return log(2) * N_A * exposure * (eff) * (signal * sig_units) / m_76
 end
 
@@ -314,8 +310,8 @@ function get_mu_s_b(
     fit_range,
 )
 
-    deltaE = Utils.get_deltaE(fit_range)
-    eff = Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
+    deltaE = ZeroNuFit.Utils.get_deltaE(fit_range)
+    eff = ZeroNuFit.Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
 
     if (settings[:bkg_only] == false)
         model_s_k = get_mu_s(part_k.exposure, eff, p.S)
@@ -368,7 +364,7 @@ function build_likelihood_per_partition(
     bkg_shape::Symbol,
     fit_range,
 )
-    Qbb = Constants.Qbb
+    Qbb = ZeroNuFit.Constants.Qbb
 
     ll_value = 0
 
@@ -393,8 +389,12 @@ function build_likelihood_per_partition(
         if (settings[:bkg_only] == false)
 
             # get the correct reso and bias 
-            reso, bias =
-                Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+            reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(
+                part_k,
+                p,
+                settings,
+                idx_part_with_events,
+            )
             term2 = model_s_k * get_signal_pdf(evt_energy, Qbb, part_k)
         else
             term2 = 0
@@ -525,7 +525,7 @@ function generate_data(
     seed = nothing,
     bkg_only = false,
 )
-    Qbb = Constants.Qbb
+    Qbb = ZeroNuFit.Constants.Qbb
 
     # seed the seed
     output = OrderedDict("events" => [])
@@ -561,12 +561,19 @@ function generate_data(
 
         n_s = rand(Poisson(model_s_k))
         n_b = rand(Poisson(model_b_k))
-        events = Utils.generate_disjoint_uniform_samples(n_b, fit_ranges[part_k.fit_group])
+        events = ZeroNuFit.Utils.generate_disjoint_uniform_samples(
+            n_b,
+            fit_ranges[part_k.fit_group],
+        )
         if (bkg_only == false)
             for i = 1:n_s
 
-                reso, bias =
-                    Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+                reso, bias = ZeroNuFit.Utils.get_energy_scale_pars(
+                    part_k,
+                    p,
+                    settings,
+                    idx_part_with_events,
+                )
 
                 append!(events, rand(Normal(Qbb - bias, reso)))
 

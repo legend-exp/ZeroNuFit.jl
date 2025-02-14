@@ -9,14 +9,7 @@ using SpecialFunctions
 
 export run_analysis, retrieve_real_fit_results
 
-include("utils.jl")
-include("likelihood.jl")
-include("plotting.jl")
-using .Utils
-using .Likelihood
-using .Plotting
-
-
+using ZeroNuFit
 
 """
     save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
@@ -58,13 +51,13 @@ function save_outputs(
     if config["light_output"] == false
         if config["overwrite"] == true ||
            !isfile(joinpath(config["output_path"], "mcmc_files/samples.h5"))
-            Utils.save_generated_samples(samples, output_path)
+            ZeroNuFit.Utils.save_generated_samples(samples, output_path)
             @info "...done!"
         end
     end
 
     @info "... now we save other useful results + config entries"
-    Utils.save_results_into_json(
+    ZeroNuFit.Utils.save_results_into_json(
         samples,
         posterior,
         nuisance_info,
@@ -76,7 +69,7 @@ function save_outputs(
     @info "...done!"
 
     if config["light_output"] == false
-        Plotting.plot_correlation_matrix(
+        ZeroNuFit.Plotting.plot_correlation_matrix(
             samples,
             output_path,
             par_names = par_names,
@@ -86,7 +79,7 @@ function save_outputs(
 
     if config["light_output"] == false
         @info "... now we plot marginalized posteriors (and priors)"
-        Plotting.plot_marginal_distr(
+        ZeroNuFit.Plotting.plot_marginal_distr(
             partitions,
             samples,
             free_pars,
@@ -103,7 +96,7 @@ function save_outputs(
 
     if config["light_output"] == false
         @info "... now we plot 2D posterior"
-        Plotting.plot_two_dim_posteriors(
+        ZeroNuFit.Plotting.plot_two_dim_posteriors(
             samples,
             free_pars,
             output_path,
@@ -115,7 +108,7 @@ function save_outputs(
 
     if config["plot"]["bandfit_and_data"] || config["plot"]["fit_and_data"]
         @info "... now we plot fit & data"
-        Plotting.plot_fit_and_data(
+        ZeroNuFit.Plotting.plot_fit_and_data(
             partitions,
             events,
             part_event_index,
@@ -143,7 +136,8 @@ function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = n
     """
     @info "You entered into src/ZeroNuFit.jl"
 
-    part_event_index, events, partitions, fit_ranges = Utils.get_partitions_events(config)
+    part_event_index, events, partitions, fit_ranges =
+        ZeroNuFit.Utils.get_partitions_events(config)
     # check if you want to overwrite the fit; if no results are present, then fit data
     if config["overwrite"] == true ||
        !isfile(joinpath(config["output_path"], "mcmc_files/samples.h5"))
@@ -153,7 +147,7 @@ function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = n
             @info "OVERWRITING THE PREVIOUS FIT!"
         end
 
-        samples, prior, par_names = Likelihood.run_fit_over_partitions(
+        samples, prior, par_names = ZeroNuFit.Likelihood.run_fit_over_partitions(
             partitions,
             events,
             part_event_index,
@@ -164,7 +158,7 @@ function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = n
     else
         @info "... we load already existing fit results"
         samples = bat_read(joinpath(config["output_path"], "mcmc_files/samples.h5")).result
-        prior, _, _, par_names, nuisance_info = Likelihood.get_stat_blocks(
+        prior, _, _, par_names, nuisance_info = ZeroNuFit.Likelihood.get_stat_blocks(
             partitions,
             events,
             part_event_index,
@@ -177,7 +171,7 @@ function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = n
     # let's save
     @info samples
     @info bat_report(samples)
-    _, _, posterior, _, nuisance_info = Likelihood.get_stat_blocks(
+    _, _, posterior, _, nuisance_info = ZeroNuFit.Likelihood.get_stat_blocks(
         partitions,
         events,
         part_event_index,
@@ -222,7 +216,7 @@ function retrieve_real_fit_results(config::Dict{String,Any})
     @info config["partitions"]
     for part_path in config["partitions"]
 
-        part_tmp, fit_groups = Utils.get_partitions_new(part_path)
+        part_tmp, fit_groups = ZeroNuFit.Utils.get_partitions_new(part_path)
         if (first)
             partitions = part_tmp
             first = false
@@ -234,7 +228,7 @@ function retrieve_real_fit_results(config::Dict{String,Any})
     @info "... load events"
     events_multi = []
     for event_path in config["events"]
-        append!(events_multi, [Utils.get_events(event_path, partitions)])
+        append!(events_multi, [ZeroNuFit.Utils.get_events(event_path, partitions)])
     end
 
     events = Array{Vector{Float64}}(undef, length(partitions))
@@ -253,7 +247,7 @@ function retrieve_real_fit_results(config::Dict{String,Any})
     @debug events
 
     @info "get which partitions have events"
-    part_event_index = Utils.get_partition_event_index(events, partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
 
     # let's retrieve the old data
     samples = bat_read(joinpath(config["output_path"], "mcmc_files/samples.h5")).result

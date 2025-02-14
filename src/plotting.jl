@@ -14,12 +14,7 @@ using PDFmerger: append_pdf!
 using ColorSchemes
 using OrderedCollections
 
-include("utils.jl")
-include("constants.jl")
-include("likelihood.jl")
-using .Utils
-using .Constants
-using .Likelihood
+using ZeroNuFit
 
 default(
     framestyle = :box,               # Grid line transparency
@@ -49,22 +44,23 @@ function fit_model(
     fit_range,
     x::Float64,
 )
-    Qbb = Constants.Qbb
-    N_A = Constants.N_A
-    m_76 = Constants.m_76
-    sig_units = Constants.sig_units
+    Qbb = ZeroNuFit.Constants.Qbb
+    N_A = ZeroNuFit.Constants.N_A
+    m_76 = ZeroNuFit.Constants.m_76
+    sig_units = ZeroNuFit.Constants.sig_units
 
-    deltaE = Utils.get_deltaE(fit_range)
-    eff = Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
+    deltaE = ZeroNuFit.Utils.get_deltaE(fit_range)
+    eff = ZeroNuFit.Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
 
     b_name = part_k.bkg_name
-    model_b_k = Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name])
-    term1 = model_b_k * Likelihood.get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
+    model_b_k = ZeroNuFit.Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name])
+    term1 = model_b_k * ZeroNuFit.Likelihood.get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
 
     if (settings[:bkg_only] == false)
-        reso, bias = Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
-        model_s_k = Likelihood.get_mu_s(part_k.exposure, eff, p.S)
-        term2 = model_s_k * Likelihood.get_signal_pdf(x, Qbb, part_k)
+        reso, bias =
+            ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+        model_s_k = ZeroNuFit.Likelihood.get_mu_s(part_k.exposure, eff, p.S)
+        term2 = model_s_k * ZeroNuFit.Likelihood.get_signal_pdf(x, Qbb, part_k)
     else
         term2 = 0
     end
@@ -158,7 +154,7 @@ function plot_data(
             globalmode = false,
             fillalpha = 0.3,
         ) #TO DO: take only some samples
-        _, best_fit_pars = Utils.get_global_mode(samples, posterior)
+        _, best_fit_pars = ZeroNuFit.Utils.get_global_mode(samples, posterior)
         plot!(
             p,
             min_x:0.1:max_x,
@@ -168,7 +164,7 @@ function plot_data(
             color = "red",
         )
     else
-        _, best_fit_pars = Utils.get_global_mode(samples, posterior)
+        _, best_fit_pars = ZeroNuFit.Utils.get_global_mode(samples, posterior)
         plot!(
             p,
             min_x:0.1:max_x,
@@ -181,22 +177,22 @@ function plot_data(
 
     # exclude gamma lines
     shape_x = [
-        Constants.gamma_2113_keV,
-        Constants.gamma_2113_keV,
-        Constants.gamma_2123_keV,
-        Constants.gamma_2123_keV,
+        ZeroNuFit.Constants.gamma_2113_keV,
+        ZeroNuFit.Constants.gamma_2113_keV,
+        ZeroNuFit.Constants.gamma_2123_keV,
+        ZeroNuFit.Constants.gamma_2123_keV,
     ]
     shape_x2 = [
-        Constants.gamma_2098_keV,
-        Constants.gamma_2098_keV,
-        Constants.gamma_2108_keV,
-        Constants.gamma_2108_keV,
+        ZeroNuFit.Constants.gamma_2098_keV,
+        ZeroNuFit.Constants.gamma_2098_keV,
+        ZeroNuFit.Constants.gamma_2108_keV,
+        ZeroNuFit.Constants.gamma_2108_keV,
     ]
     shape_x3 = [
-        Constants.gamma_2199_keV,
-        Constants.gamma_2199_keV,
-        Constants.gamma_2209_keV,
-        Constants.gamma_2209_keV,
+        ZeroNuFit.Constants.gamma_2199_keV,
+        ZeroNuFit.Constants.gamma_2199_keV,
+        ZeroNuFit.Constants.gamma_2209_keV,
+        ZeroNuFit.Constants.gamma_2209_keV,
     ]
     shape_y = [0, ymax, ymax, 0]
 
@@ -253,8 +249,8 @@ function plot_fit_and_data(
 )
 
     plotflag = config["plot"]
-    settings = Utils.get_settings(config)
-    bkg_shape, _ = Utils.get_bkg_info(config)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    bkg_shape, _ = ZeroNuFit.Utils.get_bkg_info(config)
 
     # create histo with energies 
     energies = []
@@ -340,8 +336,8 @@ function plot_two_dim_posteriors(
                 continue
             end
 
-            x = Utils.get_par_posterior(samples, par_x, idx = nothing)
-            y = Utils.get_par_posterior(samples, par_y, idx = nothing)
+            x = ZeroNuFit.Utils.get_par_posterior(samples, par_x, idx = nothing)
+            y = ZeroNuFit.Utils.get_par_posterior(samples, par_y, idx = nothing)
 
             p = histogram2d(
                 x,
@@ -421,7 +417,7 @@ function plot_marginal_distr(
         # checking if it is a 'AbstractFloat' helps avoiding cases were multivariate parameters have 1 entry only
         if (length(par_entry) == 1 && par_entry isa AbstractFloat)
 
-            post = Utils.get_par_posterior(samples, par, idx = nothing)
+            post = ZeroNuFit.Utils.get_par_posterior(samples, par, idx = nothing)
             if (par == :S || par == :B)
                 mini = 0
             else
@@ -498,7 +494,7 @@ function plot_marginal_distr(
             # multivariate parameters    
         else
             for idx = 1:length(par_entry)
-                post = Utils.get_par_posterior(samples, par, idx = idx)
+                post = ZeroNuFit.Utils.get_par_posterior(samples, par, idx = idx)
 
                 xlab = string("$(par)[$(idx)]")
                 ylab = string("Probability Density")
