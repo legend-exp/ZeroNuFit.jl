@@ -35,6 +35,21 @@ color_schemes = Dict(
     :muted => [:olivedrab, :goldenrod, :indianred1],
 )
 
+
+"""
+    fit_model(idx_part_with_events::Int,part_k::NamedTuple,p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,x::Float64)
+
+Evaòuates the total modeling function at x.
+
+### Arguments
+- `idx_part_with_events::Int`: index of the partition with the event.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
+- `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `x::Float64`: the x value to evaluate at.
+"""
 function fit_model(
     idx_part_with_events::Int,
     part_k::NamedTuple,
@@ -73,7 +88,20 @@ end
 """
     plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
 
-Function to plot events in the Qbb analysis window and BAT fit results
+Function to plot events in the Qbb analysis window and BAT fit results.
+
+### Arguments
+- `hist::Histogram`: binned histogram with energy events.
+- `name`: title of the plot.
+- `partitions`: table of partitions.
+- `part_event_index`: index mapping events to the partitions.
+- `pars`: free parameters in format (:B, :S, ...) 
+- `samples`: set of generated MCMC samples.
+- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
+- `plotflag`: True if the 68% band is plotted together with the best fit result.
+- `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
+- `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
+- `fit_ranges`: The fitting ranges corresponding to the partitions.
 """
 function plot_data(
     hist::Histogram,
@@ -234,7 +262,22 @@ function plot_data(
 end
 
 
+"""
+    plot_fit_and_data(partitions,part_event_index,samples,posterior,pars,output,config,fit_ranges;toy_idx=nothing)
 
+Retrieves event energies and calls `plot_data` to plot events in the Qbb analysis window and BAT fit results. 
+
+### Arguments
+- `partitions`: table of partitions.
+- `part_event_index`: index mapping events to the partitions.
+- `samples`: set of generated MCMC samples.
+- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
+- `pars`: free parameters in format (:B, :S, ...) 
+- `output`: output folder path.
+- `config`: input dictionary.
+- `fit_ranges`: The fitting ranges corresponding to the partitions.
+- `toy_idx`: identification index of the generated toy.
+"""
 function plot_fit_and_data(
     partitions,
     events,
@@ -291,7 +334,13 @@ end
 """
     plot_correlation_matrix(samples,output;par_names=nothing,toy_idx=nothing)
 
-Plots the correlation matrixs
+Plots the correlation matrixes across the free parameters. 
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `output`: output folder path.
+- `par_names`: collection of parameter names.
+- `toy_idx`: identification index of the generated toy.
 """
 function plot_correlation_matrix(samples, output; par_names = nothing, toy_idx = nothing)
     unshaped_samples, f_flatten = bat_transform(Vector, samples)
@@ -312,6 +361,19 @@ function plot_correlation_matrix(samples, output; par_names = nothing, toy_idx =
     savefig(joinpath(output, "plots/correlations$log_suffix.pdf"))
 end
 
+
+"""
+    plot_two_dim_posteriors(samples,pars,output;par_names=nothing,toy_idx=nothing)
+
+Plots the correlation matrixes across the free parameters. 
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `pars`: free parameters in format (:B, :S, ...) free parameters in format (:B, :S, ...) 
+- `output`: output folder path.
+- `par_names`: collection of parameter names.
+- `toy_idx`: identification index of the generated toy.
+"""
 function plot_two_dim_posteriors(
     samples,
     pars,
@@ -362,14 +424,23 @@ function plot_two_dim_posteriors(
 end
 
 
-##############################################
-##############################################
-##############################################
-
 """
     plot_marginal_distr(partitions,samples,pars,output;sqrt_prior=false,priors=nothing,par_names=nothing,plot_config=nothing,s_max=nothing,hier=false,toy_idx=nothing) 
 
-Function to plot 1D and 2D marginalized distributions (and priors)
+Function to plot 1D and 2D marginalized posterior distributions, and prior distributions.
+
+### Arguments
+- `partitions`: table of partitions.
+- `samples`: set of generated MCMC samples.
+- `pars`: free parameters in format (:B, :S, ...) 
+- `output`: output folder path.
+- `sqrt_prior`: True if a 1/sqrt(signal) prior distribution was used for the signal.
+- `priors`: True if we want to overlap priors distributions over posterior distributions.
+- `par_names`: collection of parameter names.
+- `plot_config`: dictionary with plotting settings.
+- `s_max`: maximum value of the marginalized signal posterior pdf.
+- `hier`: True if we use a hierarchical model.
+- `toy_idx`: identification index of the generated toy.
 """
 function plot_marginal_distr(
     partitions,
