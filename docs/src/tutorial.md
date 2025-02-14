@@ -1,3 +1,5 @@
+# Tutorial
+
 The aim of this tutorial consists in building proper config JSON files in order to run a neutrinoless double-beta decay analysis over GERDA and MAJORANA DEMONSTRATO (MJD) published data.
 Additional info on the meaning of input parameters can be found under the "Configuration file" section, and for input files under the "Partitions and events" section.
 

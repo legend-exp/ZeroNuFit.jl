@@ -1,3 +1,5 @@
+# Generating toys
+
 Table of contents:
 
 ```@contents

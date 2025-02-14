@@ -1,3 +1,5 @@
+# Likelihood implementation
+
 Table of contents:
 
 ```@contents
@@ -10,12 +12,12 @@ The implemented unbinned Likelihood function reads as:
 
 ```math
 \begin{aligned}
-    \mathcal{L}(\Gamma) = \prod_k \bigg[ \textrm{Pois}(s_k+b_k) \bigg[ \prod_{i_k=1}^{N_k} \frac{1}{s_k + b_k} \left( b_k\cdot p_{\rm b}(E) + s_{\rm k}\cdot p_{\rm s}(E) \right)  \bigg] \bigg]
+    \mathcal{L}(\Gamma,\, \boldsymbol{BI},\,\boldsymbol{\theta}|D) = \prod_k \bigg[ \textrm{Pois}(s_k+b_k) \bigg[ \prod_{i_k=1}^{N_k} \frac{1}{s_k + b_k} \left( b_k\cdot p_{\rm b}(E) + s_{\rm k}\cdot p_{\rm s}(E) \right)  \bigg] \bigg]
 \end{aligned}
 ```
 
+where $\Gamma$ is the signal rate, BI is the background index, $\boldsymbol{\theta}$ are the nuisance parameters, and $D$ are the observed data.
 Here, the first product runs over the number of partitions _k_ ($N_{\rm p}$ partitions in total) and the second over the events _i_ in a given partition ($N_{\rm k}$ events in total).
-
 In case no events are found in a given partition _k_, the above Likelihood expression simplifies into
 
 ```math
@@ -46,7 +48,7 @@ Taking $x=Q_{\beta\beta} - \Delta_{\rm k}$, the signal energy distribution for e
 \end{aligned}
 ```
 
-Alternatively, the signal energy distribution can also be shaped as a Gaussian with a tail at low energies (e.g. for MAJORANA DEMONSTRATOR), 
+Alternatively, the signal energy distribution can also be shaped as a Gaussian with a tail at low energies (e.g. for MAJORANA DEMONSTRATOR data), 
 
 ```math
 \begin{aligned}
@@ -68,7 +70,7 @@ and
 
 ```math
 \begin{aligned}
-s_{\rm k} = \frac{\text{ln}\,2\,\mathcal{N}_{\rm A}}{m_{\rm 76}} \cdot (\varepsilon_{\rm k} + \alpha \cdot \sigma_{\varepsilon_{\rm k}}) \cdot \mathcal{E}_{\rm k} \cdot \Gamma
+s_{\rm k} = \frac{\text{ln}\,2\cdot \mathcal{N}_{\rm A}}{m_{\rm 76}} \cdot (\varepsilon_{\rm k} + \alpha \cdot \sigma_{\varepsilon_{\rm k}}) \cdot \mathcal{E}_{\rm k} \cdot \Gamma
 \end{aligned}
 ```
 
@@ -86,10 +88,10 @@ We defined our "log Likelihood" ($LL$) as:
 \end{aligned}
 ```
 
-The sum over all partitions $k$ was separated in a sum over partitions containing an event $i$ ($j$) and in a sum over partitions with no events ($l$).
+The sum over all partitions $k$ was separated in a sum over partitions containing an event $i$ with energy $E_{\rm i}$ (sum with index $j$) and in a sum over partitions with no events (sum with index $l$).
 
 
-## Free parameter priors
+## Prior terms
 
 Different free prameters can be identified within the framework:
 - signal, $\Gamma$
@@ -140,7 +142,7 @@ The above products, then, can be expressed again as
 \end{aligned}
 ```
 
-### Marginalization and posterior distributions
+### Posterior distributions and marginalization
 
 The combined posterior probability density function is calculated according to Bayes’ theorem as:
 
