@@ -16,9 +16,17 @@ using SpecialFunctions
 using ZeroNuFit
 
 """
-    get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only)
+    get_stat_blocks(partitions,events::Array{Vector{Float64}},part_event_index,fit_ranges;config,bkg_only::Bool)
 
-Function to retrieve useful pieces (prior, likelihood, posterior), also in saving values
+Function to retrieve useful pieces (prior, likelihood, posterior), also in saving values.
+
+### Arguments
+- `partitions`: table of partitions.
+- `events::Array{Vector{Float64}}`: list of events (=energies) in each partition.
+- `part_event_index::Vector{Int}`: index mapping events to the partitions.
+- `fit_ranges`: dictionary of energy ranges considered for the analysis.
+- `config`: input dictionary.
+- `bkg_only::Bool`: True if we are using a model with background only.
 """
 function get_stat_blocks(
     partitions,
@@ -26,7 +34,7 @@ function get_stat_blocks(
     part_event_index,
     fit_ranges;
     config,
-    bkg_only,
+    bkg_only::Bool,
 )
     settings = ZeroNuFit.Utils.get_settings(config)
 
@@ -72,7 +80,14 @@ end
 """
     run_fit_over_partitions(partitions,events::Array{Vector{Float64}},part_event_index::Vector{Int}, config,fit_ranges)
 
-Function to run the fit looping over partitions
+Function to run the fit looping over partitions.
+
+### Arguments
+- `partitions`: table of partitions.
+- `events::Array{Vector{Float64}}`: list of events (=energies) in each partition.
+- `part_event_index::Vector{Int}`: index mapping events to the partitions.
+- `config`: input dictionary.
+- `fit_ranges`: dictionary of energy ranges considered for the analysis.
 """
 function run_fit_over_partitions(
     partitions,
@@ -105,6 +120,10 @@ end
     get_signal_prior_info(bkg_only::Bool,config)
 
 Function that retrieves signal prior information.
+
+### Arguments
+- `bkg_only::Bool`: True if we are using a model with background only.
+- `config`: input dictionary.
 """
 function get_signal_prior_info(bkg_only::Bool, config)
     sqrt_prior = false
@@ -120,15 +139,16 @@ end
 
 
 """
-    norm_uniform(x::Real,p::NamedTuple,b_name::Symbol,fit_range)
+    norm_uniform(x::Real,p::NamedTuple,fit_range)
 
 Normalised flat function defined by 1/norm.
 
-Parameters
-----------
-    - x::Real,     the x value to evaluate at
+### Arguments
+- `x::Real`: the x value to evaluate at.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
-function norm_uniform(x::Real, p::NamedTuple, b_name::Symbol, fit_range)
+function norm_uniform(x::Real, p::NamedTuple, fit_range)
     range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
@@ -140,12 +160,13 @@ end
 """
     norm_linear(x::Float64,p::NamedTuple,b_name::Symbol,fit_range)
 
-Normalised linear function defined by (1+slope*(x-center)/260)/norm.
+Normalised linear function defined by (1+slope*(x-center)/net_width)/norm.
 
-Parameters
-----------
-    - slope::Real, the slope of the background
-    - x::Real,     the x value to evaluate at
+### Arguments
+- `x::Real`: the x value to evaluate at.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `b_name::Symbol`: name of the background index.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
     range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
@@ -162,6 +183,14 @@ function norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
 end
 
 
+"""
+    exp_stable(x::Float64)
+
+Exponential function, using Taylor expansion series for `abs(x) < 1E-6`.
+
+### Arguments
+- `x::Real`: the x value to evaluate at.
+"""
 function exp_stable(x::Float64)
     if (abs(x) < 1E-6)
         return 1 + x + x^2 / 2 + x^3 / 6
@@ -176,10 +205,11 @@ end
 
 Normalised exponential function defined by exp_stable((x-center)*Rt)/norm.
 
-Parameters
-----------
-    - slope::Real, the slope of the background
-    - x::Real,     the x value to evaluate at
+### Arguments
+- `x::Real`: the x value to evaluate at.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `b_name::Symbol`: name of the background index.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
     range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
@@ -205,11 +235,17 @@ function norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
 end
 
 
-
 """
     gaussian_plus_lowEtail(evt_energy::Float64,Qbb::Float64,bias::Float64,reso::Float64,part_k::NamedTuple)
 
-Signal model based on the peak shape used for the MJD analysis. The peak shape derives from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
+Signal model based on the peak shape used for the MJD analysis. The peak shape was derived from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
+
+### Arguments
+- `evt_energy::Float64`: energy of the event at which we want to compute the function.
+- `Qbb::Float64`: centroid of the Gaussian.
+- `bias::Float64`: energy bias associated to the energy event.
+- `reso::Float64`: energy resolution associated to the energy event.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
 """
 function gaussian_plus_lowEtail(
     evt_energy::Float64,
@@ -236,8 +272,18 @@ function gaussian_plus_lowEtail(
 end
 
 
+"""
+    get_bkg_pdf(bkg_shape::Symbol,evt_energy::Float64,p::NamedTuple,b_name::Symbol,fit_range)
 
+Returns the background modeling function.
 
+### Arguments
+- `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
+- `evt_energy::Float64`: energy of the event at which we want to compute the function.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `b_name::Symbol`: name of the background index.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+"""
 function get_bkg_pdf(
     bkg_shape::Symbol,
     evt_energy::Float64,
@@ -246,7 +292,7 @@ function get_bkg_pdf(
     fit_range,
 )
     if (bkg_shape == :uniform)
-        return norm_uniform(evt_energy, p, b_name, fit_range)
+        return norm_uniform(evt_energy, p, fit_range)
     elseif (bkg_shape == :linear)
         return norm_linear(evt_energy, p, b_name, fit_range)
     elseif (bkg_shape == :exponential)
@@ -258,6 +304,17 @@ function get_bkg_pdf(
 
 end
 
+
+"""
+    get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple)
+
+Returns the signal modeling function.
+
+### Arguments
+- `evt_energy::Float64`: energy of the event at which we want to compute the function.
+- `Qbb::Float64`: centroid of the Gaussian.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+"""
 function get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple)
     signal_shape = part_k.signal_name
     bias = part_k.bias
@@ -276,18 +333,28 @@ end
 
 
 """
-    get_mu_b(deltaE, exposure, bkg)
+    get_mu_b(deltaE, exposure, bkg_index)
 
-Get the expected number of background counts in a partition
+Get the expected number of background counts.
+
+### Arguments
+- `deltaE`: net width of the fit range.
+- `exposure`: exposure (mass x time).
+- `bkg_index`: background index value.
 """
 function get_mu_b(deltaE, exposure, bkg_index)
     return deltaE * exposure * bkg_index
 end
 
 """
-    get_mu_s(deltaE, exposure, bkg)
+    get_mu_s(exposure, eff, signal)
 
-Get the expected number of signal counts in a partition
+Get the expected number of signal counts.
+
+### Arguments
+- `exposure`: exposure (mass x time).
+- `eff`: total signal efficiency.
+- `signal`: number of signal counts
 """
 function get_mu_s(exposure, eff, signal)
     N_A = ZeroNuFit.Constants.N_A
@@ -300,7 +367,14 @@ end
 """
     get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict,fit_range)
 
-Get the expected number of signal and background counts in a partition
+Get the expected number of signal and background counts.
+
+### Arguments
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `idx_part_with_events::Int`: index of the partition with the event.
+- `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function get_mu_s_b(
     p::NamedTuple,
@@ -329,7 +403,13 @@ end
 """
     build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settings::Dict,fit_range)
 
-Function to calculate the partial likelihood for a partition with 0 events
+Function to calculate the likelihood for a single data partition k with 0 events.
+
+### Arguments
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function build_likelihood_zero_obs_evts(
     part_k::NamedTuple,
@@ -349,13 +429,20 @@ end
 
 
 """
-    build_likelihood_per_partition(idx_k::Int, idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}},p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
+    build_likelihood_per_partition(idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}},p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
 
-Function which computes the partial likelihood for a single data partiton
-free parameters: signal (S), background (B), energy bias (biask) and resolution per partition (resk)
+Function which computes the likelihood for a single data partition k.
+
+### Arguments
+- `idx_part_with_events::Int`: index of the partition with the event.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `events_k::Vector{Union{Float64}}`: vecotr of events (=energies) in the partition k.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
+- `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function build_likelihood_per_partition(
-    idx_k::Int,
     idx_part_with_events::Int,
     part_k::NamedTuple,
     events_k::Vector{Union{Float64}},
@@ -413,14 +500,12 @@ end
 """
     build_likelihood_looping_partitions(partitions::TypedTables.Table,events::Array{Vector{Float64}},part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
 
-Function which creates the likelihood function for the fit (looping over partitions).
-
-Returns the likelihood function (a `DensityInterface.logfuncdensity` object).
+Function to build the likelihood (a `DensityInterface.logfuncdensity` object) for the fit by looping over partitions.
 
 ### Arguments
-- `partitions::TypedTables.Table`: The partitions input table.
-- `events::Array{Vector{Float64}}`: A list of events (=energies) in each partition.
-- `part_event_index::Vector{Int}`: The index mapping events to the partitions.
+- `partitions::TypedTables.Table`: table of partitions.
+- `events::Array{Vector{Float64}}`: list of events (=energies) in each partition.
+- `part_event_index::Vector{Int}`: index mapping events to the partitions.
 - `settings::Dict`: A dictionary of settings containing configuration for the likelihood calculation.
 - `sqrt_prior::Bool`: Whether to include the square root prior in the likelihood calculation. If `False`, a uniform prior is used.
 - `s_max::Union{Float64, Nothing}`: A maximum value used for scaling the square root prior. If `Nothing`, no prior is applied.
@@ -441,13 +526,13 @@ function build_likelihood_looping_partitions(
     return DensityInterface.logfuncdensity(
         function (p::NamedTuple)
             total_ll = 0.0
+            println(p)
 
             for (idx_k, part_k) in enumerate(partitions)
 
                 if part_event_index[idx_k] != 0
                     idx_k_with_events = part_event_index[idx_k]
                     total_ll += build_likelihood_per_partition(
-                        idx_k,
                         part_event_index[idx_k],
                         part_k,
                         events[idx_k],
@@ -478,42 +563,29 @@ function build_likelihood_looping_partitions(
 end
 
 
-
-
 """
     generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges;best_fit::Bool=false,seed=nothing,bkg_only=false)
 
 Generates data from a posterior distribution.
 This is based on the posterior predictive distributions. 
-Given a model with some parameters `theta_i`, the posterior predictive distribution,
-or the distribution of data generated according to the posterior distribution of theta
-and the likelihood is:
+Given a model with some parameters `theta_i`, the posterior predictive distribution, or the distribution of data generated according to the posterior distribution of theta and the likelihood is:
 
 ```math
 p(y|D) =int p(y|theta)p(theta|D)dtheta
 ```
 
-Or in terms of sampling we first draw samples of `theta` from the posterior and then generate,
-datasets based on the likelihood.
-We also give the options to fix the posterior distribution to the best fit,
-which is equivalent to the standard sampling methods.
+Or in terms of sampling we first draw samples of `theta` from the posterior and then generate, datasets based on the likelihood.
+We also give the options to fix the posterior distribution to the best fit, which is equivalent to the standard sampling methods.
 
-Parameters
-----------
-    - samples::DensitySamplesVector the samples of a past fit or a NamedTuple of best fit
-    - partitions::Table of the partition info
-    - part_event_index: index for the parameters for partitions with events
-
-Keyword arguments
------------------
-    - best_fit::Bool where to fix the paramaters to the best fit
-    - nuis_prior::Bool whether only statistical parameters were included in the posterior
-    - bkg_only::Bool where the fit was without signal,
-    - seed::Int random seed
-
-Returns
--------
-    OrderedDict of the data
+### Arguments
+- `samples::DensitySamplesVector`: samples of a past fit or a NamedTuple of best fit.
+- `partitions::Table`: Table of the partition info.
+- `part_event_index::Vector{Int}`: index for the parameters for partitions with events.
+- `settings::Dict`: A dictionary of settings containing configuration for the likelihood calculation.
+- `fit_ranges`: dictionary of energy ranges considered for the analysis.
+- `best_fit::Bool`: True if you want to fix the paramaters to the best fit.
+- `seed::Int`: random seed.
+- `bkg_only::Bool`: True if we are using a model with background only.
 """
 function generate_data(
     samples::BAT.DensitySampleVector,
@@ -612,11 +684,10 @@ end
 """
     get_signal_bkg_priors(config)
 
-Defines specific priors for signal and background contributions
+Defines specific priors for signal and background contributions.
 
-Parameters
-----------
-    - config: the Dict of the fit config
+### Arguments
+- `config`: input dictionary.
 """
 function get_signal_bkg_priors(config)
 
@@ -646,13 +717,18 @@ end
 """
     build_prior(partitions,part_event_index,config,settings::Dict;hierachical=false,hierachical_mode=nothing,hierachical_range=nothing,bkg_shape=:uniform,shape_pars=nothing)
 
-Builds the priors for use in the fit
+Builds the priors for use in the fit.
 
-Parameters
-----------
-    - partitions:Table of the partition info
-    - config: the Dict of the fit config
-    - nuis_prior; true if we want to include priors for nuisance parameters (bias, res, eff)
+### Arguments
+- `partitions::Table`: Table of the partition info.
+- `part_event_index::Vector{Int}`: index for the parameters for partitions with events.
+- `config`: input dictionary.
+- `settings::Dict`: A dictionary of settings containing configuration for the likelihood calculation.
+- `hierachical`: True if we use a hierarchical model.
+- `hierachical_mode`: average mode of the hierarchical model.
+- `hierachical_range`: range of the reference distribution used to correlated the background indexes in a hierarchical model.
+- `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
+- `shape_pars`: background shape parameters, e.g. slope for linear or exponential background modeling.
 """
 function build_prior(
     partitions,

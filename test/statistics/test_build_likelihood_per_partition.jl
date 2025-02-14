@@ -61,7 +61,6 @@ using TypedTables
     ll_value = nothing
     try
         ll_value = ZeroNuFit.Likelihood.build_likelihood_per_partition(
-            1,
             part_event_index[1],
             partitions[1],
             events[1],

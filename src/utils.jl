@@ -24,6 +24,9 @@ import HDF5
     get_corr_info(config)
 
 Function that retrieves information about correlated background from config in input.
+
+### Arguments
+- `config`: input dictionary.
 """
 function get_corr_info(config)
     if !(haskey(config["bkg"], "correlated"))
@@ -42,6 +45,16 @@ function get_corr_info(config)
 end
 
 
+"""
+    get_par_posterior(samples, par; idx)
+
+Function that retrieves the parameter posterior.
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `par`: name of the parameter for which we want to extract the marginalized mode.
+- `idx`: index for multiparameters
+"""
 function get_par_posterior(samples, par; idx)
 
     pars = []
@@ -65,7 +78,10 @@ end
 """
     get_bkg_info(config)
 
-Function that retrieves background information from config in input.
+Function that retrieves background shape name and parameters (if different from flat) from the input configuration dictionary.
+
+### Arguments
+- `config`: input dictionary.
 """
 function get_bkg_info(config)
     bkg_shape = :uniform
@@ -348,7 +364,7 @@ end
 """
     get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
 
-Returns an object descirbing if a partition has an event and giving them indexes.
+Returns an object describing if a partition has an event and giving them indexes.
 This creates a vector where
 
 - `V[i]=0` if partition `i` has no events,
@@ -357,7 +373,7 @@ This creates a vector where
 where the index counts the number of partitions with `index<=i`.
 
 ### Arguments
-- `events::Array{Vector{Float64}}`: array of energy events.
+- `events::Array{Vector{Float64}}`: list of events (=energies) in each partition.
 - `partitions::TypedTables.Table`: table of partitions.
 """
 function get_partition_event_index(
@@ -466,9 +482,9 @@ Returns the efficiency for a given partition, depending on the specified setting
 If you are fitting with a background-only model, then efficiency=0.
 
 ### Arguments
-- `p::NamedTuple`: 
-- `part_k::NamedTuple`: 
-- `idx_part_with_events::Int`: 
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `idx_part_with_events::Int`: index of the partition with the event.
 - `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
 """
 function get_efficiency(
@@ -510,7 +526,13 @@ end
 """ 
     get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
 
-Get the resolution and bias
+Returns the energy resolution and bias for a given partition, depending on the specified settings (e.g. if correlated or not, if fixed or not).
+
+### Arguments
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
+- `idx_part_with_events::Int`: index of the partition with the event.
 """
 function get_energy_scale_pars(
     part_k::NamedTuple,
@@ -548,7 +570,15 @@ function get_energy_scale_pars(
 end
 
 
-## sampling 
+""" 
+    inverse_uniform_cdf(p, fit_range)
+
+Returns the inverse cumulative distribution function value for the given probability `p`.
+
+### Arguments
+- `p`: probability between 0 and 1 representing the desired quantile of the cumulative distribution.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+"""
 function inverse_uniform_cdf(p, fit_range)
     range_l, range_h = get_range(fit_range)
     delta = sum(range_h .- range_l)
@@ -582,6 +612,16 @@ function inverse_uniform_cdf(p, fit_range)
 end
 
 
+""" 
+    generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
+
+Generates a list of `n` events uniform sampled within a specified range using the inverse CDF method.
+
+### Arguments
+- `n`: number of events to randomly generate.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `seed`: fix to a value if you want to fix the random generator seed.
+"""
 function generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
     # fix the seed (if provided)
     if seed !== nothing
@@ -596,7 +636,11 @@ end
 """
     save_generated_samples(samples,output)
 
-Function which saves sampling results
+Saves generated MCMC samples to `.jld2` and `.h5` files.
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `output`: output folder path.
 """
 function save_generated_samples(samples, output)
     FileIO.save(joinpath(output, "mcmc_files/samples.jld2"), Dict("samples" => samples))
@@ -607,7 +651,11 @@ end
 """
     get_global_mode(samples, posterior)
 
-Function which retrieves global mode and a refined estimate of it
+Function which retrieves global mode and a refined estimate of it (using `bat_findmode`).
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
 """
 function get_global_mode(samples, posterior)
     global_modes = BAT.mode(samples)
@@ -622,7 +670,11 @@ end
 """
     get_marginalized_mode(samples, par)
 
-Function which retrieves marginalized mode as the highest bin of the posterior, rebinned with 250 bins
+Function which retrieves marginalized mode as the highest bin of the posterior, using 250 bins (vs 100 bins set by default by BAT).
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `par`: name of the parameter for which we want to extract the marginalized mode.
 """
 function get_marginalized_mode(samples, par)
     post = get_par_posterior(samples, par, idx = nothing)
@@ -641,7 +693,16 @@ end
 """
     save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
 
-Function which saves results from the fit and copies the input config (for any future need)
+Function which saves results from the fit and the used input configurations.
+
+### Arguments
+- `samples`: set of generated MCMC samples.
+- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
+- `nuisance_info`: dictionary with info on the prior parameters.
+- `config`: input dictionary.
+- `output`: output folder path.
+- `par_names`: collection of parameter names.
+- `toy_idx`: identification index of the generated toy.
 """
 function save_results_into_json(
     samples,
@@ -754,6 +815,9 @@ end
     get_deltaE(fit_range)
 
 Function that returns the net width of the fit range.
+
+### Arguments
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function get_deltaE(fit_range)
     return sum([arr[2] - arr[1] for arr in fit_range])
@@ -764,6 +828,9 @@ end
     get_range(fit_range)
 
 Function that returns lower and upper edges of fit ranges.
+
+### Arguments
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
 """
 function get_range(fit_range)
     range_l = [arr[1] for arr in fit_range]
