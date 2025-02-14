@@ -1,3 +1,5 @@
+# Configuration file
+
 Table of contents:
 
 ```@contents

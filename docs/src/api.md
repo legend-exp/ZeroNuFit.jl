@@ -1,13 +1,9 @@
 # API
 
-## Functions and macros
-
 ```@index
-Pages = ["internal_api.md"]
-Order = [:macro, :function]
+Pages = ["api.md"]
+Order = [:function]
 ```
-
-## Documentation
 
 ### analysis.jl
 ```@docs

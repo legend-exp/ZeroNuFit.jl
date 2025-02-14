@@ -20,6 +20,7 @@ Pages = [
     "inputs.md",
     "toys.md",
     "tutorial.md",
+    "api.md",
 ]
 Depth = 1
 ```

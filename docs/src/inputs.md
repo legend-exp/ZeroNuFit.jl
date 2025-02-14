@@ -1,3 +1,5 @@
+# Partitions and events
+
 The fit takes in inputs two files in JSON format (for a full customization of the fit), which paths have to be specified in the `config.json` file.
 
 Table of contents:
