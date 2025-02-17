@@ -22,7 +22,7 @@ In case no events are found in a given partition _k_, the above Likelihood expre
 
 ```math
 \begin{aligned}
-    \mathcal{L}(\Gamma) = \prod_k \textrm{Pois}(s_k+b_k) 
+    \mathcal{L}(\Gamma,\, \boldsymbol{BI},\,\boldsymbol{\theta}|D) = \prod_k \textrm{Pois}(s_k+b_k) 
 \end{aligned}
 ```
 
@@ -141,6 +141,58 @@ The above products, then, can be expressed again as
     \mathcal{P}_{\rm mod.}(\boldsymbol{\theta}) =\mathcal{P}(\alpha) \cdot  \prod_{\rm j} \mathcal{P}_{\rm j}(\mu)\cdot \mathcal{P}_{\rm j}(\sigma)
 \end{aligned}
 ```
+
+### Alternative background shapes
+
+The default background modeling shape is a flat function:
+
+```math
+\begin{aligned}
+  f_{\rm flat}(E) = b_{\rm k} \cdot p_{\rm b,\,flat}(E) = BI \cdot \Delta E \cdot \mathcal{E}_{\rm k} \cdot \underbrace{\frac{1}{K_{\rm flat}}}_{p_{\rm b,\,flat}(E)}
+\end{aligned}
+```
+
+where $E$ is the energy and $K_{\rm flat}$ is a normalization factor that accounts for the net width of the fit window, accounting for any removed gap within it.
+
+In the linear case, we can model the background as
+
+```math
+\begin{aligned}
+  f_{\rm lin}(E) = b_{\rm k} \cdot p_{\rm b,\,lin}(E) = BI \cdot \Delta E \cdot \mathcal{E}_{\rm k} \cdot \underbrace{\left(1+ \frac{m_{\rm lin} \cdot (E-E_{\rm 0})}{E_{\rm max}-E_{\rm 0}} \right)\cdot \frac{1}{K_{\rm lin}}}_{p_{\rm b,\,lin}(E)}
+\end{aligned}
+```
+
+where $m_{\rm lin}$ is the slope of the linear function, $E_{\rm 0}$ ($E_{\rm max}$) is the starting (ending) energy value of the fit window, and $K_{\rm lin}$ is the normalization factor.
+
+In the exponential case, we can model the background as
+
+```math
+\begin{aligned}
+  f_{\rm exp}(E) = b_{\rm k} \cdot p_{\rm b,\,exp}(E) = BI \cdot \Delta E \cdot \mathcal{E}_{\rm k} \cdot \underbrace{e ^ {\left(E-E_{\rm 0}\right)\cdot \frac{m_{\rm exp}}{\Delta E} } \cdot \frac{1}{K_{\rm exp}}}_{p_{\rm b,\,exp}(E)} 
+\end{aligned}
+```
+
+with corresponding slope $m_{\rm exp}$ and normalization factor $K_{\rm exp}$.
+
+The normalization factors can be expressed in a general form in the following way:
+
+```math
+\begin{aligned}
+    \begin{cases}
+      K_{\rm flat} = \Delta E\\[15pt]
+      K_{\rm lin} = \Delta E \cdot \left(1 - \frac{m_{\rm lin}\cdot E_{\rm 0}}{E_{\rm max}-E_{\rm 0}} \right) + m_{\rm lin}\cdot \frac{\sum_{i} \left( E_{\rm h,\,i}^2 - E_{\rm l,\,i}^2 \right)}{2\left(E_{\rm max}-E_{\rm 0} \right )}\\[15pt]
+      K_{\rm exp} = \frac{E_{\rm max}-E_{\rm 0}}{m_{\rm exp}} \cdot \left[\sum_{\rm i}e^{(E_{\rm h,i}-E_{\rm 0})\cdot \frac{m_{\rm exp}}{E_{\rm max}-E_{\rm 0}}} - \sum_{\rm i}e^{(E_{\rm l,i}-E_{\rm 0})\cdot \frac{m_{\rm exp}}{E_{\rm max}-E_{\rm 0}}} \right]
+    \end{cases}  
+\end{aligned}
+```
+
+where $E_{\rm l,i}$ ($E_{\rm h,i}$) is the starting (ending) energy value of the sub-windows defined within the analysis fit window, accounting for any excluded gap in the fit window. 
+If no gaps are present, then $E_{\rm l,i}\equiv E_{\rm 0}$ and $E_{\rm h,i}\equiv E_{\rm max}$.
+In particular, $\Delta E= \sum_{\rm i} \left(E_{\rm h,i}-E_{\rm l,i} \right)$.
+
+Notice that $K_{\rm lin} \rightarrow K_{\rm flat}$ and $K_{\rm exp} \rightarrow K_{\rm flat}$ in the limit of $m_{\rm lin} \rightarrow 0$ and $m_{\rm exp} \rightarrow 0$, respectively. 
+The free parameters in the linear and exponential case are $m_{\rm lin}$ and $m_{\rm exp}$ (other than the background indices, $BI$).
+For all these parameters, we used a uniform prior as default, while prior ranges can be modified by the user via the configuration file. 
 
 ### Posterior distributions and marginalization
 
