@@ -1,10 +1,19 @@
 # API
 
+Table of contents:
+
+```@contents
+Pages = ["api.md"]
+Depth = 3
+```
+
+## Functions
 ```@index
 Pages = ["api.md"]
 Order = [:function]
 ```
 
+## Documentation
 ### analysis.jl
 ```@docs
 ZeroNuFit.Analysis.retrieve_real_fit_results
