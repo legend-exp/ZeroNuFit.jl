@@ -70,9 +70,9 @@ Moreover, the config requires the following block for nuisance parameters, ie en
 In particular, you can set `"correlated": true` if you want to use one variable to correlate the nuisance parameters (eg to speed up the computation times), and `"fixed": false` if you want to include a prior for nuisance parameters (otherwise these parameters they will be fixed to their partition value and not constrained).
  
 If a variable is correlated (either `energy_bias` or `energy_res` or `efficiency`), the code will search for a field in the `fit_groups` block of the partitions JSON file to use a correlated variable per each fit group. 
-In particular, the field has to be specified as:
+In particular, the field can be specified as:
 - `"energy_bias_group_name": "..."`
-- `"energy_res_group_name": "..."`
+- `"energy_reso_group_name": "..."`
 - `"efficiency_group_name": "..."`
  
 Parameters are then added to the model called `αr_\$name` (for resolution), `αe_\$name` for efficiency and `αb_\$name` for bias.

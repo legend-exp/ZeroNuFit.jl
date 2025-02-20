@@ -4,6 +4,9 @@ Pkg.instantiate() # instantiate the environment
 include("../../src/ZeroNuFit.jl")
 using .ZeroNuFit
 using TypedTables
+using JSON
+
+Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
 @testset "test_get_partitions" begin
 
@@ -129,8 +132,25 @@ using TypedTables
             [2209.1, 2350.0],
         ],
     )
-    #@test partitions == expected_partitions
     @test partitions == expected_partitions
     @test fit_ranges == expected_fit_ranges
+
+    # not existing path
+    config["partitions"] = [joinpath(present_dir, "../inputs/partitions_fake.json")]
+    @test_throws ArgumentError ZeroNuFit.Utils.get_partitions(config)
+
+    # test handling of correlated parameters with specified key names
+    partitions_file = joinpath(present_dir, "../inputs/partitions_test_3.json")
+    partitions, fit_groups, fit_ranges = ZeroNuFit.Utils.get_partitions_new(partitions_file)
+    partitions_json = JSON.parsefile(partitions_file)
+    @test partitions[1].energy_bias_name == Symbol(
+        "αb_" * partitions_json["fit_groups"]["all_phase_II"]["energy_bias_group_name"],
+    )
+    @test partitions[1].energy_reso_name == Symbol(
+        "αr_" * partitions_json["fit_groups"]["all_phase_II"]["energy_reso_group_name"],
+    )
+    @test partitions[1].eff_name == Symbol(
+        "αe_" * partitions_json["fit_groups"]["all_phase_II"]["efficiency_group_name"],
+    )
 
 end

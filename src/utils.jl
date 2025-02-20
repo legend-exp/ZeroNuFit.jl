@@ -218,11 +218,12 @@ function get_partitions_new(part_path::String)
             end
 
             ## defaults to 'all'
-            if (haskey("efficiency_group_name", part_data_json["fit_groups"][fit_group]))
+            if haskey(part_data_json["fit_groups"][fit_group], "efficiency_group_name")
                 append!(
                     arrays["eff_par_name"],
                     [
-                        "αe_" * Symbol(
+                        Symbol(
+                            "αe_" *
                             part_data_json["fit_groups"][fit_group]["efficiency_group_name"],
                         ),
                     ],
@@ -230,32 +231,32 @@ function get_partitions_new(part_path::String)
             else
                 append!(arrays["eff_par_name"], [:αe_all])
             end
-
-            ## defaults to 'all'
-            if (haskey("energy_scale_group_name", part_data_json["fit_groups"][fit_group]))
-                append!(
-                    arrays["energy_reso_name"],
-                    [
-                        Symbol(
-                            "αr_" *
-                            part_data_json["fit_groups"][fit_group]["energy_scale_group_name"],
-                        ),
-                    ],
-                )
+            if haskey(part_data_json["fit_groups"][fit_group], "energy_bias_group_name")
                 append!(
                     arrays["energy_bias_name"],
                     [
                         Symbol(
                             "αb_" *
-                            part_data_json["fit_groups"][fit_group]["energy_scale_group_name"],
+                            part_data_json["fit_groups"][fit_group]["energy_bias_group_name"],
+                        ),
+                    ],
+                )
+            else
+                append!(arrays["energy_bias_name"], [:αb_all])
+            end
+            if haskey(part_data_json["fit_groups"][fit_group], "energy_reso_group_name")
+                append!(
+                    arrays["energy_reso_name"],
+                    [
+                        Symbol(
+                            "αr_" *
+                            part_data_json["fit_groups"][fit_group]["energy_reso_group_name"],
                         ),
                     ],
                 )
 
             else
                 append!(arrays["energy_reso_name"], [:αr_all])
-                append!(arrays["energy_bias_name"], [:αb_all])
-
             end
 
         end
