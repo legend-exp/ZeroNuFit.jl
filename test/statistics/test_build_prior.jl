@@ -9,6 +9,8 @@ using Distributions
 using JSON
 using LaTeXStrings
 
+Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
+
 @testset "test_build_prior" begin
 
     @info "Testing retrieval of signal & background pdfs (function 'build_prior' in src/likelihood.jl)"
@@ -70,7 +72,6 @@ using LaTeXStrings
     @test [] == nuisance_info["α"]
     @test [] == nuisance_info["αr"]
     @test [] == nuisance_info["αb"]
-    @test [] == nuisance_info["γ"]
     @test [] == nuisance_info["ε"]
     @test [] == nuisance_info["ω"]
     @test [] == nuisance_info["𝛥"]
@@ -115,7 +116,6 @@ using LaTeXStrings
     @test [] == nuisance_info["α"]
     @test [] == nuisance_info["αr"]
     @test [] == nuisance_info["αb"]
-    @test [] == nuisance_info["γ"]
     @test [] == nuisance_info["ε"]
     @test ["GERDA", "part00", "ANG4", 1.328561380042463, 0.08067940552016985, 0, Inf] ==
           nuisance_info["ω"][1]
@@ -156,7 +156,6 @@ using LaTeXStrings
     @test [] == nuisance_info["α"]
     @test [] == nuisance_info["αr"]
     @test [] == nuisance_info["αb"]
-    @test [] == nuisance_info["γ"]
     @test [] == nuisance_info["ε"]
     @test ["combined", "", "", 0, 1, -12.060720688373456, Inf] == nuisance_info["αe_all"][1]
     @test ["combined", "", "", 0, 1, -16.467168684210527, Inf] == nuisance_info["αr_all"][1]
@@ -176,4 +175,146 @@ using LaTeXStrings
     priors, pretty_names, nuisance_info =
         ZeroNuFit.Likelihood.build_prior(partitions, part_event_index, config, settings)
     @test !haskey(priors, :S)
+
+    # eff
+    config["nuisance"]["efficiency"]["fixed"] = false
+    config["nuisance"]["efficiency"]["correlated"] = false
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    priors = nothing
+    pretty_names = nothing
+    nuisance_info = nothing
+    priors, pretty_names, nuisance_info =
+        ZeroNuFit.Likelihood.build_prior(partitions, part_event_index, config, settings)
+    # priors
+    prior_ε =
+        Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(undef, 1)
+    prior_ε[1] = Truncated(Normal(0.476981, 0.0395483), 0, 1)
+    @test prior_ε == priors.ε.v
+    # pretty names
+    @test "Efficiency " * L"(\varepsilon)" * " - " * long_name * "" == pretty_names[:ε][1]
+    # nuisance info
+    @test ["GERDA", "part00", "ANG4", 0.476981, 0.0395483, 0, 1] == nuisance_info["ε"][1]
+
+
+    # bkg shapes parameters (eg linear/exponential)
+    config["bkg"] = Dict(
+        "correlated" => Dict("range" => "none", "mode" => "none"),
+        "prior" => "uniform",
+        "upper_bound" => 0.1,
+        "shape" => Dict("name" => "linear", "pars" => Dict("slope" => [-10, 10])),
+    )
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
+    priors = nothing
+    pretty_names = nothing
+    nuisance_info = nothing
+    priors, pretty_names, nuisance_info = ZeroNuFit.Likelihood.build_prior(
+        partitions,
+        part_event_index,
+        config,
+        settings,
+        shape_pars = bkg_shape_pars,
+    )
+    # priors
+    @test Uniform(-10, 10) == priors.B_gerda_all_pII_slope
+    # pretty names
+    long_name = "GERDA part00 ANG4"
+    @test bkg_name * "_slope" == pretty_names[:B_gerda_all_pII_slope]
+
+    # gaussian + low E tail (MJD-like event)
+    config["bkg"] = Dict(
+        "correlated" => Dict("range" => "none", "mode" => "none"),
+        "prior" => "uniform",
+        "upper_bound" => 0.1,
+    )
+    config["nuisance"]["energy_bias"]["fixed"] = false
+    config["nuisance"]["energy_bias"]["correlated"] = false
+    config["nuisance"]["energy_res"]["fixed"] = false
+    config["nuisance"]["energy_res"]["correlated"] = false
+    config["events"] = [joinpath(present_dir, "../inputs/events_test_2.json")]
+    config["partitions"] = [joinpath(present_dir, "../inputs/partitions_test_2.json")]
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    priors = nothing
+    pretty_names = nothing
+    nuisance_info = nothing
+    priors, pretty_names, nuisance_info =
+        ZeroNuFit.Likelihood.build_prior(partitions, part_event_index, config, settings)
+    # priors
+    prior_𝛥 =
+        Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(undef, 1)
+    prior_𝛥[1] = Truncated(Normal(0.02, 0.08), 0.02 - 5 * 0.08, 0.02 + 5 * 0.08)
+    @test prior_𝛥 == priors.𝛥.v
+    prior_ω =
+        Vector{Truncated{Normal{Float64},Continuous,Float64,Float64,Float64}}(undef, 1)
+    prior_ω[1] = Truncated(Normal(1.05, 0.040), 1.05 - 5 * 0.040, 1.05 + 5 * 0.040)
+    @test prior_ω == priors.ω.v
+    # nuisance info
+    @test ["MJD", "ds0", "DS0", 0.02, 0.08, 0.02 - 5 * 0.08, 0.02 + 5 * 0.08] ==
+          nuisance_info["𝛥"][1]
+    @test ["MJD", "ds0", "DS0", 1.05, 0.04, 1.05 - 5 * 0.040, 1.05 + 5 * 0.040] ==
+          nuisance_info["ω"][1]
+
+    # same, but with a not-existing signal shape
+    config["partitions"] = [joinpath(present_dir, "../inputs/partitions_test_4.json")]
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.build_prior(
+        partitions,
+        part_event_index,
+        config,
+        settings,
+    )
+
+    # hierarchical (back to GERDA-like event)
+    config["bkg"]["correlated"] = Dict("mode" => "lognormal", "range" => [0, 1])
+    config["events"] = [joinpath(present_dir, "../inputs/events_test.json")]
+    config["partitions"] = [joinpath(present_dir, "../inputs/partitions_test.json")]
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    corr, hier_mode, hier_range = ZeroNuFit.Utils.get_corr_info(config)
+    priors = nothing
+    pretty_names = nothing
+    nuisance_info = nothing
+    priors, pretty_names, nuisance_info = ZeroNuFit.Likelihood.build_prior(
+        partitions,
+        part_event_index,
+        config,
+        settings,
+        hierachical = corr,
+        hierachical_mode = hier_mode,
+        hierachical_range = hier_range,
+    )
+    # pretty names
+    @test "B [cts/keV/kg/yr]" == pretty_names[:B]
+    @test L"\sigma_B" * string("[cts/keV/kg/yr]") == pretty_names[:σB]
+
+    # unknown hierarchical mode
+    config["bkg"]["correlated"] = Dict("mode" => "fancynormal", "range" => [0, 1])
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    corr, hier_mode, hier_range = ZeroNuFit.Utils.get_corr_info(config)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.build_prior(
+        partitions,
+        part_event_index,
+        config,
+        settings,
+        hierachical = corr,
+        hierachical_mode = hier_mode,
+        hierachical_range = hier_range,
+    )
 end

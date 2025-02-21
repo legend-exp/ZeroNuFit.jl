@@ -1,0 +1,10 @@
+{
+    "events": [
+        {
+            "experiment": "MJD",
+            "energy": 2195.2452,
+            "timestamp": 2.5,
+            "detector": "DS0"
+        }
+    ]
+}

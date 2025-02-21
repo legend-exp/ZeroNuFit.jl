@@ -55,7 +55,7 @@ Function that retrieves the parameter posterior.
 - `par`: name of the parameter for which we want to extract the marginalized mode.
 - `idx`: index for multiparameters
 """
-function get_par_posterior(samples, par; idx)
+function get_par_posterior(samples, par; idx = nothing)
 
     pars = []
 

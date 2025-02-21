@@ -755,7 +755,6 @@ function build_prior(
         :α => L"\alpha_{\varepsilon}",
         :αr => L"\alpha_{r}",
         :αb => L"\alpha_{b}",
-        :γ => [],
         :ε => [],
         :ω => [],
         :𝛥 => [],
@@ -776,15 +775,8 @@ function build_prior(
     end
 
     # dictionary with info on the prior parameters
-    nuisance_info = OrderedDict(
-        "α" => [],
-        "αr" => [],
-        "αb" => [],
-        "γ" => [],
-        "ε" => [],
-        "ω" => [],
-        "𝛥" => [],
-    )
+    nuisance_info =
+        OrderedDict("α" => [], "αr" => [], "αb" => [], "ε" => [], "ω" => [], "𝛥" => [])
 
     ### EFFICIENCY prior
 
@@ -889,7 +881,7 @@ function build_prior(
                     )
 
                 elseif part.signal_name == :gaussian_plus_lowEtail
-                    # let's define some intervals in +-5σ (always with res>0)
+                    # let's define some intervals in +-5σ 
                     bias_min = part.bias - 5 * part.bias_sigma
                     bias_max = part.bias + 5 * part.bias_sigma
                     bias[i_new] =
