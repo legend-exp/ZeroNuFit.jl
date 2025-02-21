@@ -852,8 +852,7 @@ function build_prior(
         for name in unique_list
             priors[Symbol(name)] = Truncated(Normal(0, 1), -Inf, Inf)
             pretty_names[Symbol(name)] = L"\alpha_{b} (" * split(String(name), "_")[2] * ")"
-            nuisance_info[string(name)] =
-                [["combined", "", "", part.detector, 0, 1, -Inf, Inf]]
+            nuisance_info[string(name)] = [["combined", "", "", 0, 1, -Inf, Inf]]
 
         end
     end
