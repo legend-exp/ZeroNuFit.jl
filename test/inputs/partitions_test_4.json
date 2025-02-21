@@ -1,0 +1,48 @@
+{
+    "fit_groups": {
+        "mjd-DS0": {
+            "range": [
+                [
+                    1950.0,
+                    2098.511
+                ],
+                [
+                    2108.511,
+                    2113.513
+                ],
+                [
+                    2123.513,
+                    2199.1
+                ],
+                [
+                    2209.1,
+                    2350.0
+                ]
+            ],
+            "signal_name": "fancy_gaussian",
+            "model": "uniform",
+            "bkg_name": "mjd-DS0"
+        }
+    },
+    "partitions": {
+        "mjd-DS0": [
+            {
+                "experiment": "MJD",
+                "detector": "DS0",
+                "part_name": "ds0",
+                "start_ts": 0,
+                "end_ts": 5,
+                "eff_tot": 0.2,
+                "eff_tot_sigma": 0.01,
+                "frac": 0.10,
+                "sigma": 1.10,
+                "tau": 1.05,
+                "width": 1.05,
+                "width_sigma": 0.040,
+                "exposure": 1.08,
+                "bias": 0.02,
+                "bias_sigma": 0.08
+            }
+        ]
+    }
+}
