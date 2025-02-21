@@ -275,6 +275,18 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
         config,
         settings,
     )
+    config["nuisance"]["energy_bias"]["fixed"] = true
+    config["nuisance"]["energy_bias"]["correlated"] = false
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    @test_throws ArgumentError ZeroNuFit.Likelihood.build_prior(
+        partitions,
+        part_event_index,
+        config,
+        settings,
+    )
 
     # hierarchical (back to GERDA-like event)
     config["bkg"]["correlated"] = Dict("mode" => "lognormal", "range" => [0, 1])
