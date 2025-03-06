@@ -257,10 +257,10 @@ function plot_l200_result(samples, config)
             bkg = false,
         )
         if bkg_shape == "flat"
-            s_90[i] = 0 .. quantile(posterior, _weights, 0.9) 
+            s_90[i] = 0 .. quantile(posterior, _weights, 0.9)
             s_90_plus_b[i] = b_mode[1] .. b_mode[1] + quantile(posterior, _weights, 0.9)
         else
-            s_90[i] = 0 .. quantile(posterior, _weights, 0.9) 
+            s_90[i] = 0 .. quantile(posterior, _weights, 0.9)
             s_90_plus_b[i] = b_mode[i] .. b_mode[i] + quantile(posterior, _weights, 0.9)
         end
     end
@@ -293,8 +293,16 @@ function plot_l200_result(samples, config)
     HDF5.h5write("ovbb_plot_entries.h5", "b_mode_all_window", b_mode_all_window)
     HDF5.h5write("ovbb_plot_entries.h5", "s_90_left", s_90_left)
     HDF5.h5write("ovbb_plot_entries.h5", "s_90_right", s_90_right)
-    HDF5.h5write("attic/ovbb_plot_entries_combined.h5", "s_90_plus_b_left", s_90_plus_b_left)
-    HDF5.h5write("attic/ovbb_plot_entries_combined.h5", "s_90_plus_b_right", s_90_plus_b_right)
+    HDF5.h5write(
+        "attic/ovbb_plot_entries_combined.h5",
+        "s_90_plus_b_left",
+        s_90_plus_b_left,
+    )
+    HDF5.h5write(
+        "attic/ovbb_plot_entries_combined.h5",
+        "s_90_plus_b_right",
+        s_90_plus_b_right,
+    )
 end
 
 
