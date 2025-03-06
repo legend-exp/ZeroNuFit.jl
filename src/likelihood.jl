@@ -582,7 +582,7 @@ end
 
 
 """
-    generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges;best_fit::Bool=false,seed=nothing,bkg_only=false)
+    generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges,bkg_units::String;best_fit::Bool=false,seed=nothing,bkg_only=false)
 
 Generates data from a posterior distribution.
 This is based on the posterior predictive distributions. 
@@ -604,13 +604,15 @@ We also give the options to fix the posterior distribution to the best fit, whic
 - `best_fit::Bool`: True if you want to fix the paramaters to the best fit.
 - `seed::Int`: random seed.
 - `bkg_only::Bool`: True if we are using a model with background only.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function generate_data(
     samples::BAT.DensitySampleVector,
     partitions::TypedTables.Table,
     part_event_index::Vector{Int},
     settings::Dict,
-    fit_ranges;
+    fit_ranges,
+    bkg_units::String;
     best_fit::Bool = false,
     seed = nothing,
     bkg_only = false,
@@ -647,6 +649,7 @@ function generate_data(
             idx_part_with_events,
             settings,
             fit_ranges[part_k.fit_group],
+            bkg_units,
         )
 
         n_s = rand(Poisson(model_s_k))
