@@ -404,7 +404,8 @@ function get_mu_s_b(
     end
 
     b_name = part_k.bkg_name
-    reso, _ = ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+    reso, _ =
+        ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
     model_b_k = get_mu_b(deltaE, part_k.exposure, p[b_name], reso, bkg_units)
 
     return model_s_k, model_b_k
@@ -470,7 +471,8 @@ function build_likelihood_per_partition(
 
     ll_value = 0
 
-    model_s_k, model_b_k = get_mu_s_b(p, part_k, idx_part_with_events, settings, fit_range, bkg_units)
+    model_s_k, model_b_k =
+        get_mu_s_b(p, part_k, idx_part_with_events, settings, fit_range, bkg_units)
 
     model_tot_k = model_b_k + model_s_k
 

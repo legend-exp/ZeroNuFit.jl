@@ -70,8 +70,10 @@ function fit_model(
     eff = ZeroNuFit.Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
 
     b_name = part_k.bkg_name
-    reso, _ = ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
-    model_b_k = ZeroNuFit.Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name], reso, bkg_units)
+    reso, _ =
+        ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+    model_b_k =
+        ZeroNuFit.Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name], reso, bkg_units)
     term1 = model_b_k * ZeroNuFit.Likelihood.get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
 
     if (settings[:bkg_only] == false)
@@ -169,8 +171,16 @@ function plot_data(
                     ) * diff(bin_edges)[1]
             else
                 model +=
-                    fit_model(0, part_k, params, settings, bkg_shape, fit_range, bkg_units, x) *
-                    diff(bin_edges)[1]
+                    fit_model(
+                        0,
+                        part_k,
+                        params,
+                        settings,
+                        bkg_shape,
+                        fit_range,
+                        bkg_units,
+                        x,
+                    ) * diff(bin_edges)[1]
             end
         end
         return model

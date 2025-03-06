@@ -341,7 +341,9 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
     part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
     settings = ZeroNuFit.Utils.get_settings(config)
     corr, hier_mode, hier_range = ZeroNuFit.Utils.get_corr_info(config)
-    priors, pretty_names, nuisance_info = ZeroNuFit.Likelihood.build_prior(partitions, part_event_index, config, settings)
-    bkg_name = JSON.parsefile(config["partitions"][1])["fit_groups"]["all_phase_II"]["bkg_name"]
+    priors, pretty_names, nuisance_info =
+        ZeroNuFit.Likelihood.build_prior(partitions, part_event_index, config, settings)
+    bkg_name =
+        JSON.parsefile(config["partitions"][1])["fit_groups"]["all_phase_II"]["bkg_name"]
     @test string(bkg_name) * " [cts/FWHM/t/yr]" == pretty_names[Symbol(bkg_name)]
 end

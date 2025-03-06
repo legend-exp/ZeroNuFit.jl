@@ -59,7 +59,7 @@ using TypedTables
             p,
             settings,
             bkg_shape,
-            fit_ranges[partitions[1].fit_group], 
+            fit_ranges[partitions[1].fit_group],
             "ckky",
             x,
         )

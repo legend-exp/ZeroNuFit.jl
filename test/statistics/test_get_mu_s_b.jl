@@ -129,7 +129,7 @@ using TypedTables
         fit_ranges[partitions[1].fit_group],
         "cFty",
     )
-    expected_value = 0.048/(partitions[1].width*2.355*1000)
+    expected_value = 0.048 / (partitions[1].width * 2.355 * 1000)
     tolerance = 1e-3
     @testset "Check mu_b accuracy (background only fit)" begin
         diff = abs(mu_b - expected_value)
