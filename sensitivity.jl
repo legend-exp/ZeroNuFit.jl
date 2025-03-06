@@ -95,6 +95,7 @@ function main()
             part_event_index,
             settings,
             fit_ranges,
+            config["bkg"]["units"],
             best_fit = config["best_fit"],
             seed = config["seed"],
         )

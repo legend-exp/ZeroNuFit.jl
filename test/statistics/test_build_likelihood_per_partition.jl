@@ -68,6 +68,7 @@ using TypedTables
             settings,
             bkg_shape,
             fit_ranges[partitions[1].fit_group],
+            "ckky",
         )
     catch e
         @error "Error in 'build_likelihood_per_partition' evaluation: $e"

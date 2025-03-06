@@ -42,7 +42,7 @@ function get_stat_blocks(
 
     bkg_shape, bkg_shape_pars = ZeroNuFit.Utils.get_bkg_info(config)
 
-    prior, par_names, nuisance_info = Likelihood.build_prior(
+    prior, par_names, nuisance_info = build_prior(
         partitions,
         part_event_index,
         config,
@@ -56,9 +56,9 @@ function get_stat_blocks(
     @info "using a ", bkg_shape, " bkg with ", bkg_shape_pars, " parameters"
     @info "built prior"
 
-    sqrt_prior, s_max = Likelihood.get_signal_prior_info(bkg_only, config)
+    sqrt_prior, s_max = get_signal_prior_info(bkg_only, config)
 
-    likelihood = Likelihood.build_likelihood_looping_partitions(
+    likelihood = build_likelihood_looping_partitions(
         partitions,
         events,
         part_event_index,
@@ -66,6 +66,7 @@ function get_stat_blocks(
         sqrt_prior,
         s_max,
         fit_ranges,
+        config["bkg"]["units"],
         bkg_shape = bkg_shape,
     )
     @info "built likelihood"
@@ -333,7 +334,7 @@ end
 
 
 """
-    get_mu_b(deltaE, exposure, bkg_index)
+    get_mu_b(deltaE, exposure, bkg_index, reso, bkg_units::String)
 
 Get the expected number of background counts.
 
@@ -341,9 +342,16 @@ Get the expected number of background counts.
 - `deltaE`: net width of the fit range.
 - `exposure`: exposure (mass x time).
 - `bkg_index`: background index value.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
-function get_mu_b(deltaE, exposure, bkg_index)
-    return deltaE * exposure * bkg_index
+function get_mu_b(deltaE, exposure, bkg_index, reso, bkg_units::String)
+    if bkg_units == "ckky"
+        return deltaE * exposure * bkg_index
+    end
+    if bkg_units == "cFty"
+        fwhm = reso * 2.355
+        return deltaE * exposure * (bkg_index / fwhm / 1000)
+    end
 end
 
 """
@@ -365,7 +373,7 @@ end
 
 
 """
-    get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict,fit_range)
+    get_mu_s_b(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict,fit_range,bkg_units::String)
 
 Get the expected number of signal and background counts.
 
@@ -375,6 +383,7 @@ Get the expected number of signal and background counts.
 - `idx_part_with_events::Int`: index of the partition with the event.
 - `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
 - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function get_mu_s_b(
     p::NamedTuple,
@@ -382,6 +391,7 @@ function get_mu_s_b(
     idx_part_with_events::Int,
     settings::Dict,
     fit_range,
+    bkg_units::String,
 )
 
     deltaE = ZeroNuFit.Utils.get_deltaE(fit_range)
@@ -394,14 +404,16 @@ function get_mu_s_b(
     end
 
     b_name = part_k.bkg_name
-    model_b_k = get_mu_b(deltaE, part_k.exposure, p[b_name])
+    reso, _ =
+        ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+    model_b_k = get_mu_b(deltaE, part_k.exposure, p[b_name], reso, bkg_units)
 
     return model_s_k, model_b_k
 end
 
 
 """
-    build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settings::Dict,fit_range)
+    build_likelihood_zero_obs_evts(part_k::NamedTuple, p::NamedTuple,settings::Dict,fit_range,bkg_units::String)
 
 Function to calculate the likelihood for a single data partition k with 0 events.
 
@@ -410,16 +422,18 @@ Function to calculate the likelihood for a single data partition k with 0 events
 - `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
 - `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
 - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function build_likelihood_zero_obs_evts(
     part_k::NamedTuple,
     p::NamedTuple,
     settings::Dict,
     fit_range,
+    bkg_units::String,
 )
 
     ll_value = 0
-    model_s_k, model_b_k = get_mu_s_b(p, part_k, 0, settings, fit_range)
+    model_s_k, model_b_k = get_mu_s_b(p, part_k, 0, settings, fit_range, bkg_units)
     model_tot_k = model_b_k + model_s_k
 
     ll_value += -(model_tot_k + eps(model_tot_k))
@@ -429,7 +443,7 @@ end
 
 
 """
-    build_likelihood_per_partition(idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}},p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range)
+    build_likelihood_per_partition(idx_part_with_events::Int,part_k::NamedTuple, events_k::Vector{Union{Float64}},p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,bkg_units::String)
 
 Function which computes the likelihood for a single data partition k.
 
@@ -441,6 +455,7 @@ Function which computes the likelihood for a single data partition k.
 - `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
 - `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
 - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function build_likelihood_per_partition(
     idx_part_with_events::Int,
@@ -450,12 +465,14 @@ function build_likelihood_per_partition(
     settings::Dict,
     bkg_shape::Symbol,
     fit_range,
+    bkg_units::String,
 )
     Qbb = ZeroNuFit.Constants.Qbb
 
     ll_value = 0
 
-    model_s_k, model_b_k = get_mu_s_b(p, part_k, idx_part_with_events, settings, fit_range)
+    model_s_k, model_b_k =
+        get_mu_s_b(p, part_k, idx_part_with_events, settings, fit_range, bkg_units)
 
     model_tot_k = model_b_k + model_s_k
 
@@ -498,7 +515,7 @@ end
 
 
 """
-    build_likelihood_looping_partitions(partitions::TypedTables.Table,events::Array{Vector{Float64}},part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges;bkg_shape::Symbol=:uniform)
+    build_likelihood_looping_partitions(partitions::TypedTables.Table,events::Array{Vector{Float64}},part_event_index::Vector{Int},settings::Dict,sqrt_prior::Bool,s_max::Union{Float64,Nothing},fit_ranges,bkg_units::String;bkg_shape::Symbol=:uniformm)
 
 Function to build the likelihood (a `DensityInterface.logfuncdensity` object) for the fit by looping over partitions.
 
@@ -511,6 +528,7 @@ Function to build the likelihood (a `DensityInterface.logfuncdensity` object) fo
 - `s_max::Union{Float64, Nothing}`: A maximum value used for scaling the square root prior. If `Nothing`, no prior is applied.
 - `fit_ranges`: The fitting ranges corresponding to the partitions.
 - `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function build_likelihood_looping_partitions(
     partitions::TypedTables.Table,
@@ -519,14 +537,14 @@ function build_likelihood_looping_partitions(
     settings::Dict,
     sqrt_prior::Bool,
     s_max::Union{Float64,Nothing},
-    fit_ranges;
+    fit_ranges,
+    bkg_units::String;
     bkg_shape::Symbol = :uniform,
 )
     @debug part_event_index
     return DensityInterface.logfuncdensity(
         function (p::NamedTuple)
             total_ll = 0.0
-            println(p)
 
             for (idx_k, part_k) in enumerate(partitions)
 
@@ -540,6 +558,7 @@ function build_likelihood_looping_partitions(
                         settings,
                         bkg_shape,
                         fit_ranges[part_k.fit_group],
+                        bkg_units,
                     )
                 else
                     # no events are there for a given partition
@@ -548,6 +567,7 @@ function build_likelihood_looping_partitions(
                         p,
                         settings,
                         fit_ranges[part_k.fit_group],
+                        bkg_units,
                     )
                 end
             end
@@ -564,7 +584,7 @@ end
 
 
 """
-    generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges;best_fit::Bool=false,seed=nothing,bkg_only=false)
+    generate_data(samples::BAT.DensitySampleVector,partitions::TypedTables.Table,part_event_index::Vector{Int},settings::Dict,fit_ranges,bkg_units::String;best_fit::Bool=false,seed=nothing,bkg_only=false)
 
 Generates data from a posterior distribution.
 This is based on the posterior predictive distributions. 
@@ -586,13 +606,15 @@ We also give the options to fix the posterior distribution to the best fit, whic
 - `best_fit::Bool`: True if you want to fix the paramaters to the best fit.
 - `seed::Int`: random seed.
 - `bkg_only::Bool`: True if we are using a model with background only.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function generate_data(
     samples::BAT.DensitySampleVector,
     partitions::TypedTables.Table,
     part_event_index::Vector{Int},
     settings::Dict,
-    fit_ranges;
+    fit_ranges,
+    bkg_units::String;
     best_fit::Bool = false,
     seed = nothing,
     bkg_only = false,
@@ -629,6 +651,7 @@ function generate_data(
             idx_part_with_events,
             settings,
             fit_ranges[part_k.fit_group],
+            bkg_units,
         )
 
         n_s = rand(Poisson(model_s_k))
@@ -761,7 +784,12 @@ function build_prior(
     )
 
     for key in keys(distrB_multi)
-        pretty_names[key] = string(key) * " [cts/keV/kg/yr]"
+        if config["bkg"]["units"] == "ckky"
+            pretty_names[key] = string(key) * " [cts/keV/kg/yr]"
+        end
+        if config["bkg"]["units"] == "cFty"
+            pretty_names[key] = string(key) * " [cts/FWHM/t/yr]"
+        end
     end
 
 

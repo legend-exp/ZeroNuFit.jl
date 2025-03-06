@@ -43,8 +43,10 @@ using TypedTables
     )
 
     settings = Dict()
-    settings[:energy_scale_fixed] = true
-    settings[:energy_scale_correlated] = false
+    settings[:energy_bias_fixed] = true
+    settings[:energy_bias_correlated] = false
+    settings[:energy_res_fixed] = true
+    settings[:energy_res_correlated] = false
     settings[:eff_fixed] = true
     settings[:eff_correlated] = true
     settings[:bkg_only] = false
@@ -61,6 +63,7 @@ using TypedTables
             p,
             settings,
             fit_ranges[partitions[1].fit_group],
+            "ckky",
         )
     catch e
         @error "Error in 'build_likelihood_zero_obs_evts' evaluation: $e"

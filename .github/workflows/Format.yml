@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - refactor
       - 'releases/**'
     tags: '*'
   pull_request:

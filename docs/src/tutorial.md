@@ -59,7 +59,7 @@ All these fit settings can therefore be grouped in the following config JSON fil
     "plot": {"fit_and_data": false, "bandfit_and_data": false, "scheme":"green", "alpha": 0.3},
     "bkg_only": false,
     "signal": {"upper_bound": 1000, "prior": "uniform"},
-    "bkg": {"upper_bound": 0.1, "prior": "uniform", "correlated": {"mode": "none", "range": "none"}},
+    "bkg": {"units": "ckky", "upper_bound": 0.1, "prior": "uniform", "correlated": {"mode": "none", "range": "none"}},
     "nuisance": { 
         "energy_scale" : {
             "correlated": false,
@@ -119,6 +119,7 @@ Let's create the following config JSON file with name `config_gerda_phIandphII_l
     "partitions":["inputs/partitions_gerda_pI.json", "inputs/partitions_gerda_pII.json"],
     "output_path": "output/fit_gerda_phIandphII_linearB/",
     "bkg": {
+        "units": "ckky", 
         "upper_bound": 0.1, 
         "prior": "uniform",
         "correlated": {"mode": "none", "range": "none"},
@@ -140,6 +141,7 @@ or `config_gerda_phIandphII_expoB.json`:
     "partitions":["inputs/partitions_gerda_pI.json", "inputs/partitions_gerda_pII.json"],
     "output_path": "output/fit_gerda_phIandphII_expoB/",
     "bkg": {
+        "units": "ckky", 
         "upper_bound": 0.1, 
         "prior": "uniform",
         "correlated": {"mode": "none", "range": "none"},

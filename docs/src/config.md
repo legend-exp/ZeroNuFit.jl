@@ -26,7 +26,9 @@ Before running the code, set the input config.json file with following entries:
         },
     "bkg_only": false,
     "signal": {"upper_bound":1000, "prior": "uniform"},
-    "bkg": {"upper_bound":0.1,
+    "bkg": {
+             "units": "ckky",
+             "upper_bound":0.1,
              "prior": "uniform",
              "correlated": {"mode": "none", "range": "none"}
              },
@@ -44,7 +46,7 @@ where
 - `"plot"`: settings for plotting; `"fit_and_data": true` plots fit line over data (and CI bands if `"bandfit_and_data": true`); `"scheme":"red"` and `"alpha":0.3` are used for customizing output appearances;
 - `"bkg_only": true` if we fit assuming no signal (S=0), false otherwise;
 - `"signal"`: select `"upper_bound"` for the prior and the `"prior"` shape (`uniform`, `sqrt`, ...);
-- `"bkg"`: select `"upper_bound"` for the prior and the `"prior"` shape (`uniform`, ...) there are several optional keys with details given below, if these are not provided the fit defaults to a flat background without correlations.
+- `"bkg"`: select `"upper_bound"` for the prior range and the `"prior"` shape (`uniform`, ...). There are several optional keys with details given below: if these are not provided, the fit defaults to a flat background without correlations. Notice the units of the final BI can be chosen among `"ckky"` (counts/keV/kg/yr) or `"cFty"` (counts/FWHM/t/yr).
 
 
 Moreover, the config requires the following block for nuisance parameters, ie energy scale (=energy bias and resolution) and efficiency:
@@ -82,7 +84,7 @@ Parameters are then added to the model called `αr_\$name` (for resolution), `α
     The $\alpha$ parameter names default to `_all`, if you want one different per experiment this must be explicitly specified in the fit groups entry
 
 ## Background shape and correlation
-There are several options to control the background in more detail. These can be added to the "bkg" section of the config:
+There are several options to control the background in more detail. These can be added to the `"bkg"` part of the config:
 In particular:
  - "correlated" adds a hierarchical (correlated) background to the model, this key should have a dictionary giving details on the prior shape and ranges. The three options for the mode are: `none` (default), `lognormal` or `normal`. The range entry is associated to the range used for the uniform prior on the `\$sigma_B` parameter. For example:
 

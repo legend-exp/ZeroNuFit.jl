@@ -22,6 +22,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
             "correlated" => Dict("range" => "none", "mode" => "none"),
             "prior" => "uniform",
             "upper_bound" => 0.1,
+            "units" => "ckky",
         ),
         "signal" => Dict("prior" => "uniform", "upper_bound" => 1000),
         "events" => [joinpath(present_dir, "../inputs/events_test.json")],
@@ -201,6 +202,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
     # bkg shapes parameters (eg linear/exponential)
     config["bkg"] = Dict(
+        "units" => "ckky",
         "correlated" => Dict("range" => "none", "mode" => "none"),
         "prior" => "uniform",
         "upper_bound" => 0.1,
@@ -229,6 +231,7 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
 
     # gaussian + low E tail (MJD-like event)
     config["bkg"] = Dict(
+        "units" => "ckky",
         "correlated" => Dict("range" => "none", "mode" => "none"),
         "prior" => "uniform",
         "upper_bound" => 0.1,
@@ -329,4 +332,18 @@ Base.exit(code::Int) = throw(ArgumentError("exit code $code"))
         hierachical_mode = hier_mode,
         hierachical_range = hier_range,
     )
+
+    # cts/FWHM/t/yr units
+    config["bkg"]["correlated"] = Dict("mode" => "none", "range" => "none")
+    config["bkg"]["units"] = "cFty"
+    partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+    events = ZeroNuFit.Utils.get_events(config["events"][1], partitions)
+    part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+    settings = ZeroNuFit.Utils.get_settings(config)
+    corr, hier_mode, hier_range = ZeroNuFit.Utils.get_corr_info(config)
+    priors, pretty_names, nuisance_info =
+        ZeroNuFit.Likelihood.build_prior(partitions, part_event_index, config, settings)
+    bkg_name =
+        JSON.parsefile(config["partitions"][1])["fit_groups"]["all_phase_II"]["bkg_name"]
+    @test string(bkg_name) * " [cts/FWHM/t/yr]" == pretty_names[Symbol(bkg_name)]
 end

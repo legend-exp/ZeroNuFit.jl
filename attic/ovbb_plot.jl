@@ -201,6 +201,7 @@ function plot_l200_result(samples, config)
     # let's use a narrow region around Qbb for the 90% CI on the signal
     energies = 2034.0:4:2044.0
     s_90 = Vector(undef, length(energies))
+    s_90_plus_b = Vector(undef, length(energies))
     b_mode_all_window = 0
 
     if bkg_shape == "flat"
@@ -256,10 +257,11 @@ function plot_l200_result(samples, config)
             bkg = false,
         )
         if bkg_shape == "flat"
-            println(b_mode[1], "   ", quantile(posterior, _weights, 0.9))
-            s_90[i] = b_mode[1] .. quantile(posterior, _weights, 0.9)
+            s_90[i] = 0 .. quantile(posterior, _weights, 0.9)
+            s_90_plus_b[i] = b_mode[1] .. b_mode[1] + quantile(posterior, _weights, 0.9)
         else
-            s_90[i] = b_mode[i] .. quantile(posterior, _weights, 0.9)
+            s_90[i] = 0 .. quantile(posterior, _weights, 0.9)
+            s_90_plus_b[i] = b_mode[i] .. b_mode[i] + quantile(posterior, _weights, 0.9)
         end
     end
 
@@ -272,12 +274,13 @@ function plot_l200_result(samples, config)
     b_68_right = [i.right for i in b_68]
     s_90_left = [i.left for i in s_90]
     s_90_right = [i.right for i in s_90]
+    s_90_plus_b_left = [i.left for i in s_90_plus_b]
+    s_90_plus_b_right = [i.right for i in s_90_plus_b]
     b_mode = [x for x in b_mode]
     if b_mode_all_window == 0
         b_mode_all_window = [b_mode_all_window]
     end
 
-    println("s_90 ->", s_90)
     # save objects to be plotted in a h5 file
     HDF5.h5write("ovbb_plot_entries.h5", "bkg_shape", bkg_shape)
     HDF5.h5write("ovbb_plot_entries.h5", "exposure", sum(partitions.exposure))
@@ -290,6 +293,16 @@ function plot_l200_result(samples, config)
     HDF5.h5write("ovbb_plot_entries.h5", "b_mode_all_window", b_mode_all_window)
     HDF5.h5write("ovbb_plot_entries.h5", "s_90_left", s_90_left)
     HDF5.h5write("ovbb_plot_entries.h5", "s_90_right", s_90_right)
+    HDF5.h5write(
+        "attic/ovbb_plot_entries_combined.h5",
+        "s_90_plus_b_left",
+        s_90_plus_b_left,
+    )
+    HDF5.h5write(
+        "attic/ovbb_plot_entries_combined.h5",
+        "s_90_plus_b_right",
+        s_90_plus_b_right,
+    )
 end
 
 

@@ -60,6 +60,7 @@ using TypedTables
             settings,
             bkg_shape,
             fit_ranges[partitions[1].fit_group],
+            "ckky",
             x,
         )
     catch e
@@ -87,6 +88,7 @@ using TypedTables
         settings,
         bkg_shape,
         fit_ranges[partitions[1].fit_group],
+        "ckky",
         x,
     )
     expected_total = 0.0845283663997091
