@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - refactor
       - 'releases/**'
     tags: '*'
     paths-ignore:
@@ -13,6 +14,7 @@ on:
     branches:
       - main
       - dev
+      - refactor
       - 'releases/**'
     paths-ignore:
       - 'attic/**'
