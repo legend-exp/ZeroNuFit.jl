@@ -46,8 +46,10 @@ using TypedTables
     )
 
     settings = Dict()
-    settings[:energy_scale_fixed] = true
-    settings[:energy_scale_correlated] = false
+    settings[:energy_bias_fixed] = true
+    settings[:energy_bias_correlated] = false
+    settings[:energy_res_fixed] = true
+    settings[:energy_res_correlated] = false
     settings[:eff_fixed] = true
     settings[:eff_correlated] = true
     settings[:bkg_only] = false
@@ -66,6 +68,7 @@ using TypedTables
             1,
             settings,
             fit_ranges[partitions[1].fit_group],
+            "ckky",
         )
     catch e
         @error "Error in 'get_mu_s_b' evaluation: $e"
@@ -102,6 +105,7 @@ using TypedTables
         1,
         settings,
         fit_ranges[partitions[1].fit_group],
+        "ckky",
     )
     expected_value = 0
     tolerance = 1e-10
@@ -110,6 +114,22 @@ using TypedTables
         @test diff <= tolerance
     end
     expected_value = 0.048
+    tolerance = 1e-3
+    @testset "Check mu_b accuracy (background only fit)" begin
+        diff = abs(mu_b - expected_value)
+        @test diff <= tolerance
+    end
+
+    # background only fit, with BI in cts/FWHM/t/yr
+    mu_s, mu_b = ZeroNuFit.Likelihood.get_mu_s_b(
+        p,
+        partitions[1],
+        1,
+        settings,
+        fit_ranges[partitions[1].fit_group],
+        "cFty",
+    )
+    expected_value = 0.048/(partitions[1].width*2.355*1000)
     tolerance = 1e-3
     @testset "Check mu_b accuracy (background only fit)" begin
         diff = abs(mu_b - expected_value)

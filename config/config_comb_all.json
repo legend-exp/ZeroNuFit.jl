@@ -14,6 +14,7 @@
         },
     "signal": {"upper_bound":100, "prior": "uniform"},
     "bkg": {
+        "units": "ckky",
         "upper_bound":0.1, 
         "prior": "uniform",
         "correlated": {"mode": "none", "range": "none"}
