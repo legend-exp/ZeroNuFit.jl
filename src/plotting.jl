@@ -37,7 +37,7 @@ color_schemes = Dict(
 
 
 """
-    fit_model(idx_part_with_events::Int,part_k::NamedTuple,p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,x::Float64)
+    fit_model(idx_part_with_events::Int,part_k::NamedTuple,p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,bkg_units::String,x::Float64)
 
 Evaòuates the total modeling function at x.
 
@@ -48,6 +48,7 @@ Evaòuates the total modeling function at x.
 - `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
 - `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
 - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 - `x::Float64`: the x value to evaluate at.
 """
 function fit_model(
@@ -57,6 +58,7 @@ function fit_model(
     settings::Dict,
     bkg_shape::Symbol,
     fit_range,
+    bkg_units::String,
     x::Float64,
 )
     Qbb = ZeroNuFit.Constants.Qbb
@@ -68,7 +70,8 @@ function fit_model(
     eff = ZeroNuFit.Utils.get_efficiency(p, part_k, idx_part_with_events, settings)
 
     b_name = part_k.bkg_name
-    model_b_k = ZeroNuFit.Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name])
+    reso, _ = ZeroNuFit.Utils.get_energy_scale_pars(part_k, p, settings, idx_part_with_events)
+    model_b_k = ZeroNuFit.Likelihood.get_mu_b(deltaE, part_k.exposure, p[b_name], reso, bkg_units)
     term1 = model_b_k * ZeroNuFit.Likelihood.get_bkg_pdf(bkg_shape, x, p, b_name, fit_range)
 
     if (settings[:bkg_only] == false)
@@ -86,7 +89,7 @@ end
 
 
 """
-    plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges)
+    plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges,bkg_units::String)
 
 Function to plot events in the Qbb analysis window and BAT fit results.
 
@@ -102,6 +105,7 @@ Function to plot events in the Qbb analysis window and BAT fit results.
 - `settings::Dict`: dictionary of settings containing configuration for the likelihood calculation.
 - `bkg_shape::Symbol`: Specifies the background shape; default is `:uniform`.
 - `fit_ranges`: The fitting ranges corresponding to the partitions.
+- `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function plot_data(
     hist::Histogram,
@@ -115,6 +119,7 @@ function plot_data(
     settings::Dict,
     bkg_shape::Symbol,
     fit_ranges,
+    bkg_units::String,
 )
 
     counts = sum(hist.weights)
@@ -159,11 +164,12 @@ function plot_data(
                         settings,
                         bkg_shape,
                         fit_range,
+                        bkg_units,
                         x,
                     ) * diff(bin_edges)[1]
             else
                 model +=
-                    fit_model(0, part_k, params, settings, bkg_shape, fit_range, x) *
+                    fit_model(0, part_k, params, settings, bkg_shape, fit_range, bkg_units, x) *
                     diff(bin_edges)[1]
             end
         end
@@ -323,6 +329,7 @@ function plot_fit_and_data(
         settings,
         bkg_shape,
         fit_ranges,
+        config["bkg"]["units"],
     )
 
     log_suffix = toy_idx == nothing ? "" : "_$(toy_idx)"
