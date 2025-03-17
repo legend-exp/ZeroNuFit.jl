@@ -6,11 +6,10 @@
 using Pkg
 Pkg.activate(".") # activate the environment
 Pkg.instantiate() # instantiate the environment
+using ArgParse
 using JSON3
-include("main.jl")
-include("src/likelihood.jl")
-include("src/utils.jl")
-
+include("src/ZeroNuFit.jl")
+using .ZeroNuFit
 
 function main()
     s = ArgParseSettings()
@@ -43,14 +42,14 @@ function main()
     # read config path
     config_path = parsed_args["config"]
     @info "Reading configuration from: $config_path"
-    config = read_config(config_path)
+    config = ZeroNuFit.Utils.read_config(config_path)
 
     # load the output path and create the neccesary
     output_path = config["path_to_fit"]
     saving_folder = get(config, :saving_folder, "sensitivity")
 
     config_real_data =
-        read_config(joinpath(config["path_to_fit"], "mcmc_files/fit_results.json"))["config"]
+        ZeroNuFit.Utils.read_config(joinpath(config["path_to_fit"], "mcmc_files/fit_results.json"))["config"]
     # we add/overwrite an option for light saving
     config_real_data["light_output"] = true
 
@@ -66,19 +65,19 @@ function main()
         end
     end
 
-    set_logger(config_real_data, "$output_path/$saving_folder", toy_idx = toy_idx)
+    ZeroNuFit.Utils.set_logger(config_real_data, "$output_path/$saving_folder", toy_idx = toy_idx)
 
     # we generate+fit a toy spectrum
     if path_to_toys == nothing
         @info "You'll generate new toys!"
         # let's retrieve input for the fake generation of data (JUST ONCE!)
-        samples, partitions, part_event_index = retrieve_real_fit_results(config_real_data)
+        samples, partitions, part_event_index = ZeroNuFit.Analysis.retrieve_real_fit_results(config_real_data)
 
         # get fit ranges
         fit_ranges = nothing
         first = true
         for part_path in config_real_data["partitions"]
-            _, _, fit_range = get_partitions_new(part_path)
+            _, _, fit_range = ZeroNuFit.Utils.get_partitions_new(part_path)
             if (first)
                 first = false
                 fit_ranges = fit_range
@@ -88,14 +87,14 @@ function main()
         end
 
         # now let's generate and fit data! How many times? As N_toys
-        settings = get_settings(config_real_data)
-        fake_data = generate_data(
+        settings = ZeroNuFit.Utils.get_settings(config_real_data)
+        fake_data = ZeroNuFit.Likelihood.generate_data(
             samples,
             partitions,
             part_event_index,
             settings,
             fit_ranges,
-            config["bkg"]["units"],
+            config_real_data["bkg"]["units"],
             best_fit = config["best_fit"],
             seed = config["seed"],
         )
@@ -145,12 +144,11 @@ function main()
     end
 
     # fit fake data
-    ZeroNuFit.run_analysis(
+    ZeroNuFit.Analysis.run_analysis(
         config_real_data,
         output_path = "$output_path/$saving_folder",
         toy_idx = toy_idx,
     )
-
 end
 
 # Run the main function if this file is executed directly

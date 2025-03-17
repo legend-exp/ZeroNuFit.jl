@@ -6,7 +6,7 @@
 module Utils
 using PropertyFunctions
 using JSON
-using Logging
+using Logging, LoggingExtras
 using Random, LinearAlgebra, Statistics, Distributions, StatsBase, BAT
 using PropDicts
 using FilePathsBase
@@ -837,6 +837,47 @@ function get_range(fit_range)
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     return sort(range_l), sort(range_h)
+end
+
+
+function set_logger(config::Dict, output_path::String; toy_idx = nothing)
+    """
+    Function which sets the logging for the program
+    Parameters
+    ----------
+        config::Dict the fit config
+        output_path::String path to save the logs to
+    """
+    if ("debug" in keys(config) && config["debug"] == true)
+        terminal_log = global_logger(ConsoleLogger(stderr, LogLevel(Debug)))
+    else
+        terminal_log = global_logger(ConsoleLogger(stderr, LogLevel(Info)))
+    end
+
+    log_suffix = toy_idx == nothing ? "" : "_$(toy_idx)"
+
+    logger = TeeLogger(
+        terminal_log,
+        # Accept any messages with level >= Info
+        MinLevelLogger(
+            FileLogger("$output_path/logs/logfile$log_suffix.log"),
+            Logging.Info,
+        ),
+        # Accept any messages with level >= Debug
+        MinLevelLogger(FileLogger("$output_path/logs/debug$log_suffix.log"), Logging.Debug),
+    )
+    global_logger(logger)
+
+end
+
+# read JSON configuration file
+function read_config(file_path::String)
+    """
+    Read the JASON configuration file and parse it into a Dict
+    """
+    json_string = read(file_path, String)
+    config = JSON.parse(json_string)
+    return config
 end
 
 
