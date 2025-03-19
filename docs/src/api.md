@@ -77,4 +77,6 @@ ZeroNuFit.Utils.inverse_uniform_cdf
 ZeroNuFit.Utils.generate_disjoint_uniform_samples
 ZeroNuFit.Utils.save_generated_samples
 ZeroNuFit.Utils.save_results_into_json
+ZeroNuFit.Utils.set_logger
+ZeroNuFit.Utils.read_config
 ```
