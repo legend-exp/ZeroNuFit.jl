@@ -48,8 +48,9 @@ function main()
     output_path = config["path_to_fit"]
     saving_folder = get(config, :saving_folder, "sensitivity")
 
-    config_real_data =
-        ZeroNuFit.Utils.read_config(joinpath(config["path_to_fit"], "mcmc_files/fit_results.json"))["config"]
+    config_real_data = ZeroNuFit.Utils.read_config(
+        joinpath(config["path_to_fit"], "mcmc_files/fit_results.json"),
+    )["config"]
     # we add/overwrite an option for light saving
     config_real_data["light_output"] = true
 
@@ -65,13 +66,18 @@ function main()
         end
     end
 
-    ZeroNuFit.Utils.set_logger(config_real_data, "$output_path/$saving_folder", toy_idx = toy_idx)
+    ZeroNuFit.Utils.set_logger(
+        config_real_data,
+        "$output_path/$saving_folder",
+        toy_idx = toy_idx,
+    )
 
     # we generate+fit a toy spectrum
     if path_to_toys == nothing
         @info "You'll generate new toys!"
         # let's retrieve input for the fake generation of data (JUST ONCE!)
-        samples, partitions, part_event_index = ZeroNuFit.Analysis.retrieve_real_fit_results(config_real_data)
+        samples, partitions, part_event_index =
+            ZeroNuFit.Analysis.retrieve_real_fit_results(config_real_data)
 
         # get fit ranges
         fit_ranges = nothing

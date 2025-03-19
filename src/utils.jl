@@ -839,15 +839,17 @@ function get_range(fit_range)
     return sort(range_l), sort(range_h)
 end
 
+"""
+    set_logger(config::Dict, output_path::String; toy_idx = nothing)
 
+Function which sets the logging for the program.
+
+### Arguments
+- `config::Dict`: input dictionary.
+- `output_path::String`: path to save the logs to.
+- `toy_idx=nothing`: identification index of the generated toy.
+"""
 function set_logger(config::Dict, output_path::String; toy_idx = nothing)
-    """
-    Function which sets the logging for the program
-    Parameters
-    ----------
-        config::Dict the fit config
-        output_path::String path to save the logs to
-    """
     if ("debug" in keys(config) && config["debug"] == true)
         terminal_log = global_logger(ConsoleLogger(stderr, LogLevel(Debug)))
     else
@@ -870,11 +872,16 @@ function set_logger(config::Dict, output_path::String; toy_idx = nothing)
 
 end
 
-# read JSON configuration file
+
+"""
+    read_config(file_path::String)
+
+Function that reads the JSON configuration file and parse it into a Dict.
+
+### Arguments
+- `file_path::String`: path to the JSON file.
+"""
 function read_config(file_path::String)
-    """
-    Read the JASON configuration file and parse it into a Dict
-    """
     json_string = read(file_path, String)
     config = JSON.parse(json_string)
     return config
