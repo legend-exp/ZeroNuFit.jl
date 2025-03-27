@@ -139,3 +139,13 @@ $srun $parallel "julia sensitivity.jl -c config/toy_9_l200_1BI_new_data_same_bkg
 
 wait
 ```
+
+
+
+## Testing fake scanerios
+In the above examples, you can replace the julia-running line in order to test the "sensitivity" of the experiment for fixed input partitions parameters and a fixed level of background (`<bkg_index>`: expressed in units of $10^{-4}$ counts/keV/kg/yr):
+
+```bash
+$srun  $parallel "julia sensitivity.jl -c config/fake_config.json -i {1} -f true -b <bkg_idex>" ::: {1..10000} 
+```
+
