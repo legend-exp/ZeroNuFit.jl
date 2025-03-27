@@ -1,0 +1,42 @@
+{
+    "fit_groups": {
+        "all_l200a": {
+            "range": [
+                [
+                    1930.0,
+                    2098.511
+                ],
+                [
+                    2108.511,
+                    2113.513
+                ],
+                [
+                    2123.513,
+                    2190.0
+                ]
+            ],
+            "model": "uniform",
+            "bkg_name": "B_l200a_all"
+        }
+    },
+    "partitions": {
+        "all_l200a": [
+            {
+                "experiment": "L200",
+                "detector": "FAKEDET",
+                "part_name": "part0001",
+                "start_ts": 1704950367,
+                "end_ts": 1708271505,
+                "eff_tot": 0.69,
+                "eff_tot_sigma": 0,
+                "width": 1.0616522503600239,
+                "width_sigma": 0,
+                "fwhm": 2.5,
+                "fwhm_sigma": 0,
+                "exposure": 1000,
+                "bias": 0,
+                "bias_sigma": 0
+            }
+        ]
+    }
+}
