@@ -5,7 +5,7 @@
 # load the script to run the analysis
 using Pkg
 Pkg.activate(".") # activate the environment
-#Pkg.instantiate() # instantiate the environment
+Pkg.instantiate() # instantiate the environment
 using ArgParse
 using JSON3
 include("src/ZeroNuFit.jl")
