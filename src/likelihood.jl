@@ -609,7 +609,7 @@ We also give the options to fix the posterior distribution to the best fit, whic
 - `bkg_units::String`: Specifies the units for the background index; available options are `"ckky"` (=counts/keV/kg/yr) or `"cFty"` (=counts/FWHM/t/yr).
 """
 function generate_data(
-    samples::BAT.DensitySampleVector,
+    samples,#::BAT.DensitySampleVector,
     partitions::TypedTables.Table,
     part_event_index::Vector{Int},
     settings::Dict,

@@ -28,10 +28,21 @@ function main()
         arg_type = String
         default = nothing
         required = false
+        "--fake_scenario", "-f"
+        help = "Boolean (default: false). if true, then fake nuisance parameters and BI are set from the user via the partition file"
+        arg_type = Bool
+        default = false
+        required = false
+        "--fake_BI", "-b"
+        help = "Fake background index, expressed in units of x 10^-4 counts/keV/kg/yr"
+        arg_type = Float64
+        required = false
     end
 
     parsed_args = parse_args(s)
     path_to_toys = parsed_args["path_to_toys"]
+    fake_scenario = parsed_args["fake_scenario"]
+    fake_BI = parsed_args["fake_BI"]
 
     # read parsed arguments
     @info "running using ", Base.Threads.nthreads(), " threads"
@@ -44,13 +55,20 @@ function main()
     @info "Reading configuration from: $config_path"
     config = ZeroNuFit.Utils.read_config(config_path)
 
-    # load the output path and create the neccesary
-    output_path = config["path_to_fit"]
-    saving_folder = get(config, :saving_folder, "sensitivity")
-
-    config_real_data = ZeroNuFit.Utils.read_config(
-        joinpath(config["path_to_fit"], "mcmc_files/fit_results.json"),
-    )["config"]
+    if fake_scenario == false
+        output_path = config["path_to_fit"]
+        saving_folder = get(config, :saving_folder, "sensitivity")
+        config_real_data = ZeroNuFit.Utils.read_config(
+            joinpath(config["path_to_fit"], "mcmc_files/fit_results.json"),
+        )["config"]
+    else
+        output_path = config["output_path"]
+        saving_folder = get(config, :saving_folder, "sensitivity")
+        config_real_data = config
+        config_real_data["best_fit"] = true
+        config_real_data["seed"] = nothing
+        config_real_data["low_stat"] = true
+    end
     # we add/overwrite an option for light saving
     config_real_data["light_output"] = true
 
@@ -75,21 +93,25 @@ function main()
     # we generate+fit a toy spectrum
     if path_to_toys == nothing
         @info "You'll generate new toys!"
-        # let's retrieve input for the fake generation of data (JUST ONCE!)
-        samples, partitions, part_event_index =
-            ZeroNuFit.Analysis.retrieve_real_fit_results(config_real_data)
 
-        # get fit ranges
-        fit_ranges = nothing
-        first = true
-        for part_path in config_real_data["partitions"]
-            _, _, fit_range = ZeroNuFit.Utils.get_partitions_new(part_path)
-            if (first)
-                first = false
-                fit_ranges = fit_range
-            else
-                merge!(fit_ranges, fit_range)
-            end
+        if fake_scenario == false
+            # let's retrieve input for the fake generation of data (JUST ONCE!)
+            partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config_real_data)
+            samples, partitions, part_event_index =
+                ZeroNuFit.Analysis.retrieve_real_fit_results(config_real_data)
+        else
+            partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
+            events = ZeroNuFit.Utils.get_events(config_real_data["events"][1], partitions) # this works for 1 fake partition only
+            part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
+            println("partitions: ", partitions)
+            println("partitions: ", partitions[1])
+            samples = (
+                αe_all = 0.5,
+                ω = [partitions[1].width],
+                𝛥 = [partitions[1].bias],
+                ε = [partitions[1].eff_tot],
+                B_l200a_all = fake_BI * 1e-4,
+            )
         end
 
         # now let's generate and fit data! How many times? As N_toys
