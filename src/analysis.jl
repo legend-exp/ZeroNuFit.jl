@@ -11,25 +11,6 @@ export run_analysis, retrieve_real_fit_results
 
 using ZeroNuFit
 
-"""
-    save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
-
-Function to plot and save results, as well as inputs.
-
-### Arguments
-- `partitions`: table of partitions.
-- `events`: list of events (=energies) in each partition.
-- `part_event_index`: index mapping events to the partitions.
-- `samples`: set of generated MCMC samples.
-- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
-- `nuisance_info`: dictionary with info on the prior parameters.
-- `config`: input dictionary.
-- `output_path`: output folder path.
-- `fit_ranges`: dictionary of energy ranges considered for the analysis.
-- `priors`: prior distributions.
-- `par_names`: collection of parameter names.
-- `toy_idx`: identification index of the generated toy.
-"""
 function save_outputs(
     partitions,
     events,
@@ -44,6 +25,25 @@ function save_outputs(
     par_names = nothing,
     toy_idx = nothing,
 )
+    """
+        save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
+    
+    Function to plot and save results, as well as inputs.
+    
+    ### Arguments
+    - `partitions`: table of partitions.
+    - `events`: list of events (=energies) in each partition.
+    - `part_event_index`: index mapping events to the partitions.
+    - `samples`: set of generated MCMC samples.
+    - `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
+    - `nuisance_info`: dictionary with info on the prior parameters.
+    - `config`: input dictionary.
+    - `output_path`: output folder path.
+    - `fit_ranges`: dictionary of energy ranges considered for the analysis.
+    - `priors`: prior distributions.
+    - `par_names`: collection of parameter names.
+    - `toy_idx`: identification index of the generated toy.
+    """
     if (haskey(config["bkg"], "correlated")) &
        (config["bkg"]["correlated"]["mode"] != "none")
         hier = true
@@ -140,17 +140,17 @@ function save_outputs(
 end
 
 
-"""
-    run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = nothing)
-
-Function which handeles running analysis.
-
-### Arguments
-- `config::Dict{String,Any}`: the fit configuration.
-- `output_path::String`: the path to the output files folder.
-- `toy_idx`: identification index of the generated toy.
-"""
 function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = nothing)
+    """
+        run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = nothing)
+    
+    Function which handeles running analysis.
+    
+    ### Arguments
+    - `config::Dict{String,Any}`: the fit configuration.
+    - `output_path::String`: the path to the output files folder.
+    - `toy_idx`: identification index of the generated toy.
+    """
     @info "You entered into src/ZeroNuFit.jl"
 
     part_event_index, events, partitions, fit_ranges =
@@ -216,15 +216,15 @@ function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = n
 end
 
 
-"""
-    retrieve_real_fit_results(config::Dict{String,Any})
-
-Function which handeles generating of fake data and run a signal+background model fit over it.
-
-### Arguments
-- `config::Dict{String,Any}`: the fit configuration.
-"""
 function retrieve_real_fit_results(config::Dict{String,Any})
+    """
+        retrieve_real_fit_results(config::Dict{String,Any})
+    
+    Function which handeles generating of fake data and run a signal+background model fit over it.
+    
+    ### Arguments
+    - `config::Dict{String,Any}`: the fit configuration.
+    """
     @info "You entered into src/ZeroNuFit.jl"
 
     @info"Let's retrieve some partitions ..."

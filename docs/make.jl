@@ -24,6 +24,6 @@ makedocs(
         "Partitions and events" => "inputs.md",
         "Generating toys" => "toys.md",
         "Tutorial" => "tutorial.md",
-        "API" => "api.md",
+        #"API" => "api.md",
     ],
 )
