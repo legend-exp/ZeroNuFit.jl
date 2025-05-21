@@ -27,9 +27,9 @@ function save_outputs(
 )
     """
         save_outputs(partitions, events, part_event_index, samples, posterior, nuisance_info, config, output_path, fit_ranges;priors=nothing,par_names=nothing,toy_idx=nothing)
-    
+
     Function to plot and save results, as well as inputs.
-    
+
     ### Arguments
     - `partitions`: table of partitions.
     - `events`: list of events (=energies) in each partition.
@@ -143,9 +143,9 @@ end
 function run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = nothing)
     """
         run_analysis(config::Dict{String,Any}; output_path::String, toy_idx = nothing)
-    
+
     Function which handeles running analysis.
-    
+
     ### Arguments
     - `config::Dict{String,Any}`: the fit configuration.
     - `output_path::String`: the path to the output files folder.
@@ -219,9 +219,9 @@ end
 function retrieve_real_fit_results(config::Dict{String,Any})
     """
         retrieve_real_fit_results(config::Dict{String,Any})
-    
+
     Function which handeles generating of fake data and run a signal+background model fit over it.
-    
+
     ### Arguments
     - `config::Dict{String,Any}`: the fit configuration.
     """

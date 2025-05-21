@@ -35,7 +35,7 @@ color_schemes = Dict(
     :muted => [:olivedrab, :goldenrod, :indianred1],
 )
 
-    
+
 function fit_model(
     idx_part_with_events::Int,
     part_k::NamedTuple,
@@ -48,9 +48,9 @@ function fit_model(
 )
     """
         fit_model(idx_part_with_events::Int,part_k::NamedTuple,p::NamedTuple,settings::Dict,bkg_shape::Symbol,fit_range,bkg_units::String,x::Float64)
-    
+
     Evaòuates the total modeling function at x.
-    
+
     ### Arguments
     - `idx_part_with_events::Int`: index of the partition with the event.
     - `part_k::NamedTuple`: Table of specifications for a given partition k.
@@ -89,7 +89,7 @@ function fit_model(
 
 end
 
-    
+
 function plot_data(
     hist::Histogram,
     name,
@@ -106,9 +106,9 @@ function plot_data(
 )
     """
         plot_data(hist::Histogram,name,partitions,part_event_index,pars,samples,posterior,plotflag,settings::Dict,bkg_shape::Symbol,fit_ranges,bkg_units::String)
-    
+
     Function to plot events in the Qbb analysis window and BAT fit results.
-    
+
     ### Arguments
     - `hist::Histogram`: binned histogram with energy events.
     - `name`: title of the plot.
@@ -277,7 +277,7 @@ function plot_data(
     return p
 end
 
-    
+
 function plot_fit_and_data(
     partitions,
     events,
@@ -292,9 +292,9 @@ function plot_fit_and_data(
 )
     """
         plot_fit_and_data(partitions,part_event_index,samples,posterior,pars,output,config,fit_ranges;toy_idx=nothing)
-    
+
     Retrieves event energies and calls `plot_data` to plot events in the Qbb analysis window and BAT fit results. 
-    
+
     ### Arguments
     - `partitions`: table of partitions.
     - `part_event_index`: index mapping events to the partitions.
@@ -347,13 +347,13 @@ function plot_fit_and_data(
 
 end
 
-    
+
 function plot_correlation_matrix(samples, output; par_names = nothing, toy_idx = nothing)
     """
         plot_correlation_matrix(samples,output;par_names=nothing,toy_idx=nothing)
-    
+
     Plots the correlation matrixes across the free parameters. 
-    
+
     ### Arguments
     - `samples`: set of generated MCMC samples.
     - `output`: output folder path.
@@ -378,7 +378,7 @@ function plot_correlation_matrix(samples, output; par_names = nothing, toy_idx =
     savefig(joinpath(output, "plots/correlations$log_suffix.pdf"))
 end
 
-    
+
 function plot_two_dim_posteriors(
     samples,
     pars,
@@ -388,9 +388,9 @@ function plot_two_dim_posteriors(
 )
     """
         plot_two_dim_posteriors(samples,pars,output;par_names=nothing,toy_idx=nothing)
-    
+
     Plots the correlation matrixes across the free parameters. 
-    
+
     ### Arguments
     - `samples`: set of generated MCMC samples.
     - `pars`: free parameters in format (:B, :S, ...) free parameters in format (:B, :S, ...) 
@@ -440,7 +440,7 @@ function plot_two_dim_posteriors(
 
 end
 
-    
+
 function plot_marginal_distr(
     partitions,
     samples,
@@ -456,9 +456,9 @@ function plot_marginal_distr(
 )
     """
         plot_marginal_distr(partitions,samples,pars,output;sqrt_prior=false,priors=nothing,par_names=nothing,plot_config=nothing,s_max=nothing,hier=false,toy_idx=nothing) 
-    
+
     Function to plot 1D and 2D marginalized posterior distributions, and prior distributions.
-    
+
     ### Arguments
     - `partitions`: table of partitions.
     - `samples`: set of generated MCMC samples.
