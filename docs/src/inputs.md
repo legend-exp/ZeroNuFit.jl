@@ -87,8 +87,8 @@ Notice that if you want to use the `"signal_name":"gaussian_plus_lowEtail"` opti
 !!! warning
 
     Notice that the `width` parameter assumes different meanings depending on the chosen signal shape:
-    - if `"signal_name":"gaussian_plus_lowEtail"`, `width` is the fractional uncertainty on the FWHM of the peak at 2039 keV (it rescales the energy resolution of the peak)
-    - if `"signal_name":"gaussian"`, `width` is the energy resolution expressed in standard deviations (NOT in FWHM)
+    - if `"signal_name": "gaussian_plus_lowEtail"`, `width` is the fractional uncertainty on the FWHM of the peak at 2039 keV (it rescales the energy resolution of the peak)
+    - if `"signal_name": "gaussian"`, `width` is the energy resolution expressed in standard deviations (NOT in FWHM)
 
 
 ## Events file

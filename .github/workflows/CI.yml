@@ -37,7 +37,6 @@ jobs:
         version:
           - '1.11'
           - '1'
-          - 'pre'
         os:
           - ubuntu-latest
         arch:

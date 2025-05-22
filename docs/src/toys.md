@@ -143,9 +143,54 @@ wait
 
 
 ## Testing fake scanerios
-In the above examples, you can replace the julia-running line in order to test the "sensitivity" of the experiment for fixed input partitions parameters and a fixed level of background (`<bkg_index>`: expressed in units of $10^{-4}$ counts/keV/kg/yr):
+In the above examples, you can replace the julia-running line in order to test the "sensitivity" of the experiment for fixed input partitions parameters and a fixed level of background (`<bkg_index>`: expressed in units of $10^{-4}$ counts/keV/kg/yr) for the exclusion scenario:
 
 ```bash
 $srun  $parallel "julia sensitivity.jl -c config/fake_config.json -i {1} -f true -b <bkg_idex>" ::: {1..10000} 
 ```
 
+An example of fake_partitions.json` input is the following, where you fill entries with the values you want to test the $0\nu\beta\beta$ sensitivity:
+
+```json
+{
+    "fit_groups": {
+        "all_l200a": {
+            "range": [
+                [1930.0, 2098.511], [2108.511, 2113.513], [2123.513, 2190.0}
+            ],
+            "model": "uniform",
+            "bkg_name": "B_l200a_all"
+        }
+    },
+    "partitions": {
+        "all_l200a": [
+            {
+            "experiment": "L200",
+            "detector": "FAKEDET", // random name
+            "part_name": "part0001", // partition ID
+            "start_ts": 1704950367, // used to map the enregy events to the correct partition ID
+            "end_ts": 1708271505, // used to map the enregy events to the correct partition ID
+            "eff_tot": 0.69,
+            "eff_tot_sigma": 0, 
+            "width": 1.0616522503600239, // energy resolution in standard deviation (in keV)
+            "width_sigma": 0,
+            "fwhm": 2.5, // energy resolution in FWHM (in keV)
+            "fwhm_sigma": 0,
+            "exposure": 1000,
+            "bias": 0, 
+            "bias_sigma": 0
+            }
+        ]
+    }
+}
+```
+
+The code works for deriving the exclusion sensitivity, so for the `fake_events.json` input just use:
+```json
+{
+    "events": [
+    ]
+}
+```
+
+The implementation of a discovery sensitivty study has not been carried on.
