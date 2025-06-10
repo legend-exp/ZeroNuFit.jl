@@ -100,11 +100,10 @@ function main()
             samples, partitions, part_event_index =
                 ZeroNuFit.Analysis.retrieve_real_fit_results(config_real_data)
         else
+            @warn "You can read 1 fake partition only. At the moment, the case of >1 fake partitions have not been implemented yet. Sorry"
             partitions, fit_ranges = ZeroNuFit.Utils.get_partitions(config)
             events = ZeroNuFit.Utils.get_events(config_real_data["events"][1], partitions) # this works for 1 fake partition only
             part_event_index = ZeroNuFit.Utils.get_partition_event_index(events, partitions)
-            println("partitions: ", partitions)
-            println("partitions: ", partitions[1])
             samples = (
                 αe_all = 0.5,
                 ω = [partitions[1].width],
