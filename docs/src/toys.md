@@ -149,6 +149,10 @@ In the above examples, you can replace the julia-running line in order to test t
 $srun  $parallel "julia sensitivity.jl -c config/fake_config.json -i {1} -f true -b <bkg_idex>" ::: {1..10000} 
 ```
 
+!!! warning
+
+    You can find an example of `fake_config.json` under `config/`. Notice that the option `"bkg_only"` has to be set to `true` for the code to run. In this way, the code is able to generate a fake toy spectrum assuming no signal, and then it will automatically include a signal contribution in the model when it comes to fit the generated toy events.
+
 An example of fake_partitions.json` input is the following, where you fill entries with the values you want to test the $0\nu\beta\beta$ sensitivity:
 
 ```json
@@ -185,6 +189,11 @@ An example of fake_partitions.json` input is the following, where you fill entri
 }
 ```
 
+!!! warning
+
+    The code is working for 1 fake partition only. If in `fake_partitions.json` you add more than one fake partition, all partitions but the first one will be ignored when generatind your toy spectra.
+
+
 The code works for deriving the exclusion sensitivity, so for the `fake_events.json` input just use:
 ```json
 {
@@ -193,4 +202,4 @@ The code works for deriving the exclusion sensitivity, so for the `fake_events.j
 }
 ```
 
-The implementation of a discovery sensitivty study has not been carried on.
+The implementation of a discovery sensitivity study has not been carried on.
