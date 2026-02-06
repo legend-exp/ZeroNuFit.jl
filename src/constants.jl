@@ -3,6 +3,25 @@
 # Authors: Sofia Calgaro, Toby Dixon
 # 
 ###
+
+"""
+    Constants
+
+Module defining physical and experimental constants used throughout ZeroNuFit.jl.
+
+# Constants
+- `Qbb`: Q-value for ⁷⁶Ge double-beta decay (2039.06 keV)
+- `N_A`: Avogadro's number (6.022E23 mol⁻¹)
+- `me_keV`: Electron mass in keV (510.99895 keV, PDG value)
+- `m_76`: Molar mass of ⁷⁶Ge (75.92E-3 kg/mol)
+- `sig_units`: Signal units scaling factor (1e-27)
+- `gamma_2113_keV`: Gamma line energy at 2113.513 keV
+- `gamma_2123_keV`: Gamma line energy at 2123.513 keV
+- `gamma_2098_keV`: Gamma line energy at 2098.511 keV
+- `gamma_2108_keV`: Gamma line energy at 2108.511 keV
+- `gamma_2199_keV`: Gamma line energy at 2199.100 keV
+- `gamma_2209_keV`: Gamma line energy at 2209.100 keV
+"""
 module Constants
 
 # define global constants
