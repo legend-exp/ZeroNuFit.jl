@@ -399,7 +399,7 @@ Plots the correlation matrixes across the free parameters.
 
 # Arguments
 - `samples`: set of generated MCMC samples.
-- `pars`: free parameters in format (:B, :S, ...) free parameters in format (:B, :S, ...) 
+- `pars`: free parameters in format (:B, :S, ...) 
 - `output`: output folder path.
 - `par_names`: collection of parameter names.
 - `toy_idx`: identification index of the generated toy.
