@@ -39,7 +39,7 @@ color_schemes = Dict(
 """
     fit_model(idx_part_with_events::Int, part_k::NamedTuple, p::NamedTuple, settings::Dict, bkg_shape::Symbol, fit_range, bkg_units::String, x::Float64) -> Float64
 
-Evaòuates the total modeling function at x.
+Evaluates the total modeling function at x.
 
 # Arguments
 - `idx_part_with_events::Int`: index of the partition with the event.

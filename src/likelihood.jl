@@ -218,10 +218,6 @@ Exponential function, using Taylor expansion series for `abs(x) < 1E-6`.
 - Exponential value computed in a numerically stable way.
 """
 function exp_stable(x::Float64)
-
-    ### Arguments
-    - `x::Real`: the x value to evaluate at.
-    """
     if (abs(x) < 1E-6)
         return 1 + x + x^2 / 2 + x^3 / 6
     else
