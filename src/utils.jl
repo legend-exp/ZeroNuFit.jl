@@ -20,15 +20,20 @@ import JLD2
 import HDF5
 
 
+"""
+    get_corr_info(config)
+
+Function that retrieves information about correlated background from config in input.
+
+# Arguments
+- `config`: input dictionary.
+
+# Returns
+- `corr::Bool`: whether correlated background mode is enabled.
+- `hier_mode`: hierarchical mode setting or `nothing`.
+- `hier_range`: hierarchical range setting or `nothing`.
+"""
 function get_corr_info(config)
-    """
-        get_corr_info(config)
-
-    Function that retrieves information about correlated background from config in input.
-
-    ### Arguments
-    - `config`: input dictionary.
-    """
     if !(haskey(config["bkg"], "correlated"))
         return false, nothing, nothing
     end
@@ -45,17 +50,20 @@ function get_corr_info(config)
 end
 
 
+"""
+    get_par_posterior(samples, par; idx = nothing)
+
+Function that retrieves the parameter posterior.
+
+# Arguments
+- `samples`: set of generated MCMC samples.
+- `par`: name of the parameter for which we want to extract the marginalized mode.
+- `idx`: index for multiparameters
+
+# Returns
+- `pars`: array of parameter values extracted from all samples.
+"""
 function get_par_posterior(samples, par; idx = nothing)
-    """
-        get_par_posterior(samples, par; idx)
-
-    Function that retrieves the parameter posterior.
-
-    ### Arguments
-    - `samples`: set of generated MCMC samples.
-    - `par`: name of the parameter for which we want to extract the marginalized mode.
-    - `idx`: index for multiparameters
-    """
 
     pars = []
 
@@ -75,15 +83,19 @@ function get_par_posterior(samples, par; idx = nothing)
 end
 
 
+"""
+    get_bkg_info(config)
+
+Function that retrieves background shape name and parameters (if different from flat) from the input configuration dictionary.
+
+# Arguments
+- `config`: input dictionary.
+
+# Returns
+- `bkg_shape::Symbol`: background shape name (default `:uniform`).
+- `bkg_shape_pars`: background shape parameters or `nothing`.
+"""
 function get_bkg_info(config)
-    """
-        get_bkg_info(config)
-
-    Function that retrieves background shape name and parameters (if different from flat) from the input configuration dictionary.
-
-    ### Arguments
-    - `config`: input dictionary.
-    """
     bkg_shape = :uniform
     bkg_shape_pars = nothing
 
@@ -98,17 +110,17 @@ end
 
 
 
+"""
+    check_key(config::Dict, k::String)
+
+Function that checks the existence of a key in a dictionary.
+If the key is not found, the code exits here.
+
+# Arguments
+- `config::Dict`: input dictionary.
+- `k::String`: name of the key to check the existence of in `config`.
+"""
 function check_key(config::Dict, k::String)
-    """
-        check_key(config::Dict, k::String)
-
-    Function that checks the existence of a key in a dictionary.
-    If the key is not found, the code exits here.
-
-    ### Arguments
-    - `config::Dict`: input dictionary.
-    - `k::String`: name of the key to check the existence of in `config`.
-    """
     if !(k in keys(config))
         @error "'$k' not in config, exit here"
         exit(-1)
@@ -116,17 +128,18 @@ function check_key(config::Dict, k::String)
 end
 
 
+"""
+    get_settings(config::Dict{String,Any})
+
+Function that retrieves useful settings information from the input configuration dictionary.
+
+# Arguments
+- `config::Dict{String,Any}`: input dictionary.
+
+# Returns
+- `settings::Dict`: dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
+"""
 function get_settings(config::Dict{String,Any})
-    """
-        get_settings(config::Dict{String,Any})
-
-    Function that retrieves useful settings information from the input configuration dictionary.
-
-    Returns a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
-
-    ### Arguments
-    - `config::Dict{String,Any}`: input dictionary.
-    """
 
     check_key(config, "nuisance")
     check_key(config["nuisance"], "energy_bias")
@@ -147,17 +160,20 @@ function get_settings(config::Dict{String,Any})
 end
 
 
+"""
+    get_partitions_new(part_path::String)
+
+Get the partition information from a JSON file and save to a Table.
+
+# Arguments
+- `part_path::String`: path to a given partition JSON file.
+
+# Returns
+- `tab`: Table of partitions.
+- `fit_groups`: dictionary of fit groups.
+- `fit_ranges`: dictionary of fit ranges.
+"""
 function get_partitions_new(part_path::String)
-    """
-        get_partitions_new(part_path::String)
-
-    Get the partition information from a JSON file and save to a Table.
-
-    Returns a Table of partitions, a dictionary of fit groups, a dictionary of fit ranges.
-
-    ### Arguments
-    - `part_path::String`: path to a given partition JSON file.
-    """
     if !isfile(part_path)
         @error "Error: file $part_path does not exist!"
         exit(-1)
@@ -291,18 +307,19 @@ function get_partitions_new(part_path::String)
 end
 
 
-function event_is_contained(event::Float64, fit_range)::Bool
-    """
-        event_is_contained(event::Float64, fit_ranges)
+"""
+    event_is_contained(event::Float64, fit_range)::Bool
         
-    Function to check the containment of an energy event.
+Function to check the containment of an energy event.
 
-    Returns true if the event is contained at least in one of the selected energy ranges.
+# Arguments
+- `event::Float64`: energy event.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`
 
-    ### Arguments
-    - `event::Float64`: energy event.
-    - fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`
-    """
+# Returns
+- `flag::Bool`: true if the event is contained at least in one of the selected energy ranges.
+"""
+function event_is_contained(event::Float64, fit_range)::Bool
     flag = false
     for range_pair in fit_range
         if range_pair[1] <= event <= range_pair[2]
@@ -313,17 +330,21 @@ function event_is_contained(event::Float64, fit_range)::Bool
 end
 
 
-function get_partitions_events(config::Dict{String,Any})
-    """
-        get_partitions_events(config::Dict{String, Any})
+"""
+    get_partitions_events(config::Dict{String,Any})
         
-    Get partition, event, and fit range info from the configuration dictionary given in input.
+Get partition, event, and fit range info from the configuration dictionary given in input.
 
-    Returns an object descirbing if a partition has an event by assigning indexes, an array of energy events, a Table of partitions, and fit ranges.
+# Arguments
+- `config::Dict{String,Any}`: input dictionary.
 
-    ### Arguments
-    - `config::Dict{String,Any}`: input dictionary.
-    """
+# Returns
+- `part_event_index`: object describing if a partition has an event by assigning indexes.
+- `events`: array of energy events.
+- `partitions`: Table of partitions.
+- `fit_ranges`: dictionary of fit ranges.
+"""
+function get_partitions_events(config::Dict{String,Any})
 
     @info"... retrieve some partitions"
     partitions, fit_ranges = get_partitions(config)
@@ -362,25 +383,27 @@ function get_partitions_events(config::Dict{String,Any})
 end
 
 
+"""
+    get_partition_event_index(events::Array{Vector{Float64}}, partitions::TypedTables.Table)::Vector{Int}
+
+Returns an object describing if a partition has an event and giving them indexes.
+This creates a vector where:
+- `V[i]=0` if partition `i` has no events,
+- `V[i]=idx` if partition `i` has events,
+
+where the index counts the number of partitions with `index<=i`.
+
+# Arguments
+- `events::Array{Vector{Float64}}`: list of events (=energies) in each partition.
+- `partitions::TypedTables.Table`: table of partitions.
+
+# Returns
+- `output::Vector{Int}`: vector of indexes describing event presence in partitions.
+"""
 function get_partition_event_index(
     events::Array{Vector{Float64}},
     partitions::TypedTables.Table,
 )::Vector{Int}
-    """
-        get_partition_event_index(events::Array{Vector{Float64}},partitions::TypedTables.Table)::Vector{Int}
-
-    Returns an object describing if a partition has an event and giving them indexes.
-    This creates a vector where
-
-    - `V[i]=0` if partition `i` has no events,
-    - `V[i]=idx` if partition `i` has events,
-
-    where the index counts the number of partitions with `index<=i`.
-
-    ### Arguments
-    - `events::Array{Vector{Float64}}`: list of events (=energies) in each partition.
-    - `partitions::TypedTables.Table`: table of partitions.
-    """
     output = Vector{Int}(undef, length(partitions))
     counter = 1
     for (idx, part) in enumerate(partitions)
@@ -396,15 +419,19 @@ function get_partition_event_index(
 end
 
 
+"""
+    get_partitions(config::Dict{String,Any})
+
+Function to retrieve a Table of partitions and a dictionary of fit ranges.
+
+# Arguments
+- `config::Dict{String,Any}`: input dictionary.
+
+# Returns
+- `partitions`: Table of partitions.
+- `fit_ranges`: dictionary of fit ranges.
+"""
 function get_partitions(config::Dict{String,Any})
-    """
-        get_partitions(config::Dict{String, Any})
-
-    Function to retrieve a Table of partitions and a dictionary of fit ranges.
-
-    ### Arguments
-    - `config::Dict{String,Any}`: input dictionary.
-    """
 
     partitions = nothing
     first = true
@@ -429,17 +456,20 @@ function get_partitions(config::Dict{String,Any})
 end
 
 
+"""
+    get_events(event_path::String, partitions)::Array{Vector{Float64}}
+
+Function that returns an Array of Vectors filled with energy events per each partition.
+The code exits here if an event can't be associated to any existing partition.
+
+# Arguments
+- `event_path::String`: path to the input JSON file with energy events.
+- `partitions`: Table of retrieved partitions.
+
+# Returns
+- `events::Array{Vector{Float64}}`: array of vectors containing energy events per partition.
+"""
 function get_events(event_path::String, partitions)::Array{Vector{Float64}}
-    """
-        get_events(event_path::String,partitions)::Array{Vector{Float64}}
-
-    Function that returns an Array of Vectors filled with energy events per each partition.
-    The code exits here if an event can't be associated to any existing partition.
-
-    ### Arguments
-    - `event_path::String`: path to the input JSON file with energy events.
-    - `partitions`: Table of retrieve partitions.
-    """
     if !isfile(event_path)
         @error "Error: file $event_path does not exist!"
         exit(-1)
@@ -476,24 +506,27 @@ function get_events(event_path::String, partitions)::Array{Vector{Float64}}
 end
 
 
+"""
+    get_efficiency(p::NamedTuple, part_k::NamedTuple, idx_part_with_events::Int, settings::Dict)
+
+Returns the efficiency for a given partition, depending on the specified settings (e.g. if correlated or not, if fixed or not).
+If you are fitting with a background-only model, then efficiency=0.
+
+# Arguments
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `idx_part_with_events::Int`: index of the partition with the event.
+- `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
+
+# Returns
+- `eff`: efficiency value for the partition.
+"""
 function get_efficiency(
     p::NamedTuple,
     part_k::NamedTuple,
     idx_part_with_events::Int,
     settings::Dict,
 )
-    """
-        get_efficiency(p::NamedTuple,part_k::NamedTuple,idx_part_with_events::Int,settings::Dict)
-
-    Returns the efficiency for a given partition, depending on the specified settings (e.g. if correlated or not, if fixed or not).
-    If you are fitting with a background-only model, then efficiency=0.
-
-    ### Arguments
-    - `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
-    - `part_k::NamedTuple`: Table of specifications for a given partition k.
-    - `idx_part_with_events::Int`: index of the partition with the event.
-    - `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
-    """
     eff = nothing
 
     # if background only fit, then there is no need to retrieve any efficiency 
@@ -524,23 +557,27 @@ function get_efficiency(
 end
 
 
+"""
+    get_energy_scale_pars(part_k::NamedTuple, p::NamedTuple, settings::Dict, idx_part_with_events)
+
+Returns the energy resolution and bias for a given partition, depending on the specified settings (e.g. if correlated or not, if fixed or not).
+
+# Arguments
+- `part_k::NamedTuple`: Table of specifications for a given partition k.
+- `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
+- `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
+- `idx_part_with_events`: index of the partition with the event.
+
+# Returns
+- `reso::Float64`: energy resolution for the partition.
+- `bias::Float64`: energy bias for the partition.
+"""
 function get_energy_scale_pars(
     part_k::NamedTuple,
     p::NamedTuple,
     settings::Dict,
     idx_part_with_events,
 )
-    """ 
-        get_energy_scale_pars(part_k::NamedTuple,p::NamedTuple,settings::Dict,idx_part_with_events)
-
-    Returns the energy resolution and bias for a given partition, depending on the specified settings (e.g. if correlated or not, if fixed or not).
-
-    ### Arguments
-    - `p::NamedTuple`: collection of key-value pairs where each key corresponds to a model parameter.
-    - `part_k::NamedTuple`: Table of specifications for a given partition k.
-    - `settings::Dict`: a dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
-    - `idx_part_with_events::Int`: index of the partition with the event.
-    """
     # either FIXED energy pars OR 0 events in the partition
     if (settings[:energy_res_fixed] == true || idx_part_with_events == 0)
         reso = part_k.width
@@ -571,16 +608,19 @@ function get_energy_scale_pars(
 end
 
 
+"""
+    inverse_uniform_cdf(p, fit_range)
+
+Returns the inverse cumulative distribution function value for the given probability `p`.
+
+# Arguments
+- `p`: probability between 0 and 1 representing the desired quantile of the cumulative distribution.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+
+# Returns
+- `res`: the energy value corresponding to the given probability.
+"""
 function inverse_uniform_cdf(p, fit_range)
-    """ 
-        inverse_uniform_cdf(p, fit_range)
-
-    Returns the inverse cumulative distribution function value for the given probability `p`.
-
-    ### Arguments
-    - `p`: probability between 0 and 1 representing the desired quantile of the cumulative distribution.
-    - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
-    """
     range_l, range_h = get_range(fit_range)
     delta = sum(range_h .- range_l)
 
@@ -613,17 +653,20 @@ function inverse_uniform_cdf(p, fit_range)
 end
 
 
+"""
+    generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
+
+Generates a list of `n` events uniformly sampled within a specified range using the inverse CDF method.
+
+# Arguments
+- `n`: number of events to randomly generate.
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+- `seed`: fix to a value if you want to fix the random generator seed.
+
+# Returns
+- `res`: array of uniformly sampled energy values.
+"""
 function generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
-    """ 
-        generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
-
-    Generates a list of `n` events uniform sampled within a specified range using the inverse CDF method.
-
-    ### Arguments
-    - `n`: number of events to randomly generate.
-    - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
-    - `seed`: fix to a value if you want to fix the random generator seed.
-    """
     # fix the seed (if provided)
     if seed !== nothing
         Random.seed!(seed)
@@ -634,31 +677,35 @@ function generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
 end
 
 
+"""
+    save_generated_samples(samples, output)
+
+Saves generated MCMC samples to `.jld2` and `.h5` files.
+
+# Arguments
+- `samples`: set of generated MCMC samples.
+- `output`: output folder path.
+"""
 function save_generated_samples(samples, output)
-    """
-        save_generated_samples(samples,output)
-
-    Saves generated MCMC samples to `.jld2` and `.h5` files.
-
-    ### Arguments
-    - `samples`: set of generated MCMC samples.
-    - `output`: output folder path.
-    """
     FileIO.save(joinpath(output, "mcmc_files/samples.jld2"), Dict("samples" => samples))
     bat_write(joinpath(output, "mcmc_files/samples.h5"), samples)
 end
 
 
+"""
+    get_global_mode(samples, posterior)
+
+Function which retrieves global mode and a refined estimate of it (using `bat_findmode`).
+
+# Arguments
+- `samples`: set of generated MCMC samples.
+- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
+
+# Returns
+- `global_modes`: global mode from samples.
+- `refined_mode`: refined estimate using `bat_findmode`.
+"""
 function get_global_mode(samples, posterior)
-    """
-        get_global_mode(samples, posterior)
-
-    Function which retrieves global mode and a refined estimate of it (using `bat_findmode`).
-
-    ### Arguments
-    - `samples`: set of generated MCMC samples.
-    - `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
-    """
     global_modes = BAT.mode(samples)
     # more refined estimate 
     findmode_result = bat_findmode(
@@ -668,16 +715,19 @@ function get_global_mode(samples, posterior)
     return global_modes, findmode_result.result
 end
 
+"""
+    get_marginalized_mode(samples, par)
+
+Function which retrieves marginalized mode as the highest bin of the posterior, using 250 bins (vs 100 bins set by default by BAT).
+
+# Arguments
+- `samples`: set of generated MCMC samples.
+- `par`: name of the parameter for which we want to extract the marginalized mode.
+
+# Returns
+- `mode_value`: the marginalized mode value.
+"""
 function get_marginalized_mode(samples, par)
-    """
-        get_marginalized_mode(samples, par)
-
-    Function which retrieves marginalized mode as the highest bin of the posterior, using 250 bins (vs 100 bins set by default by BAT).
-
-    ### Arguments
-    - `samples`: set of generated MCMC samples.
-    - `par`: name of the parameter for which we want to extract the marginalized mode.
-    """
     post = get_par_posterior(samples, par, idx = nothing)
     post_numeric = Float64.(post)
     xmin = minimum(post)
@@ -691,6 +741,20 @@ function get_marginalized_mode(samples, par)
 end
 
 
+"""
+    save_results_into_json(samples, posterior, nuisance_info, config, output; par_names = nothing, toy_idx = nothing)
+
+Function which saves results from the fit and the used input configurations.
+
+# Arguments
+- `samples`: set of generated MCMC samples.
+- `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
+- `nuisance_info`: dictionary with info on the prior parameters.
+- `config`: input dictionary.
+- `output`: output folder path.
+- `par_names`: collection of parameter names.
+- `toy_idx`: identification index of the generated toy.
+"""
 function save_results_into_json(
     samples,
     posterior,
@@ -700,20 +764,6 @@ function save_results_into_json(
     par_names = nothing,
     toy_idx = nothing,
 )
-    """
-        save_results_into_json(samples,posterior,nuisance_info,config,output;par_names=nothing,toy_idx=nothing)
-
-    Function which saves results from the fit and the used input configurations.
-
-    ### Arguments
-    - `samples`: set of generated MCMC samples.
-    - `posterior`: posterior distribution evaluated via `PosteriorMeasure(likelihood, prior)`.
-    - `nuisance_info`: dictionary with info on the prior parameters.
-    - `config`: input dictionary.
-    - `output`: output folder path.
-    - `par_names`: collection of parameter names.
-    - `toy_idx`: identification index of the generated toy.
-    """
 
     global_modes, refined_global_modes = get_global_mode(samples, posterior)
 
@@ -812,44 +862,51 @@ function save_results_into_json(
 end
 
 
+"""
+    get_deltaE(fit_range)
+
+Function that returns the net width of the fit range.
+
+# Arguments
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+
+# Returns
+- Net width (sum of all range widths).
+"""
 function get_deltaE(fit_range)
-    """
-        get_deltaE(fit_range)
-
-    Function that returns the net width of the fit range.
-
-    ### Arguments
-    - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
-    """
     return sum([arr[2] - arr[1] for arr in fit_range])
 end
 
 
+"""
+    get_range(fit_range)
+
+Function that returns lower and upper edges of fit ranges.
+
+# Arguments
+- `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
+
+# Returns
+- `range_l`: sorted array of lower edges.
+- `range_h`: sorted array of upper edges.
+"""
 function get_range(fit_range)
-    """
-        get_range(fit_range)
-
-    Function that returns lower and upper edges of fit ranges.
-
-    ### Arguments
-    - `fit_range`: array of arrays, defining the allowed energy ranges; e.g. `fit_range= [[1930,1950], [1970,1990], [2000,2050]]`.
-    """
     range_l = [arr[1] for arr in fit_range]
     range_h = [arr[2] for arr in fit_range]
     return sort(range_l), sort(range_h)
 end
 
+"""
+    set_logger(config::Dict, output_path::String; toy_idx = nothing)
+
+Function which sets the logging for the program.
+
+# Arguments
+- `config::Dict`: input dictionary.
+- `output_path::String`: path to save the logs to.
+- `toy_idx`: identification index of the generated toy.
+"""
 function set_logger(config::Dict, output_path::String; toy_idx = nothing)
-    """
-        set_logger(config::Dict, output_path::String; toy_idx = nothing)
-
-    Function which sets the logging for the program.
-
-    ### Arguments
-    - `config::Dict`: input dictionary.
-    - `output_path::String`: path to save the logs to.
-    - `toy_idx=nothing`: identification index of the generated toy.
-    """
     if ("debug" in keys(config) && config["debug"] == true)
         terminal_log = global_logger(ConsoleLogger(stderr, LogLevel(Debug)))
     else
@@ -873,15 +930,18 @@ function set_logger(config::Dict, output_path::String; toy_idx = nothing)
 end
 
 
+"""
+    read_config(file_path::String)
+
+Function that reads the JSON configuration file and parses it into a Dict.
+
+# Arguments
+- `file_path::String`: path to the JSON file.
+
+# Returns
+- `config::Dict`: parsed configuration dictionary.
+"""
 function read_config(file_path::String)
-    """
-        read_config(file_path::String)
-
-    Function that reads the JSON configuration file and parse it into a Dict.
-
-    ### Arguments
-    - `file_path::String`: path to the JSON file.
-    """
     json_string = read(file_path, String)
     config = JSON.parse(json_string)
     return config
