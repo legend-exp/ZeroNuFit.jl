@@ -34,7 +34,7 @@ using Test
         result = ZeroNuFit.Likelihood.norm_uniform(5.0, p, fit_range)
         expected = 1.0 / 20.0  # Total width is 10 + 10 = 20
         @test result ≈ expected
-        
+
         # Test at a different point
         result2 = ZeroNuFit.Likelihood.norm_uniform(25.0, p, fit_range)
         @test result2 ≈ expected  # Uniform, so same value everywhere

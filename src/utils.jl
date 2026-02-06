@@ -33,7 +33,7 @@ Function that retrieves information about correlated background from config in i
 - `hier_mode`: hierarchical mode setting or `nothing`.
 - `hier_range`: hierarchical range setting or `nothing`.
 """
-function get_corr_info(config)::Tuple{Bool, Union{String, Nothing}, Union{Any, Nothing}}
+function get_corr_info(config)::Tuple{Bool,Union{String,Nothing},Union{Any,Nothing}}
     if !(haskey(config["bkg"], "correlated"))
         return false, nothing, nothing
     end
@@ -95,7 +95,7 @@ Function that retrieves background shape name and parameters (if different from 
 - `bkg_shape::Symbol`: background shape name (default `:uniform`).
 - `bkg_shape_pars`: background shape parameters or `nothing`.
 """
-function get_bkg_info(config)::Tuple{Symbol, Any}
+function get_bkg_info(config)::Tuple{Symbol,Any}
     bkg_shape = :uniform
     bkg_shape_pars = nothing
 
