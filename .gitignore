@@ -16,3 +16,4 @@ config/events*.json
 config/events*.json
 make_configs.ipynb
 time_test.jl
+Manifest.toml
