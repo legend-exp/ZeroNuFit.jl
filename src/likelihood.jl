@@ -156,7 +156,7 @@ end
 
 
 """
-    norm_uniform(x::Real, p::NamedTuple, fit_range)
+    norm_uniform(x::Real, p::NamedTuple, fit_range) -> Float64
 
 Normalised flat function defined by 1/norm.
 
@@ -168,7 +168,7 @@ Normalised flat function defined by 1/norm.
 # Returns
 - Normalized uniform probability density value.
 """
-function norm_uniform(x::Real, p::NamedTuple, fit_range)
+function norm_uniform(x::Real, p::NamedTuple, fit_range)::Float64
     range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
@@ -178,7 +178,7 @@ end
 
 
 """
-    norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+    norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range) -> Float64
 
 Normalised linear function defined by (1+slope*(x-center)/net_width)/norm.
 
@@ -191,7 +191,7 @@ Normalised linear function defined by (1+slope*(x-center)/net_width)/norm.
 # Returns
 - Normalized linear probability density value.
 """
-function norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+function norm_linear(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)::Float64
     range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
@@ -207,7 +207,7 @@ end
 
 
 """
-    exp_stable(x::Float64)
+    exp_stable(x::Float64) -> Float64
 
 Exponential function, using Taylor expansion series for `abs(x) < 1E-6`.
 
@@ -217,7 +217,7 @@ Exponential function, using Taylor expansion series for `abs(x) < 1E-6`.
 # Returns
 - Exponential value computed in a numerically stable way.
 """
-function exp_stable(x::Float64)
+function exp_stable(x::Float64)::Float64
     if (abs(x) < 1E-6)
         return 1 + x + x^2 / 2 + x^3 / 6
     else
@@ -227,7 +227,7 @@ end
 
 
 """
-    norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+    norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range) -> Float64
 
 Normalised exponential function defined by exp_stable((x-center)*Rt)/norm.
 
@@ -240,7 +240,7 @@ Normalised exponential function defined by exp_stable((x-center)*Rt)/norm.
 # Returns
 - Normalized exponential probability density value.
 """
-function norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+function norm_exponential(x::Float64, p::NamedTuple, b_name::Symbol, fit_range)::Float64
     range_l, range_h = ZeroNuFit.Utils.get_range(fit_range)
     center = range_l[1]
 
@@ -265,7 +265,7 @@ end
 
 
 """
-    gaussian_plus_lowEtail(evt_energy::Float64, Qbb::Float64, bias::Float64, reso::Float64, part_k::NamedTuple)
+    gaussian_plus_lowEtail(evt_energy::Float64, Qbb::Float64, bias::Float64, reso::Float64, part_k::NamedTuple) -> Float64
 
 Signal model based on the peak shape used for the MJD analysis. The peak shape was derived from considerations made in [S. I. Alvis et al., Phys. Rev. C 100, 025501 (2019)].
 
@@ -285,7 +285,7 @@ function gaussian_plus_lowEtail(
     bias::Float64,
     reso::Float64,
     part_k::NamedTuple,
-)
+)::Float64
     γ = reso
     # following params are ALWAYS fixed
     f = part_k.frac
@@ -305,7 +305,7 @@ end
 
 
 """
-    get_bkg_pdf(bkg_shape::Symbol, evt_energy::Float64, p::NamedTuple, b_name::Symbol, fit_range)
+    get_bkg_pdf(bkg_shape::Symbol, evt_energy::Float64, p::NamedTuple, b_name::Symbol, fit_range) -> Float64
 
 Returns the background modeling function.
 
@@ -325,7 +325,7 @@ function get_bkg_pdf(
     p::NamedTuple,
     b_name::Symbol,
     fit_range,
-)
+)::Float64
     if (bkg_shape == :uniform)
         return norm_uniform(evt_energy, p, fit_range)
     elseif (bkg_shape == :linear)
@@ -341,7 +341,7 @@ end
 
 
 """
-    get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple)
+    get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple) -> Float64
 
 Returns the signal modeling function.
 
@@ -353,7 +353,7 @@ Returns the signal modeling function.
 # Returns
 - Signal PDF value at the given energy.
 """
-function get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple)
+function get_signal_pdf(evt_energy::Float64, Qbb::Float64, part_k::NamedTuple)::Float64
     signal_shape = part_k.signal_name
     bias = part_k.bias
     reso = part_k.width
