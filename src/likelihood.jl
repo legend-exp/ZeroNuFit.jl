@@ -482,7 +482,6 @@ function build_likelihood_zero_obs_evts(
     fit_range,
     bkg_units::String,
 )
-    """
     ll_value = 0
     model_s_k, model_b_k = get_mu_s_b(p, part_k, 0, settings, fit_range, bkg_units)
     model_tot_k = model_b_k + model_s_k
