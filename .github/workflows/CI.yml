@@ -63,7 +63,7 @@ jobs:
       # Update Julia packages
       - name: Update Julia packages
         run: |
-          julia -e 'using Pkg; Pkg.update() Pkg.instantiate()'  # Automatically update packages
+          julia -e 'using Pkg; Pkg.update(); Pkg.instantiate()'  # Automatically update packages
 
       # Cache dependencies
       - uses: julia-actions/cache@v2
