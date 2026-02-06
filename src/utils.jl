@@ -21,7 +21,7 @@ import HDF5
 
 
 """
-    get_corr_info(config)
+    get_corr_info(config) -> Tuple{Bool, Union{String, Nothing}, Union{Any, Nothing}}
 
 Function that retrieves information about correlated background from config in input.
 
@@ -33,7 +33,7 @@ Function that retrieves information about correlated background from config in i
 - `hier_mode`: hierarchical mode setting or `nothing`.
 - `hier_range`: hierarchical range setting or `nothing`.
 """
-function get_corr_info(config)
+function get_corr_info(config)::Tuple{Bool, Union{String, Nothing}, Union{Any, Nothing}}
     if !(haskey(config["bkg"], "correlated"))
         return false, nothing, nothing
     end
@@ -51,7 +51,7 @@ end
 
 
 """
-    get_par_posterior(samples, par; idx = nothing)
+    get_par_posterior(samples, par; idx = nothing) -> Vector
 
 Function that retrieves the parameter posterior.
 
@@ -63,7 +63,7 @@ Function that retrieves the parameter posterior.
 # Returns
 - `pars`: array of parameter values extracted from all samples.
 """
-function get_par_posterior(samples, par; idx = nothing)
+function get_par_posterior(samples, par; idx = nothing)::Vector
 
     pars = []
 
@@ -84,7 +84,7 @@ end
 
 
 """
-    get_bkg_info(config)
+    get_bkg_info(config) -> Tuple{Symbol, Any}
 
 Function that retrieves background shape name and parameters (if different from flat) from the input configuration dictionary.
 
@@ -95,7 +95,7 @@ Function that retrieves background shape name and parameters (if different from 
 - `bkg_shape::Symbol`: background shape name (default `:uniform`).
 - `bkg_shape_pars`: background shape parameters or `nothing`.
 """
-function get_bkg_info(config)
+function get_bkg_info(config)::Tuple{Symbol, Any}
     bkg_shape = :uniform
     bkg_shape_pars = nothing
 
@@ -129,7 +129,7 @@ end
 
 
 """
-    get_settings(config::Dict{String,Any})
+    get_settings(config::Dict{String,Any}) -> Dict
 
 Function that retrieves useful settings information from the input configuration dictionary.
 
@@ -139,7 +139,7 @@ Function that retrieves useful settings information from the input configuration
 # Returns
 - `settings::Dict`: dictionary containing information on energy bias/resolution/efficiency (if fixed or not, if correlated or not) and on the type of fit (if background only or not).
 """
-function get_settings(config::Dict{String,Any})
+function get_settings(config::Dict{String,Any})::Dict
 
     check_key(config, "nuisance")
     check_key(config["nuisance"], "energy_bias")
@@ -609,7 +609,7 @@ end
 
 
 """
-    inverse_uniform_cdf(p, fit_range)
+    inverse_uniform_cdf(p, fit_range) -> Float64
 
 Returns the inverse cumulative distribution function value for the given probability `p`.
 
@@ -620,7 +620,7 @@ Returns the inverse cumulative distribution function value for the given probabi
 # Returns
 - `res`: the energy value corresponding to the given probability.
 """
-function inverse_uniform_cdf(p, fit_range)
+function inverse_uniform_cdf(p, fit_range)::Float64
     range_l, range_h = get_range(fit_range)
     delta = sum(range_h .- range_l)
 
@@ -654,7 +654,7 @@ end
 
 
 """
-    generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
+    generate_disjoint_uniform_samples(n, fit_range; seed = nothing) -> Vector{Float64}
 
 Generates a list of `n` events uniformly sampled within a specified range using the inverse CDF method.
 
@@ -666,7 +666,7 @@ Generates a list of `n` events uniformly sampled within a specified range using 
 # Returns
 - `res`: array of uniformly sampled energy values.
 """
-function generate_disjoint_uniform_samples(n, fit_range; seed = nothing)
+function generate_disjoint_uniform_samples(n, fit_range; seed = nothing)::Vector{Float64}
     # fix the seed (if provided)
     if seed !== nothing
         Random.seed!(seed)
@@ -863,7 +863,7 @@ end
 
 
 """
-    get_deltaE(fit_range)
+    get_deltaE(fit_range) -> Float64
 
 Function that returns the net width of the fit range.
 
@@ -873,7 +873,7 @@ Function that returns the net width of the fit range.
 # Returns
 - Net width (sum of all range widths).
 """
-function get_deltaE(fit_range)
+function get_deltaE(fit_range)::Float64
     return sum([arr[2] - arr[1] for arr in fit_range])
 end
 
@@ -931,7 +931,7 @@ end
 
 
 """
-    read_config(file_path::String)
+    read_config(file_path::String) -> Dict
 
 Function that reads the JSON configuration file and parses it into a Dict.
 
@@ -941,7 +941,7 @@ Function that reads the JSON configuration file and parses it into a Dict.
 # Returns
 - `config::Dict`: parsed configuration dictionary.
 """
-function read_config(file_path::String)
+function read_config(file_path::String)::Dict
     json_string = read(file_path, String)
     config = JSON.parse(json_string)
     return config
