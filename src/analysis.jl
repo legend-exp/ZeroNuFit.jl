@@ -146,7 +146,7 @@ end
 """
     run_analysis(config::Dict{String,Any}; output_path::String, toy_idx=nothing) -> Nothing
 
-Function which handles running analysis.
+Function which handles running the analysis.
 
 # Arguments
 - `config::Dict{String,Any}`: the fit configuration.
@@ -225,7 +225,7 @@ end
 """
     retrieve_real_fit_results(config::Dict{String,Any}) -> Tuple
 
-Function which handles generating of fake data and run a signal+background model fit over it.
+Function which handles the generation of fake data and runs a signal+background model fit over it.
 
 # Arguments
 - `config::Dict{String,Any}`: the fit configuration.
