@@ -46,7 +46,7 @@ using Test
         fit_range = [[1.5, 2.7], [3.1, 4.9]]
         result = ZeroNuFit.Utils.get_deltaE(fit_range)
         expected = 1.2 + 1.8  # = 3.0
-        @test result ≈ expected atol=1e-10
+        @test result ≈ expected atol = 1e-10
     end
 
 end

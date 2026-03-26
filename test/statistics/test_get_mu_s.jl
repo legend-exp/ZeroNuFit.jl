@@ -23,7 +23,7 @@ using Test
         sig_units = ZeroNuFit.Constants.sig_units
         expected = log(2) * N_A * exposure * eff * signal * sig_units / m_76
 
-        @test result ≈ expected rtol=1e-10
+        @test result ≈ expected rtol = 1e-10
     end
 
     # Test case 2: Zero efficiency
@@ -33,7 +33,7 @@ using Test
         signal = 1.0
 
         result = ZeroNuFit.Likelihood.get_mu_s(exposure, eff, signal)
-        @test result ≈ 0.0 atol=1e-10
+        @test result ≈ 0.0 atol = 1e-10
     end
 
     # Test case 3: Zero signal
@@ -43,7 +43,7 @@ using Test
         signal = 0.0
 
         result = ZeroNuFit.Likelihood.get_mu_s(exposure, eff, signal)
-        @test result ≈ 0.0 atol=1e-10
+        @test result ≈ 0.0 atol = 1e-10
     end
 
     # Test case 4: Different exposure values
@@ -55,7 +55,7 @@ using Test
         result2 = ZeroNuFit.Likelihood.get_mu_s(200.0, eff, signal)
 
         # Result should scale linearly with exposure
-        @test result2 ≈ 2.0 * result1 rtol=1e-10
+        @test result2 ≈ 2.0 * result1 rtol = 1e-10
     end
 
     # Test case 5: Different efficiency values
@@ -67,7 +67,7 @@ using Test
         result2 = ZeroNuFit.Likelihood.get_mu_s(exposure, 1.0, signal)
 
         # Result should scale linearly with efficiency
-        @test result2 ≈ 2.0 * result1 rtol=1e-10
+        @test result2 ≈ 2.0 * result1 rtol = 1e-10
     end
 
 end

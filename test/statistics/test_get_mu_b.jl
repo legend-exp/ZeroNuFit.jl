@@ -20,7 +20,7 @@ using Test
         result = ZeroNuFit.Likelihood.get_mu_b(deltaE, exposure, bkg_index, reso, bkg_units)
         expected = deltaE * exposure * bkg_index  # 50 * 100 * 0.01 = 50
 
-        @test result ≈ expected rtol=1e-10
+        @test result ≈ expected rtol = 1e-10
     end
 
     # Test case 2: Using cFty units (counts/FWHM/t/yr)
@@ -35,7 +35,7 @@ using Test
         fwhm = reso * 2.355
         expected = deltaE * exposure * (bkg_index / fwhm / 1000)
 
-        @test result ≈ expected rtol=1e-10
+        @test result ≈ expected rtol = 1e-10
     end
 
     # Test case 3: Zero background index (ckky)
@@ -47,7 +47,7 @@ using Test
         bkg_units = "ckky"
 
         result = ZeroNuFit.Likelihood.get_mu_b(deltaE, exposure, bkg_index, reso, bkg_units)
-        @test result ≈ 0.0 atol=1e-10
+        @test result ≈ 0.0 atol = 1e-10
     end
 
     # Test case 4: Scaling with deltaE
@@ -61,7 +61,7 @@ using Test
         result2 = ZeroNuFit.Likelihood.get_mu_b(100.0, exposure, bkg_index, reso, bkg_units)
 
         # Result should scale linearly with deltaE
-        @test result2 ≈ 2.0 * result1 rtol=1e-10
+        @test result2 ≈ 2.0 * result1 rtol = 1e-10
     end
 
     # Test case 5: Scaling with exposure
@@ -75,7 +75,7 @@ using Test
         result2 = ZeroNuFit.Likelihood.get_mu_b(deltaE, 200.0, bkg_index, reso, bkg_units)
 
         # Result should scale linearly with exposure
-        @test result2 ≈ 2.0 * result1 rtol=1e-10
+        @test result2 ≈ 2.0 * result1 rtol = 1e-10
     end
 
     # Test case 6: cFty with different resolution
@@ -89,7 +89,7 @@ using Test
         result2 = ZeroNuFit.Likelihood.get_mu_b(deltaE, exposure, bkg_index, 4.0, bkg_units)
 
         # Result should be inversely proportional to FWHM (resolution * 2.355)
-        @test result2 ≈ 0.5 * result1 rtol=1e-10
+        @test result2 ≈ 0.5 * result1 rtol = 1e-10
     end
 
 end
