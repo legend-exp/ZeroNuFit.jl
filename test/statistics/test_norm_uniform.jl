@@ -47,7 +47,7 @@ using Test
         result = ZeroNuFit.Likelihood.norm_uniform(1940.0, p, fit_range)
         total_width = 20.0 + 20.0 + 50.0  # = 90.0
         expected = 1.0 / total_width
-        @test result ≈ expected atol=1e-10
+        @test result ≈ expected atol = 1e-10
     end
 
     # Test case 5: Check that result is independent of x (uniformity)

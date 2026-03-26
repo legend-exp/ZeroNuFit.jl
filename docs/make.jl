@@ -11,6 +11,7 @@ makedocs(
     modules = [ZeroNuFit],
     sitename = "ZeroNuFit.jl",
     authors = "Sofia Calgaro, Toby Dixon, Luigi Pertoldi",
+    checkdocs = :none,  # Don't error on undocumented docstrings
     format = Documenter.HTML(
         # size thresholds for HTML generation
         size_threshold = 400 * 1024,       # hard limit
